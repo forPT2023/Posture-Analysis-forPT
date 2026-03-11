@@ -1,0 +1,129 @@
+// Service Worker with Expiry Date
+const CACHE_NAME = 'posture-analysis-v12.2.0';
+const EXPIRY_DATE = new Date('2025-12-31T23:59:59').getTime(); // ← 有効期限
+
+const urlsToCache = [
+    '/',
+    '/index.html',
+    '/css/style.css',
+    '/js/main.js',
+    '/manifest.json'
+];
+
+// インストール時
+self.addEventListener('install', (event) => {
+    console.log('✅ Service Worker: インストール中...');
+    self.skipWaiting(); // 即座にアクティブ化
+    
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('✅ Service Worker: キャッシュ作成');
+            return cache.addAll(urlsToCache);
+        })
+    );
+});
+
+// アクティベート時
+self.addEventListener('activate', (event) => {
+    console.log('✅ Service Worker: アクティベート中...');
+    event.waitUntil(
+        clients.claim().then(() => {
+            return caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            console.log('🗑️ 古いキャッシュ削除:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            });
+        })
+    );
+});
+
+// フェッチ時（有効期限チェック）
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        (async () => {
+            const now = new Date().getTime();
+            
+            // 有効期限チェック
+            if (now > EXPIRY_DATE) {
+                console.log('⏰ 有効期限切れ: キャッシュを削除');
+                
+                // すべてのキャッシュを削除
+                await caches.delete(CACHE_NAME);
+                
+                // エラーページを返す
+                return new Response(
+                    `<!DOCTYPE html>
+                    <html lang="ja">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>有効期限切れ</title>
+                        <style>
+                            body {
+                                font-family: sans-serif;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                min-height: 100vh;
+                                margin: 0;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            }
+                            .container {
+                                background: white;
+                                padding: 40px;
+                                border-radius: 20px;
+                                text-align: center;
+                                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                                max-width: 500px;
+                            }
+                            h1 { color: #F44336; margin-bottom: 20px; }
+                            p { color: #666; line-height: 1.6; }
+                            .emoji { font-size: 4rem; margin-bottom: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="emoji">⏰</div>
+                            <h1>有効期限が切れました</h1>
+                            <p>このアプリの提供期間は終了しました。</p>
+                            <p style="font-size: 0.9rem; color: #999; margin-top: 30px;">
+                                有効期限: ${new Date(EXPIRY_DATE).toLocaleDateString('ja-JP')}
+                            </p>
+                        </div>
+                    </body>
+                    </html>`,
+                    {
+                        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                    }
+                );
+            }
+            
+            // 有効期限内の場合は通常の動作
+            try {
+                // ネットワークから取得を試みる
+                const response = await fetch(event.request);
+                
+                // 成功したらキャッシュも更新
+                const responseClone = response.clone();
+                const cache = await caches.open(CACHE_NAME);
+                cache.put(event.request, responseClone);
+                
+                return response;
+            } catch (error) {
+                // ネットワークが失敗したらキャッシュから取得
+                const cachedResponse = await caches.match(event.request);
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+                
+                // キャッシュもない場合
+                return new Response('オフラインです', { status: 503 });
+            }
+        })()
+    );
+});

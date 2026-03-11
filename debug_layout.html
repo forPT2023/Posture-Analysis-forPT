@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>レイアウトデバッグ - リアルタイム検証</title>
+    <style>
+        body { margin: 20px; font-family: sans-serif; background: #f5f5f5; }
+        .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .error { background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin: 10px 0; }
+        .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 10px 0; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 10px 0; }
+        pre { background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .test-frame { border: 2px solid #ddd; padding: 10px; margin: 10px 0; }
+        button { background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #1976d2; }
+    </style>
+</head>
+<body>
+    <h1>🔍 姿勢分析アプリ - レイアウトデバッグツール</h1>
+    
+    <div class="section">
+        <h2>📊 現在の実装状況</h2>
+        <div id="current-status">読み込み中...</div>
+    </div>
+    
+    <div class="section">
+        <h2>🎯 レイアウトテスト</h2>
+        <button onclick="testLayout('horizontal')">A4横向きテスト</button>
+        <button onclick="testLayout('vertical')">A4縦向きテスト</button>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="section">
+        <h2>🔧 リアルタイムCSSチェック</h2>
+        <div id="css-check"></div>
+    </div>
+
+    <script>
+        async function loadCurrentStatus() {
+            const status = document.getElementById('current-status');
+            
+            try {
+                // CSSをフェッチ
+                const cssResponse = await fetch('/css/style.css');
+                const cssText = await cssResponse.text();
+                
+                // JavaScriptをフェッチ
+                const jsResponse = await fetch('/js/main.js');
+                const jsText = await jsResponse.text();
+                
+                let html = '<div class="info"><strong>✅ ファイル読み込み成功</strong></div>';
+                
+                // A4横向きのCSS確認
+                const horizontalMatch = cssText.match(/\.preview-canvas\.layout-horizontal\s*\{[^}]*width:\s*([^;]+);[^}]*height:\s*([^;]+);/);
+                if (horizontalMatch) {
+                    html += `<div class="success">
+                        <strong>A4横向き設定:</strong><br>
+                        width: ${horizontalMatch[1]}<br>
+                        height: ${horizontalMatch[2]}
+                    </div>`;
+                }
+                
+                // A4縦向きのCSS確認
+                const verticalMatch = cssText.match(/\.preview-canvas\.layout-vertical\s*\{[^}]*width:\s*([^;]+);[^}]*height:\s*([^;]+);/);
+                if (verticalMatch) {
+                    html += `<div class="success">
+                        <strong>A4縦向き設定:</strong><br>
+                        width: ${verticalMatch[1]}<br>
+                        height: ${verticalMatch[2]}
+                    </div>`;
+                }
+                
+                // .comparison-areaのCSS確認
+                const comparisonMatch = cssText.match(/\.comparison-area\s*\{[^}]*display:\s*([^;!]+)[^}]*flex-direction:\s*([^;!]+)[^}]*\}/);
+                if (comparisonMatch) {
+                    html += `<div class="success">
+                        <strong>.comparison-area設定:</strong><br>
+                        display: ${comparisonMatch[1]}<br>
+                        flex-direction: ${comparisonMatch[2]}
+                    </div>`;
+                }
+                
+                // JavaScriptのレイアウト設定確認
+                const drawCanvasMatch = jsText.match(/if \(currentLayout === 'vertical'\) \{[^}]*maxWidth = ([^;]+);[^}]*maxHeight = ([^;]+);/);
+                if (drawCanvasMatch) {
+                    html += `<div class="success">
+                        <strong>JavaScript - A4縦向き画像サイズ:</strong><br>
+                        maxWidth: ${drawCanvasMatch[1]}<br>
+                        maxHeight: ${drawCanvasMatch[2]}
+                    </div>`;
+                }
+                
+                const drawCanvasMatch2 = jsText.match(/\} else \{[^}]*maxWidth = ([^;]+);[^}]*maxHeight = ([^;]+);/);
+                if (drawCanvasMatch2) {
+                    html += `<div class="success">
+                        <strong>JavaScript - A4横向き画像サイズ:</strong><br>
+                        maxWidth: ${drawCanvasMatch2[1]}<br>
+                        maxHeight: ${drawCanvasMatch2[2]}
+                    </div>`;
+                }
+                
+                status.innerHTML = html;
+                
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ エラー: ${error.message}</div>`;
+            }
+        }
+        
+        function testLayout(mode) {
+            const results = document.getElementById('test-results');
+            const isVertical = mode === 'vertical';
+            
+            // A4サイズ定義（mm to px: 1mm ≈ 3.7795px at 96dpi）
+            const mmToPx = 3.7795;
+            const a4Width = isVertical ? 260 : 297;  // v9.0.0の値
+            const a4Height = isVertical ? 297 : 210;
+            const padding = 20 * 2;  // 左右 or 上下
+            
+            // 画像サイズ（JavaScript設定値）
+            const imgWidth = isVertical ? 95 : 120;
+            const imgHeight = isVertical ? 220 : 130;
+            
+            const availableWidth = (a4Width - padding) * mmToPx;
+            const availableHeight = (a4Height - padding) * mmToPx;
+            const totalImgWidth = (imgWidth * 2 + 10/mmToPx) * mmToPx;  // 2画像 + gap
+            const imgHeightPx = imgHeight * mmToPx;
+            
+            const widthOk = totalImgWidth <= availableWidth;
+            const heightOk = imgHeightPx <= availableHeight;
+            
+            results.innerHTML = `
+                <div class="test-frame">
+                    <h3>${mode === 'vertical' ? 'A4縦向き' : 'A4横向き'} (${a4Width}mm × ${a4Height}mm)</h3>
+                    <p><strong>利用可能サイズ:</strong> ${availableWidth.toFixed(0)}px × ${availableHeight.toFixed(0)}px</p>
+                    <p><strong>2画像合計幅:</strong> ${totalImgWidth.toFixed(0)}px （各${imgWidth}mm × 2 + gap 10px）</p>
+                    <p><strong>画像高さ:</strong> ${imgHeightPx.toFixed(0)}px （${imgHeight}mm）</p>
+                    <div class="${widthOk ? 'success' : 'error'}">
+                        <strong>幅判定:</strong> ${widthOk ? '✅ 収まる' : '❌ オーバー'} 
+                        (余裕: ${(availableWidth - totalImgWidth).toFixed(0)}px)
+                    </div>
+                    <div class="${heightOk ? 'success' : 'error'}">
+                        <strong>高さ判定:</strong> ${heightOk ? '✅ 収まる' : '❌ オーバー'} 
+                        (余裕: ${(availableHeight - imgHeightPx).toFixed(0)}px)
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function checkCSS() {
+            const cssCheck = document.getElementById('css-check');
+            
+            try {
+                const response = await fetch('/css/style.css');
+                const cssText = await response.text();
+                
+                // 重要なCSSルールを抽出
+                const rules = [
+                    '.preview-canvas.layout-horizontal',
+                    '.preview-canvas.layout-vertical',
+                    '.comparison-area',
+                    '.comparison-item',
+                    '.comparison-canvas-wrapper'
+                ];
+                
+                let html = '';
+                rules.forEach(rule => {
+                    const regex = new RegExp(rule.replace('.', '\\.') + '\\s*\\{[^}]+\\}', 'g');
+                    const matches = cssText.match(regex);
+                    if (matches) {
+                        html += `<h4>${rule}</h4>`;
+                        matches.forEach((match, idx) => {
+                            html += `<pre>${match}</pre>`;
+                        });
+                    }
+                });
+                
+                cssCheck.innerHTML = html;
+                
+            } catch (error) {
+                cssCheck.innerHTML = `<div class="error">❌ CSS読み込みエラー: ${error.message}</div>`;
+            }
+        }
+        
+        // ページ読み込み時に実行
+        window.addEventListener('load', () => {
+            loadCurrentStatus();
+            checkCSS();
+        });
+    </script>
+</body>
+</html>

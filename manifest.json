@@ -1,0 +1,33 @@
+{
+  "name": "姿勢分析",
+  "short_name": "姿勢分析",
+  "description": "MediaPipe Poseを使用した姿勢分析アプリ。Before/After画像の比較と姿勢評価を提供します。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196F3",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["medical", "health", "productivity"],
+  "lang": "ja",
+  "dir": "ltr"
+}

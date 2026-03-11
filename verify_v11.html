@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>v11.0.0 重複問題修正検証</title>
+    <style>
+        body { margin: 20px; font-family: sans-serif; background: #f5f5f5; }
+        .box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 10px 0; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin: 10px 0; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 10px 0; }
+        .warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 10px 0; }
+        pre { background: #263238; color: #aed581; padding: 10px; border-radius: 5px; font-size: 12px; }
+        img { max-width: 100%; border: 2px solid #ddd; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 v11.0.0 - 画像と数値データの重複修正</h1>
+    
+    <div class="warning">
+        <strong>⚠️ ユーザー報告の問題:</strong><br>
+        Before/After画像と「姿勢改善の数値データ」が重複して表示される<br>
+        → 横向き・縦向き両方で発生
+    </div>
+    
+    <div class="box">
+        <h2>🔍 根本原因の特定</h2>
+        <div class="error">
+            <strong>問題のコード:</strong>
+            <pre>.comparison-area {
+    flex: 1;  /* ← これが原因！ */
+    display: flex;
+    ...
+}</pre>
+        </div>
+        <p><strong>説明:</strong></p>
+        <ul>
+            <li><code>flex: 1</code> により、<code>.comparison-area</code>が親要素（<code>.preview-canvas</code>）の利用可能な高さ全体を占有</li>
+            <li><code>.metrics-area</code>が下に配置されず、<code>.comparison-area</code>と重なって表示</li>
+            <li><code>.preview-canvas</code>は<code>display: flex; flex-direction: column</code>なので、子要素は縦に並ぶはずだが、<code>flex: 1</code>により<code>.comparison-area</code>が全高を占有</li>
+        </ul>
+    </div>
+    
+    <div class="box">
+        <h2>✅ 実施した修正</h2>
+        <div class="success">
+            <strong>修正後のコード:</strong>
+            <pre>.comparison-area {
+    flex: 0 0 auto;  /* 内容サイズに応じる */
+    display: flex;
+    ...
+}</pre>
+        </div>
+        <p><strong>効果:</strong></p>
+        <ul>
+            <li><code>.comparison-area</code>が画像のサイズに応じた高さになる</li>
+            <li><code>.metrics-area</code>が<code>.comparison-area</code>の下に正しく配置される</li>
+            <li>画像と数値データが重複せず、縦に並ぶ</li>
+        </ul>
+    </div>
+    
+    <div class="box">
+        <h2>🧪 検証方法</h2>
+        <div id="verification">検証中...</div>
+    </div>
+    
+    <div class="box">
+        <h2>📋 確認手順</h2>
+        <ol>
+            <li><strong>通常リロード</strong>（Cmd+R / Ctrl+R）</li>
+            <li>Before/After画像をアップロード</li>
+            <li>「姿勢を分析」ボタンをクリック</li>
+            <li>「横向き」「縦向き」両方で確認：
+                <ul>
+                    <li>✅ Before/After画像が横並びで表示</li>
+                    <li>✅ 画像の<strong>下</strong>に「姿勢改善の数値データ」が表示</li>
+                    <li>✅ 画像と数値データが<strong>重複していない</strong></li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <script>
+        async function verify() {
+            const div = document.getElementById('verification');
+            
+            try {
+                const response = await fetch('/css/style.css');
+                const css = await response.text();
+                
+                // .comparison-areaのflex設定を確認
+                const match = css.match(/\.comparison-area\s*\{[^}]*flex:\s*([^;]+);/);
+                
+                if (match) {
+                    const flexValue = match[1].trim();
+                    
+                    if (flexValue === '0 0 auto') {
+                        div.innerHTML = `
+                            <div class="success">
+                                <strong>✅ 修正成功</strong><br>
+                                <code>.comparison-area</code> の flex 設定: <code>${flexValue}</code><br>
+                                <br>
+                                画像と数値データが正しく縦に並ぶはずです。
+                            </div>
+                        `;
+                    } else {
+                        div.innerHTML = `
+                            <div class="error">
+                                <strong>❌ 修正未反映</strong><br>
+                                <code>.comparison-area</code> の flex 設定: <code>${flexValue}</code><br>
+                                <br>
+                                期待値: <code>0 0 auto</code><br>
+                                ブラウザキャッシュをクリアしてください。
+                            </div>
+                        `;
+                    }
+                } else {
+                    div.innerHTML = `
+                        <div class="error">
+                            ❌ CSSの解析に失敗しました
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                div.innerHTML = `
+                    <div class="error">
+                        ❌ エラー: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        window.addEventListener('load', verify);
+    </script>
+</body>
+</html>

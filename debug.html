@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>デバッグ: レイアウト確認</title>
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const area = document.querySelector('.comparison-area');
+                if (area) {
+                    const computed = window.getComputedStyle(area);
+                    const report = {
+                        '要素が存在': 'はい',
+                        'className': area.className,
+                        'インラインstyle属性': area.getAttribute('style'),
+                        '計算済みdisplay': computed.display,
+                        '計算済みflex-direction': computed.flexDirection,
+                        '計算済みflex-wrap': computed.flexWrap,
+                        '子要素数': area.children.length,
+                        '親要素': area.parentElement?.className
+                    };
+                    
+                    document.getElementById('report').textContent = JSON.stringify(report, null, 2);
+                    
+                    // 全てのCSSルールを表示
+                    const rules = [];
+                    for (let sheet of document.styleSheets) {
+                        try {
+                            for (let rule of sheet.cssRules) {
+                                if (rule.selectorText && rule.selectorText.includes('comparison-area')) {
+                                    rules.push({
+                                        selector: rule.selectorText,
+                                        cssText: rule.style.cssText
+                                    });
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                    document.getElementById('rules').textContent = JSON.stringify(rules, null, 2);
+                } else {
+                    document.getElementById('report').textContent = '要素が見つかりません';
+                }
+            }, 1000);
+        });
+    </script>
+</head>
+<body>
+    <h1>デバッグレポート</h1>
+    <h2>要素の状態:</h2>
+    <pre id="report">読み込み中...</pre>
+    
+    <h2>適用されているCSSルール:</h2>
+    <pre id="rules"></pre>
+    
+    <div class="comparison-area layout-vertical" style="display: flex !important; flex-direction: row !important;">
+        <div class="comparison-item">Item 1</div>
+        <div class="comparison-item">Item 2</div>
+    </div>
+</body>
+</html>

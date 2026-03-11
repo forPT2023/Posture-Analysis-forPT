@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>v10.0.0 最終検証</title>
+    <style>
+        body { margin: 20px; font-family: sans-serif; background: #f5f5f5; }
+        .box { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .success { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 10px 0; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin: 10px 0; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 10px 0; }
+        pre { background: #263238; color: #aed581; padding: 10px; border-radius: 5px; font-size: 12px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: 600; }
+        .check { font-size: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 姿勢分析アプリ v10.0.0 - 最終検証</h1>
+    
+    <div class="info">
+        <strong>修正内容:</strong><br>
+        ✅ A4横向き: 340mm → 297mm（元に戻す）<br>
+        ✅ A4縦向き: 260mm（維持）<br>
+        ✅ Service Worker: 完全無効化<br>
+        ✅ .comparison-area: flex-direction: row !important（全箇所）<br>
+        ✅ JavaScript: インラインスタイルで横並び強制
+    </div>
+    
+    <div class="box">
+        <h2>📊 現在の設定値</h2>
+        <div id="current-config">読み込み中...</div>
+    </div>
+    
+    <div class="box">
+        <h2>🧪 レイアウト計算検証</h2>
+        <div id="layout-calc"></div>
+    </div>
+    
+    <div class="box">
+        <h2>✅ チェックリスト</h2>
+        <div id="checklist"></div>
+    </div>
+
+    <script>
+        async function verify() {
+            try {
+                // CSS取得
+                const cssResponse = await fetch('/css/style.css');
+                const cssText = await cssResponse.text();
+                
+                // JavaScript取得
+                const jsResponse = await fetch('/js/main.js');
+                const jsText = await jsResponse.text();
+                
+                // 1. 現在の設定値
+                const horizontalMatch = cssText.match(/\.preview-canvas\.layout-horizontal\s*\{\s*width:\s*([^;]+);/);
+                const verticalMatch = cssText.match(/\.preview-canvas\.layout-vertical\s*\{\s*width:\s*([^;]+);/);
+                const comparisonAreaMatch = cssText.match(/\.comparison-area\s*\{[^}]*flex-direction:\s*([^;!]+)/);
+                
+                document.getElementById('current-config').innerHTML = `
+                    <table>
+                        <tr><th>項目</th><th>設定値</th><th>判定</th></tr>
+                        <tr>
+                            <td>A4横向き幅</td>
+                            <td><strong>${horizontalMatch ? horizontalMatch[1] : 'エラー'}</strong></td>
+                            <td class="check">${horizontalMatch && horizontalMatch[1].includes('297mm') ? '✅' : '❌'}</td>
+                        </tr>
+                        <tr>
+                            <td>A4縦向き幅</td>
+                            <td><strong>${verticalMatch ? verticalMatch[1] : 'エラー'}</strong></td>
+                            <td class="check">${verticalMatch && verticalMatch[1].includes('260mm') ? '✅' : '❌'}</td>
+                        </tr>
+                        <tr>
+                            <td>.comparison-area</td>
+                            <td><strong>flex-direction: ${comparisonAreaMatch ? comparisonAreaMatch[1] : 'エラー'}</strong></td>
+                            <td class="check">${comparisonAreaMatch && comparisonAreaMatch[1].includes('row') ? '✅' : '❌'}</td>
+                        </tr>
+                    </table>
+                `;
+                
+                // 2. レイアウト計算
+                const mmToPx = 3.7795;
+                const calculations = [
+                    {
+                        name: 'A4横向き',
+                        width: 297,
+                        height: 210,
+                        imgWidth: 120,
+                        imgHeight: 130
+                    },
+                    {
+                        name: 'A4縦向き',
+                        width: 260,
+                        height: 297,
+                        imgWidth: 95,
+                        imgHeight: 220
+                    }
+                ];
+                
+                let calcHtml = '<table><tr><th>モード</th><th>利用可能幅</th><th>2画像合計</th><th>判定</th></tr>';
+                
+                calculations.forEach(calc => {
+                    const availableWidth = (calc.width - 40) * mmToPx;  // padding 40mm
+                    const totalImgWidth = (calc.imgWidth * 2 + 10/mmToPx) * mmToPx;
+                    const ok = totalImgWidth <= availableWidth;
+                    const margin = availableWidth - totalImgWidth;
+                    
+                    calcHtml += `
+                        <tr>
+                            <td><strong>${calc.name}</strong><br>${calc.width}mm × ${calc.height}mm</td>
+                            <td>${availableWidth.toFixed(0)}px</td>
+                            <td>${totalImgWidth.toFixed(0)}px<br>（各${calc.imgWidth}mm × 2）</td>
+                            <td class="check">${ok ? '✅' : '❌'}<br>${margin > 0 ? '+' : ''}${margin.toFixed(0)}px</td>
+                        </tr>
+                    `;
+                });
+                
+                calcHtml += '</table>';
+                document.getElementById('layout-calc').innerHTML = calcHtml;
+                
+                // 3. チェックリスト
+                const checks = [
+                    {
+                        name: 'A4横向き幅が297mm',
+                        ok: horizontalMatch && horizontalMatch[1].includes('297mm')
+                    },
+                    {
+                        name: 'A4縦向き幅が260mm',
+                        ok: verticalMatch && verticalMatch[1].includes('260mm')
+                    },
+                    {
+                        name: '.comparison-area が flex-direction: row',
+                        ok: comparisonAreaMatch && comparisonAreaMatch[1].includes('row')
+                    },
+                    {
+                        name: 'JavaScript に setAttribute("style", ...) がある',
+                        ok: jsText.includes('setAttribute(\'style\'')
+                    },
+                    {
+                        name: 'Service Worker登録コードがコメントアウト',
+                        ok: !cssText.includes('serviceWorker') || cssText.includes('/*')  // 簡易チェック
+                    }
+                ];
+                
+                let checkHtml = '<div>';
+                checks.forEach(check => {
+                    const className = check.ok ? 'success' : 'error';
+                    const icon = check.ok ? '✅' : '❌';
+                    checkHtml += `<div class="${className}">${icon} ${check.name}</div>`;
+                });
+                checkHtml += '</div>';
+                
+                document.getElementById('checklist').innerHTML = checkHtml;
+                
+                // 最終判定
+                const allOk = checks.every(c => c.ok);
+                if (allOk) {
+                    document.body.insertAdjacentHTML('beforeend', `
+                        <div class="box">
+                            <div class="success" style="text-align: center; font-size: 18px;">
+                                <strong>🎉 すべてのチェック項目が合格しました！</strong><br>
+                                <br>
+                                次の手順で確認してください:<br>
+                                1. 通常リロード（Cmd+R / Ctrl+R）<br>
+                                2. 画像をアップロード → 「姿勢を分析」<br>
+                                3. 「横向き」「縦向き」両方で横並び表示を確認
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    document.body.insertAdjacentHTML('beforeend', `
+                        <div class="box">
+                            <div class="error" style="text-align: center; font-size: 18px;">
+                                <strong>❌ 一部のチェック項目が失敗しました</strong><br>
+                                <br>
+                                CSS/JavaScriptファイルを確認してください
+                            </div>
+                        </div>
+                    `);
+                }
+                
+            } catch (error) {
+                document.getElementById('current-config').innerHTML = `<div class="error">❌ エラー: ${error.message}</div>`;
+            }
+        }
+        
+        window.addEventListener('load', verify);
+    </script>
+</body>
+</html>

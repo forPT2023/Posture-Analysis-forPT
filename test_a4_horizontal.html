@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A4横向きレイアウトテスト</title>
+    <style>
+        body {
+            margin: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .preview-canvas {
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20mm;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 0 auto;
+        }
+        
+        .preview-canvas.layout-horizontal {
+            width: 297mm;
+            height: 210mm;
+        }
+        
+        .comparison-area {
+            flex: 1;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 10px;
+            min-height: 0;
+            align-items: flex-start;
+            justify-content: center;
+            border: 2px dashed red;
+        }
+        
+        .comparison-item {
+            flex: 0 0 auto;
+            position: relative;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: fit-content;
+        }
+        
+        .comparison-canvas-wrapper {
+            flex: 0 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            width: fit-content;
+            margin: 0 auto;
+        }
+        
+        .comparison-canvas {
+            display: block;
+            background: #e0e0e0;
+        }
+        
+        .info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ A4横向き (297mm × 210mm) レイアウトテスト</h1>
+    
+    <div class="info">
+        <strong>テスト条件:</strong><br>
+        • A4横向きサイズ: 297mm × 210mm<br>
+        • padding: 20mm × 4 = 80mm（左右上下各20mm）<br>
+        • 利用可能エリア: (297-40) × (210-40) = 257mm × 170mm ≈ 971px × 643px<br>
+        • 各画像目標サイズ: 120mm × 130mm ≈ 453px × 491px<br>
+        • 2画像 + gap: 453 + 10 + 453 = 916px → <strong>257mm (971px) 内に収まる</strong>
+    </div>
+    
+    <div class="test-container">
+        <h2>実際のレイアウト</h2>
+        <div class="preview-canvas layout-horizontal">
+            <div class="comparison-area">
+                <div class="comparison-item">
+                    <div class="comparison-canvas-wrapper">
+                        <canvas class="comparison-canvas" width="453" height="491" style="width: 453px; height: 491px;"></canvas>
+                    </div>
+                </div>
+                <div class="comparison-item">
+                    <div class="comparison-canvas-wrapper">
+                        <canvas class="comparison-canvas" width="453" height="491" style="width: 453px; height: 491px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>📊 計算結果</h2>
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        window.addEventListener('load', () => {
+            const previewCanvas = document.querySelector('.preview-canvas');
+            const comparisonArea = document.querySelector('.comparison-area');
+            const canvases = document.querySelectorAll('.comparison-canvas');
+            
+            const previewRect = previewCanvas.getBoundingClientRect();
+            const areaRect = comparisonArea.getBoundingClientRect();
+            
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <p><strong>プレビューキャンバスサイズ:</strong> ${previewRect.width.toFixed(0)}px × ${previewRect.height.toFixed(0)}px</p>
+                <p><strong>比較エリアサイズ:</strong> ${areaRect.width.toFixed(0)}px × ${areaRect.height.toFixed(0)}px</p>
+                <p><strong>各画像サイズ:</strong> ${canvases[0].width}px × ${canvases[0].height}px</p>
+                <p><strong>2画像 + gap合計:</strong> ${canvases[0].width * 2 + 10}px</p>
+                <p><strong>判定:</strong> ${(canvases[0].width * 2 + 10) <= areaRect.width ? '✅ 横並び成功' : '❌ 幅オーバー'}</p>
+                <p style="margin-top: 15px;"><strong>計算済みスタイル:</strong></p>
+                <p>• .comparison-area display: ${getComputedStyle(comparisonArea).display}</p>
+                <p>• .comparison-area flex-direction: ${getComputedStyle(comparisonArea).flexDirection}</p>
+                <p>• .comparison-area flex-wrap: ${getComputedStyle(comparisonArea).flexWrap}</p>
+            `;
+        });
+    </script>
+</body>
+</html>

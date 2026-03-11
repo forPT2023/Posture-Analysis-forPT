@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>頸部機能評価メニュー - 使い方ガイド v12.2.0</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+            font-size: 2rem;
+        }
+        .step-section {
+            margin: 40px 0;
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .step-section h2 {
+            color: #764ba2;
+            margin-top: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        .screenshot {
+            width: 100%;
+            max-width: 800px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .highlight-box h3 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+        .highlight-box ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .highlight-box li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px 10px 10px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-card {
+            padding: 20px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.2);
+        }
+        .feature-card h4 {
+            color: #764ba2;
+            margin-top: 0;
+            font-size: 1.1rem;
+        }
+        .icon {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: #667eea;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 頸部機能評価メニュー - 使い方ガイド</h1>
+        
+        <div class="highlight-box">
+            <h3><span class="icon">🎯</span>頸部機能評価にアクセスする方法</h3>
+            <p style="font-size: 1.1rem; line-height: 1.8;">
+                姿勢分析アプリで頸部機能評価（アライメント評価・後屈可動域測定）を行うには、
+                <strong>「矢状面（側面）」モードを選択</strong>してください。
+            </p>
+        </div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">1</span>アプリにアクセス</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6;">
+                以下のURLから姿勢分析アプリを開きます。
+            </p>
+            <a href="https://5060-ibh7zb7pssmr82tnvwa1k-2e77fc33.sandbox.novita.ai/" class="btn" target="_blank">
+                🚀 姿勢分析アプリを開く
+            </a>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">2</span>撮影面の選択</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6;">
+                <strong>「矢状面（側面）」</strong>のラジオボタンを選択します。
+            </p>
+            <div class="highlight-box">
+                <p style="margin: 0; font-size: 1rem;">
+                    ✅ <strong>矢状面（側面）</strong><br>
+                    <span style="font-size: 0.9rem;">横から撮影（<strong>頸部機能評価</strong>・前後姿勢分析）</span>
+                </p>
+            </div>
+            <p style="font-size: 0.95rem; color: #666;">
+                ※ デフォルトは「前額面（正面）」が選択されています。頸部機能評価を行うには、必ず「矢状面（側面）」に切り替えてください。
+            </p>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">3</span>矢状面分析設定が表示される</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6;">
+                矢状面を選択すると、<strong>「矢状面分析設定」パネル</strong>が自動的に表示されます。
+            </p>
+            <div class="highlight-box">
+                <h3 style="font-size: 1.2rem; margin-bottom: 15px;">📋 矢状面分析設定</h3>
+                <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+                    <p style="margin: 5px 0; font-size: 0.95rem;">
+                        ℹ️ <strong>頸部機能評価</strong><br>
+                        以下のオプションから測定したい項目を選択してください。<br>
+                        ✓ <strong>アライメント評価</strong>: 頭部の前方偏位を測定<br>
+                        ✓ <strong>後屈可動域測定</strong>: 頸部の伸展角度を測定
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">4</span>測定モードを選択</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px;">
+                必要な測定モードにチェックを入れます（両方選択可能）。
+            </p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>☑️ アライメント評価</h4>
+                    <p style="font-size: 0.9rem; margin: 10px 0;">
+                        <strong>測定内容</strong>: 耳-肩線と垂直基準線の角度<br>
+                        <strong>評価項目</strong>: 頭部前方偏位角度・距離
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>☑️ 後屈可動域測定</h4>
+                    <p style="font-size: 0.9rem; margin: 10px 0;">
+                        <strong>測定内容</strong>: 耳-目線と水平基準線の角度<br>
+                        <strong>評価項目</strong>: 頸部後屈可動域・制限度
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">5</span>撮影側面を選択</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6;">
+                撮影した側面（左側面 or 右側面）を選択します。
+            </p>
+            <div style="display: flex; gap: 20px; margin: 20px 0;">
+                <div style="flex: 1; padding: 15px; background: white; border: 2px solid #667eea; border-radius: 8px;">
+                    ⭕ <strong>左側面</strong>
+                </div>
+                <div style="flex: 1; padding: 15px; background: white; border: 2px solid #667eea; border-radius: 8px;">
+                    ⭕ <strong>右側面</strong>（デフォルト）
+                </div>
+            </div>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">6</span>画像をアップロード</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6;">
+                Before（施術前）とAfter（施術後）の側面画像をアップロードします。
+            </p>
+            <p style="font-size: 0.95rem; color: #666;">
+                ※ 側面撮影の画像を使用してください。正面画像では正確な測定ができません。
+            </p>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">7</span>姿勢を分析</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6;">
+                「姿勢を分析」ボタンをクリックして分析を実行します。
+            </p>
+        </div>
+        
+        <div class="arrow">⬇️</div>
+        
+        <div class="step-section">
+            <h2><span class="step-number">8</span>結果の確認</h2>
+            <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 20px;">
+                分析結果が以下のように表示されます：
+            </p>
+            
+            <div class="highlight-box">
+                <h3>📊 表示内容</h3>
+                <ul>
+                    <li><strong>ビジュアル表示</strong>: Before/After画像にマーカー、測定線、基準線が描画</li>
+                    <li><strong>数値データ</strong>: 
+                        <ul style="margin-top: 5px;">
+                            <li>頭部前方偏位角度（度）</li>
+                            <li>頭部前方偏位距離（mm）</li>
+                            <li>頸部後屈可動域（度）</li>
+                            <li>可動域制限度（度）</li>
+                        </ul>
+                    </li>
+                    <li><strong>評価ステータス</strong>: 正常/軽度/中等度/重度</li>
+                    <li><strong>改善バッジ</strong>: 改善項目には「✓ 改善」が表示</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="step-section">
+            <h2>🎯 よくある質問</h2>
+            
+            <h3 style="color: #764ba2;">Q1: 頸部機能評価メニューが見つかりません</h3>
+            <p style="margin-left: 20px;">
+                <strong>A:</strong> まず「矢状面（側面）」ラジオボタンを選択してください。矢状面を選択すると、「矢状面分析設定」パネルが自動的に表示されます。
+            </p>
+            
+            <h3 style="color: #764ba2;">Q2: チェックボックスをチェックしても何も起こりません</h3>
+            <p style="margin-left: 20px;">
+                <strong>A:</strong> チェックボックスの設定は、画像をアップロードして「姿勢を分析」を実行した後に反映されます。
+            </p>
+            
+            <h3 style="color: #764ba2;">Q3: 前額面と矢状面の違いは何ですか？</h3>
+            <p style="margin-left: 20px;">
+                <strong>A:</strong><br>
+                • <strong>前額面（正面）</strong>: 正面撮影、左右の高さ比較（肩の高さ差、骨盤傾きなど）<br>
+                • <strong>矢状面（側面）</strong>: 側面撮影、前後の姿勢分析（頸部機能評価、頭部前方偏位など）
+            </p>
+        </div>
+        
+        <div class="highlight-box" style="margin-top: 40px;">
+            <h3><span class="icon">🔗</span>アクセスリンク</h3>
+            <a href="https://5060-ibh7zb7pssmr82tnvwa1k-2e77fc33.sandbox.novita.ai/" class="btn" target="_blank">
+                🚀 姿勢分析アプリを開く
+            </a>
+            <p style="margin: 15px 0 0 0; font-size: 0.95rem;">
+                <strong>バージョン</strong>: v12.2.0<br>
+                <strong>更新内容</strong>: 矢状面ラジオカードに「頸部機能評価」を明記、ガイダンスメッセージ追加
+            </p>
+        </div>
+    </div>
+</body>
+</html>

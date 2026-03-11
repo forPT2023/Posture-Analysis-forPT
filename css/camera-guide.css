@@ -1,0 +1,388 @@
+/* ==============================================
+   カメラガイド機能のスタイル v13.0.0
+   ============================================== */
+
+/* カメラモーダル */
+.camera-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    overflow: hidden;
+}
+
+.camera-modal.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* カメラコンテナ */
+.camera-container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* ビデオ要素 */
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* フレーミングガイドのキャンバス */
+.framing-guide-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 水平インジケーター */
+.level-indicator {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    padding: 12px 20px;
+    border-radius: 12px;
+    color: white;
+    z-index: 10001;
+    min-width: 280px;
+    max-width: 90%;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    transition: background 0.3s ease;
+}
+
+.level-indicator.ok {
+    background: rgba(76, 175, 80, 0.9);
+}
+
+.level-indicator.warning {
+    background: rgba(255, 152, 0, 0.9);
+}
+
+.level-label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.level-meter {
+    width: 100%;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    position: relative;
+    margin: 10px 0;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 中央の基準線 */
+.level-meter::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+/* 気泡 */
+.level-bubble {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+    border-radius: 50%;
+    position: absolute;
+    top: 1px;
+    transform: translateX(-50%);
+    transition: left 0.2s ease-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4),
+                inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    z-index: 2;
+}
+
+.level-bubble::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+}
+
+.status-text {
+    font-size: 13px;
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+.status-ok {
+    color: #C8E6C9;
+}
+
+.status-warning {
+    color: #FFE0B2;
+}
+
+/* カメラコントロール */
+.camera-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    z-index: 10001;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 撮影ボタン */
+.capture-button {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: white;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+}
+
+.capture-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.5);
+}
+
+.capture-button:active {
+    transform: scale(0.95);
+}
+
+.capture-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #2196F3;
+}
+
+/* キャンセルボタン */
+.close-camera-button {
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-camera-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ガイドメッセージ */
+.guide-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    z-index: 10002;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.guide-message.show {
+    opacity: 1;
+}
+
+/* カウントダウン表示 */
+.countdown-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 120px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    z-index: 10003;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.countdown-overlay.show {
+    opacity: 1;
+    animation: countdownPulse 0.5s ease;
+}
+
+@keyframes countdownPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* モバイル最適化 */
+@media (max-width: 768px) {
+    .level-indicator {
+        min-width: 260px;
+        padding: 10px 16px;
+    }
+    
+    .level-label {
+        font-size: 13px;
+    }
+    
+    .level-meter {
+        height: 26px;
+    }
+    
+    .level-bubble {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .status-text {
+        font-size: 12px;
+    }
+    
+    .capture-button {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .capture-button::after {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .close-camera-button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .countdown-overlay {
+        font-size: 100px;
+    }
+}
+
+/* 横向き対応 */
+@media (orientation: landscape) {
+    .level-indicator {
+        top: 10px;
+    }
+    
+    .camera-controls {
+        padding: 15px;
+    }
+}
+
+/* PWA スタンドアロンモード対応 */
+@media all and (display-mode: standalone) {
+    .camera-modal {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .level-indicator {
+        top: calc(20px + env(safe-area-inset-top));
+    }
+    
+    .camera-controls {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+}
+
+/* 高解像度ディスプレイ対応 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .level-bubble {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5),
+                    inset 0 1px 3px rgba(255, 255, 255, 0.7);
+    }
+}
+
+/* アクセシビリティ: モーション削減 */
+@media (prefers-reduced-motion: reduce) {
+    .level-bubble,
+    .level-indicator,
+    .capture-button,
+    .close-camera-button,
+    .guide-message,
+    .countdown-overlay {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    .camera-modal {
+        background: rgba(0, 0, 0, 0.98);
+    }
+    
+    .level-indicator {
+        background: rgba(30, 30, 30, 0.95);
+    }
+    
+    .level-indicator.ok {
+        background: rgba(56, 142, 60, 0.95);
+    }
+    
+    .level-indicator.warning {
+        background: rgba(230, 126, 34, 0.95);
+    }
+}

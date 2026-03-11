@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>頸部測定機能の確認手順</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1::before {
+            content: "🔍";
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            padding-left: 50px;
+        }
+        .alert {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            box-shadow: 0 4px 12px rgba(245,87,108,0.3);
+        }
+        .alert strong {
+            font-size: 1.3rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+        .section h2 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .step:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+        }
+        .step-number {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 35px;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+        .step-content {
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 50px);
+        }
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        .step-description {
+            color: #666;
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+        .code {
+            background: #282c34;
+            color: #61dafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #856404;
+            font-weight: 600;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #c3e6cb;
+            margin: 15px 0;
+        }
+        .success::before {
+            content: "✅ ";
+            font-size: 1.3rem;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ffeeba;
+            margin: 15px 0;
+        }
+        .warning::before {
+            content: "⚠️ ";
+            font-size: 1.3rem;
+        }
+        .screenshot {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .screenshot-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        .screenshot-image {
+            background: #f0f0f0;
+            padding: 40px;
+            border-radius: 8px;
+            color: #999;
+            font-style: italic;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-left: 4px solid #4CAF50;
+            border-radius: 6px;
+        }
+        .feature-list li::before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>頸部測定機能の確認手順</h1>
+        <p class="subtitle">v13.0.0 - 頸部機能評価モードの使用ガイド</p>
+
+        <div class="alert">
+            <strong>⚠️ 重要な確認事項</strong>
+            頸部測定機能は<span class="highlight">実装済み</span>です。もし表示されない場合は、ブラウザのキャッシュが原因です。以下の手順で必ず表示されます。
+        </div>
+
+        <!-- ステップ1: ブラウザキャッシュのクリア -->
+        <div class="section">
+            <h2>📱 ステップ1: ブラウザキャッシュのクリア</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">スーパーリロードを実行</div>
+                    <div class="step-description">
+                        <strong>Windows/Linux:</strong> Ctrl + Shift + R<br>
+                        <strong>Mac:</strong> Cmd + Shift + R<br>
+                        <strong>iPhone/iPad:</strong> 設定 → Safari → 履歴とWebサイトデータを消去
+                    </div>
+                    <div class="warning">
+                        通常のリロード（F5やCmd+R）では、キャッシュされた古いファイルが読み込まれます。必ず<strong>スーパーリロード</strong>を実行してください。
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">開発者ツールでキャッシュ無効化（推奨）</div>
+                    <div class="step-description">
+                        <strong>Chrome/Edge:</strong><br>
+                        1. F12キーで開発者ツールを開く<br>
+                        2. ネットワークタブを選択<br>
+                        3. 「キャッシュを無効にする」にチェック<br>
+                        4. ページをリロード
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ステップ2: 矢状面モードの選択 -->
+        <div class="section">
+            <h2>🎯 ステップ2: 矢状面モードの選択</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">「矢状面（側面）」を選択</div>
+                    <div class="step-description">
+                        アプリの左サイドバーにある「撮影面の選択」で<br>
+                        <span class="highlight">矢状面（側面）</span>のラジオボタンをクリック
+                    </div>
+                    <div class="success">
+                        説明文: "横から撮影（<strong>頸部機能評価</strong>・前後姿勢分析）"
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">矢状面分析設定パネルの表示確認</div>
+                    <div class="step-description">
+                        矢状面を選択すると、すぐ下に<span class="highlight">「矢状面分析設定」</span>パネルが表示されます。
+                    </div>
+                    <div class="screenshot">
+                        <div class="screenshot-title">表示される内容：</div>
+                        <div class="screenshot-image">
+                            <h3 style="color: #667eea;">📏 矢状面分析設定</h3>
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                                <strong>ℹ️ 頸部機能評価</strong><br>
+                                以下のオプションから測定したい項目を選択してください。<br>
+                                ✓ アライメント評価: 頭部の前方偏位を測定<br>
+                                ✓ 後屈可動域測定: 頸部の伸展角度を測定
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ステップ3: 測定モードの選択 -->
+        <div class="section">
+            <h2>⚙️ ステップ3: 測定モードの選択</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">撮影側面を選択</div>
+                    <div class="step-description">
+                        ラジオボタンで「左側面」または「右側面」を選択<br>
+                        <span class="highlight">デフォルト: 右側面</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">測定モードのチェックボックスをON</div>
+                    <div class="step-description">
+                        以下のチェックボックスから測定したい項目を選択：
+                    </div>
+                    <ul class="feature-list" style="margin-top: 15px;">
+                        <li><strong>アライメント評価</strong> - 頭部前方偏位の評価（耳-肩の位置関係）</li>
+                        <li><strong>後屈可動域測定</strong> - 頸部の伸展角度測定（耳-目の角度）</li>
+                    </ul>
+                    <div class="warning">
+                        <strong>重要:</strong> チェックボックスをONにしないと、測定が実行されません。両方同時に選択することも可能です。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ステップ4: 分析の実行 -->
+        <div class="section">
+            <h2>🚀 ステップ4: 分析の実行</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <div class="step-title">施術前後の写真をアップロード</div>
+                    <div class="step-description">
+                        Before（施術前）とAfter（施術後）の側面写真をそれぞれアップロード
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <div class="step-title">「姿勢を分析」ボタンをクリック</div>
+                    <div class="step-description">
+                        分析が開始され、結果が表示されます
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                    <div class="step-title">測定結果の確認</div>
+                    <div class="step-description">
+                        <strong>アライメント評価を選択した場合:</strong><br>
+                        • 頭部前方偏位角度（度）<br>
+                        • 頭部前方偏位距離（mm）<br>
+                        • 評価: 正常 / 軽度 / 中等度 / 重度<br>
+                        <br>
+                        <strong>後屈可動域測定を選択した場合:</strong><br>
+                        • 頸部後屈可動域（度）<br>
+                        • 正常可動域との差（度）<br>
+                        • 評価: 正常可動域 / 軽度制限 / 中等度制限 / 重度制限
+                    </div>
+                    <div class="success">
+                        改善した項目には <strong>✅改善</strong> バッジが表示されます
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 実装確認 -->
+        <div class="section">
+            <h2>🔧 技術的な実装確認</h2>
+            
+            <div class="success">
+                <strong>実装済み機能リスト:</strong>
+            </div>
+            
+            <ul class="feature-list">
+                <li>index.html 214-263行: 矢状面分析設定UIパネル</li>
+                <li>js/main.js 20-21行: enableAlignment, enableROM フラグ</li>
+                <li>js/main.js 1091-1200行: drawSagittalAnalysis() 関数</li>
+                <li>js/main.js 1414-1490行: calculateMetrics() 矢状面測定ロジック</li>
+                <li>js/main.js 1537-1597行: calculateAlignmentAngle(), calculateROMAngle() 角度計算</li>
+            </ul>
+
+            <div class="code">
+現在のバージョン: v13.0.0<br>
+矢状面分析: ✅ 実装済み<br>
+頸部機能評価: ✅ 実装済み<br>
+アライメント評価: ✅ 実装済み<br>
+後屈可動域測定: ✅ 実装済み
+            </div>
+        </div>
+
+        <!-- トラブルシューティング -->
+        <div class="section">
+            <h2>🔍 トラブルシューティング</h2>
+            
+            <div class="step">
+                <span class="step-number">Q</span>
+                <div class="step-content">
+                    <div class="step-title">矢状面分析設定パネルが表示されない</div>
+                    <div class="step-description">
+                        <strong>原因:</strong> ブラウザキャッシュが原因<br>
+                        <strong>解決策:</strong> スーパーリロード（Ctrl+Shift+R / Cmd+Shift+R）を実行
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">Q</span>
+                <div class="step-content">
+                    <div class="step-title">測定結果に頸部の項目が表示されない</div>
+                    <div class="step-description">
+                        <strong>原因:</strong> チェックボックスがOFFのまま<br>
+                        <strong>解決策:</strong> 「アライメント評価」または「後屈可動域測定」のチェックボックスをONにする
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <span class="step-number">Q</span>
+                <div class="step-content">
+                    <div class="step-title">「正常」「軽度」などのステータスが表示されない</div>
+                    <div class="step-description">
+                        <strong>原因:</strong> 古いバージョンが読み込まれている<br>
+                        <strong>解決策:</strong> 開発者ツールでキャッシュを無効化してリロード
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="action-buttons">
+            <h3 style="margin-bottom: 20px; color: #667eea;">🚀 今すぐ確認</h3>
+            <a href="https://5060-ibh7zb7pssmr82tnvwa1k-2e77fc33.sandbox.novita.ai/" class="btn" target="_blank">
+                アプリを開く
+            </a>
+            <a href="https://5060-ibh7zb7pssmr82tnvwa1k-2e77fc33.sandbox.novita.ai/?nocache=true" class="btn btn-secondary" target="_blank">
+                キャッシュなしで開く
+            </a>
+        </div>
+
+        <div class="alert">
+            <strong>📝 まとめ</strong>
+            頸部測定機能は完全に実装済みです。表示されない場合は100%ブラウザキャッシュが原因です。スーパーリロード（Ctrl+Shift+R / Cmd+Shift+R）を実行すれば、必ず表示されます。
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>姿勢分析 - カメラガイド機能 v13.1.3</title>
+    
+    <!-- キャッシュ制御 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- PWAマニフェスト -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    
+    <!-- iOS PWA対応 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="姿勢分析">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    
+    <!-- スタイルシート -->
+    <link rel="stylesheet" href="css/style.css?v=13.1.3">
+    <link rel="stylesheet" href="css/camera-guide.css?v=13.1.3">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1><i class="fas fa-user-md"></i> 姿勢分析</h1>
+            <p class="subtitle">ビフォーアフター比較で施術効果を可視化</p>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <!-- 左サイドバー：設定エリア -->
+            <aside class="sidebar">
+                <!-- 基本情報 -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-edit"></i> 基本情報</h2>
+                    
+                    <div class="form-group">
+                        <label for="reportTitle">レポートタイトル</label>
+                        <input type="text" id="reportTitle" value="ビフォーアフター">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientName">氏名</label>
+                        <input type="text" id="patientName" placeholder="例: 山田 太郎 様">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reportDate">日付</label>
+                        <input type="date" id="reportDate">
+                    </div>
+                </div>
+
+                <!-- 面選択 -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-compass"></i> 撮影面の選択</h2>
+                    
+                    <div class="plane-selection">
+                        <label class="radio-card">
+                            <input type="radio" name="plane" value="frontal" checked>
+                            <div class="radio-content">
+                                <img src="images/frontal_icon.jpeg" alt="前額面" class="plane-icon">
+                                <span class="radio-label">前額面</span>
+                                <small>正面から撮影（左右の高さ比較）</small>
+                            </div>
+                        </label>
+                        
+                        <label class="radio-card">
+                            <input type="radio" name="plane" value="sagittal">
+                            <div class="radio-content">
+                                <img src="images/sagittal_icon.jpeg" alt="矢状面" class="plane-icon">
+                                <span class="radio-label">矢状面（側面）</span>
+                                <small>横から撮影（頸部機能評価・前後姿勢分析）</small>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 画像アップロード -->
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-images"></i> 画像アップロード</h2>
+                    
+                    <!-- Before画像 -->
+                    <div class="upload-section">
+                        <label class="upload-label">Before（施術前）</label>
+                        <div class="upload-area" id="uploadAreaBefore">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>クリック/タップで画像を選択</p>
+                            <span class="upload-hint">またはカメラで撮影</span>
+                        </div>
+                        <input type="file" id="fileInputBefore" accept="image/*" style="display: none;">
+                        <div class="preview-thumbnail" id="previewBefore"></div>
+                        <button class="btn btn-secondary" id="enableCameraGuideBefore" style="margin-top: 10px;">
+                            <i class="fas fa-camera"></i> カメラガイド付き撮影
+                        </button>
+                        <button class="btn btn-secondary" id="editBeforeBtn" style="display: none; margin-top: 10px;">
+                            <i class="fas fa-crop"></i> 画像を調整
+                        </button>
+                    </div>
+
+                    <!-- After画像 -->
+                    <div class="upload-section">
+                        <label class="upload-label">After（施術後）</label>
+                        <div class="upload-area" id="uploadAreaAfter">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>クリック/タップで画像を選択</p>
+                            <span class="upload-hint">またはカメラで撮影</span>
+                        </div>
+                        <input type="file" id="fileInputAfter" accept="image/*" style="display: none;">
+                        <div class="preview-thumbnail" id="previewAfter"></div>
+                        <button class="btn btn-secondary" id="enableCameraGuideAfter" style="margin-top: 10px;">
+                            <i class="fas fa-camera"></i> カメラガイド付き撮影
+                        </button>
+                        <button class="btn btn-secondary" id="editAfterBtn" style="display: none; margin-top: 10px;">
+                            <i class="fas fa-crop"></i> 画像を調整
+                        </button>
+                    </div>
+
+                    <button class="btn btn-primary" id="analyzeBtn" disabled>
+                        <i class="fas fa-robot"></i> 姿勢を分析
+                    </button>
+                </div>
+
+                <!-- 表示設定 -->
+                <div class="card" id="displaySettings" style="display: none;">
+                    <h2 class="card-title"><i class="fas fa-sliders-h"></i> 表示設定</h2>
+                    
+                    <!-- レイアウト選択 -->
+                    <div class="form-group">
+                        <label>用紙レイアウト</label>
+                        <div class="mode-toggle">
+                            <button class="btn btn-mode active" id="layoutHorizontal" data-layout="horizontal">
+                                <i class="fas fa-grip-horizontal"></i> A4横向き
+                            </button>
+                            <button class="btn btn-mode" id="layoutVertical" data-layout="vertical">
+                                <i class="fas fa-grip-vertical"></i> A4縦向き
+                            </button>
+                        </div>
+                        <small style="color: #757575; font-size: 0.8rem; margin-top: 5px; display: block;">
+                            ※画像は両方とも横並びで表示されます
+                        </small>
+                    </div>
+
+                    <!-- 骨格線表示 -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showSkeleton" checked>
+                            <span>骨格線を表示</span>
+                        </label>
+                    </div>
+
+                    <!-- 数値表示 -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showMetrics" checked>
+                            <span>数値データを表示</span>
+                        </label>
+                    </div>
+
+                    <!-- 変化ハイライト -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showHighlight">
+                            <span>変化をハイライト表示</span>
+                        </label>
+                    </div>
+
+                    <!-- 基準線表示 -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showReferenceLine" checked>
+                            <span>基準線を表示（矢状面のみ）</span>
+                        </label>
+                    </div>
+
+                    <!-- 線の太さ -->
+                    <div class="form-group">
+                        <label for="lineWidth">
+                            線の太さ: <span id="lineWidthValue">2px</span>
+                        </label>
+                        <input type="range" id="lineWidth" min="1" max="6" value="2" step="1">
+                    </div>
+
+                    <!-- Before色選択 -->
+                    <div class="form-group">
+                        <label>Before色</label>
+                        <div class="color-picker">
+                            <button class="color-btn active" data-target="before" data-color="#2196F3" style="background: #2196F3;" title="青"></button>
+                            <button class="color-btn" data-target="before" data-color="#4CAF50" style="background: #4CAF50;" title="緑"></button>
+                            <button class="color-btn" data-target="before" data-color="#9C27B0" style="background: #9C27B0;" title="紫"></button>
+                            <button class="color-btn" data-target="before" data-color="#FF9800" style="background: #FF9800;" title="オレンジ"></button>
+                        </div>
+                    </div>
+
+                    <!-- After色選択 -->
+                    <div class="form-group">
+                        <label>After色</label>
+                        <div class="color-picker">
+                            <button class="color-btn" data-target="after" data-color="#F44336" style="background: #F44336;" title="赤"></button>
+                            <button class="color-btn active" data-target="after" data-color="#E91E63" style="background: #E91E63;" title="ピンク"></button>
+                            <button class="color-btn" data-target="after" data-color="#FF5722" style="background: #FF5722;" title="オレンジ"></button>
+                            <button class="color-btn" data-target="after" data-color="#FFC107" style="background: #FFC107;" title="黄色"></button>
+                        </div>
+                    </div>
+
+                    <!-- 矢状面分析設定 -->
+                    <div class="form-group" id="sagittalAnalysisGroup" style="display: none;">
+                        <h3 style="font-size: 0.95rem; font-weight: 600; margin: 15px 0 10px 0; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px;">
+                            <i class="fas fa-ruler-combined"></i> 矢状面分析設定
+                        </h3>
+                        
+                        <!-- ガイダンスメッセージ -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">
+                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                <i class="fas fa-info-circle" style="font-size: 1.2rem; margin-right: 8px;"></i>
+                                <strong style="font-size: 0.9rem;">頸部機能評価</strong>
+                            </div>
+                            <p style="font-size: 0.8rem; margin: 0; line-height: 1.5;">
+                                以下のオプションから測定したい項目を選択してください。<br>
+                                ✓ <strong>アライメント評価</strong>: 頭部の前方偏位を測定<br>
+                                ✓ <strong>後屈可動域測定</strong>: 頸部の伸展角度を測定
+                            </p>
+                        </div>
+                        
+                        <!-- 撮影側面の選択 -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">撮影側面</label>
+                            <div style="display: flex; gap: 10px;">
+                                <label class="radio-label" style="flex: 1;">
+                                    <input type="radio" name="facingSide" value="left" id="facingSideLeft">
+                                    <span>左側面</span>
+                                </label>
+                                <label class="radio-label" style="flex: 1;">
+                                    <input type="radio" name="facingSide" value="right" id="facingSideRight" checked>
+                                    <span>右側面</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- 測定モード -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">測定モード</label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableAlignment">
+                                <span>アライメント評価</span>
+                            </label>
+                            <div style="font-size: 0.75rem; color: #666; margin-left: 24px; margin-top: 2px;">
+                                頭部前方偏位の評価
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="enableROM">
+                                <span>後屈可動域測定</span>
+                            </label>
+                            <div style="font-size: 0.75rem; color: #666; margin-left: 24px; margin-top: 2px;">
+                                頸部伸展角度の評価
+                            </div>
+                        </div>
+                        
+                        <!-- 表示オプション -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">表示オプション</label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showSagittalMarkers" checked>
+                                <span>マーカー表示</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showSagittalLines" checked>
+                                <span>測定線表示</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showSagittalReference" checked>
+                                <span>基準線表示</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" id="updateDisplayBtn">
+                        <i class="fas fa-sync-alt"></i> 表示を更新
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="editLandmarksBtn" style="display: none;">
+                        <i class="fas fa-edit"></i> ランドマークを編集
+                    </button>
+                </div>
+
+                <!-- データ保存・エクスポート -->
+                <div class="card" id="exportSection" style="display: none;">
+                    <h2 class="card-title"><i class="fas fa-download"></i> エクスポート</h2>
+                    
+                    <button class="btn btn-success" id="saveDataBtn">
+                        <i class="fas fa-save"></i> データを保存
+                    </button>
+                    <button class="btn btn-success" id="loadDataBtn">
+                        <i class="fas fa-folder-open"></i> データを読み込み
+                    </button>
+                    <input type="file" id="loadDataInput" accept=".json" style="display: none;">
+                    
+                    <div class="divider"></div>
+                    
+                    <button class="btn btn-primary" id="exportPdfBtn">
+                        <i class="fas fa-file-pdf"></i> PDFでダウンロード
+                    </button>
+                    <button class="btn btn-primary" id="exportPngBtn">
+                        <i class="fas fa-file-image"></i> PNGでダウンロード
+                    </button>
+                    <button class="btn btn-primary" id="exportJpgBtn">
+                        <i class="fas fa-file-image"></i> JPGでダウンロード
+                    </button>
+                </div>
+            </aside>
+
+            <!-- メインエリア：プレビュー -->
+            <main class="preview-area">
+                <div class="card preview-card">
+                    <div class="preview-header">
+                        <h2><i class="fas fa-eye"></i> プレビュー</h2>
+                        <div class="analysis-status" id="analysisStatus">
+                            <i class="fas fa-info-circle"></i>
+                            <span>画像をアップロードして分析を開始してください</span>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-wrapper" id="previewWrapper">
+                        <div class="preview-canvas layout-horizontal" id="previewCanvas">
+                            <!-- 空の状態 -->
+                            <div class="empty-state" id="emptyState" style="display: none;">
+                            </div>
+
+                            <!-- レポートコンテンツ（分析後に表示） -->
+                            <div class="report-content" id="reportContent" style="display: none;">
+                                <!-- ドキュメントヘッダー -->
+                                <div class="document-header">
+                                    <h1 class="document-title" id="previewTitle">ビフォーアフター</h1>
+                                    <div class="document-info">
+                                        <span class="document-patient" id="previewPatient">氏名</span>
+                                        <span class="document-date" id="previewDate"></span>
+                                    </div>
+                                </div>
+
+                                <!-- 比較画像エリア -->
+                                <div class="comparison-area" id="comparisonArea">
+                                    <!-- JavaScriptで動的に生成 -->
+                                </div>
+
+                                <!-- 数値データ表示 -->
+                                <div class="metrics-area" id="metricsArea" style="display: none;">
+                                    <!-- JavaScriptで動的に生成 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 画像編集モーダル -->
+    <div id="imageEditorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="imageEditorTitle">画像の調整</h2>
+                <button class="modal-close" id="imageEditorClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="image-editor">
+                    <div class="editor-preview">
+                        <canvas id="editorCanvas"></canvas>
+                    </div>
+                    <div class="editor-controls">
+                        <div class="control-group">
+                            <label>拡大率: <span id="scaleValue">100</span>%</label>
+                            <input type="range" id="scaleSlider" min="50" max="200" value="100" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label>回転: <span id="rotationValue">0</span>°</label>
+                            <input type="range" id="rotationSlider" min="-45" max="45" value="0" step="1">
+                        </div>
+                        <div class="control-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span>画像をドラッグして位置を調整できます</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="imageEditorReset">リセット</button>
+                <button class="btn btn-primary" id="imageEditorApply">適用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ランドマーク編集モーダル -->
+    <div id="landmarkEditorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ランドマークの微調整</h2>
+                <button class="modal-close" id="landmarkEditorClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="landmark-editor">
+                    <div class="editor-tabs">
+                        <button class="tab-btn active" data-target="before">Before</button>
+                        <button class="tab-btn" data-target="after">After</button>
+                    </div>
+                    <div class="editor-preview">
+                        <canvas id="landmarkCanvas"></canvas>
+                    </div>
+                    <div class="editor-info">
+                        <i class="fas fa-hand-pointer"></i>
+                        <span id="landmarkInfo">マーカーをドラッグして位置を調整できます</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="landmarkEditorReset">自動検出に戻す</button>
+                <button class="btn btn-primary" id="landmarkEditorApply">適用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 必要なライブラリ -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- メインスクリプト -->
+    <script src="js/camera-guide.js?v=13.1.3"></script>
+    <script src="js/image-editor.js?v=13.1.3"></script>
+    <script src="js/landmark-editor.js?v=13.1.3"></script>
+    <script src="js/main.js?v=13.1.3"></script>
+    
+    <!-- Service Worker登録 -->
+    <script>
+        // Service Worker登録（オフライン対応 + 自動更新）
+        // Service Worker無効化（キャッシュ問題のため）
+        /*
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker登録成功:', registration.scope);
+                        
+                        // 新しいバージョンがあれば自動的に更新
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('🔄 新しいバージョンを検出、更新中...');
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    console.log('✅ 新しいバージョンがアクティブになりました');
+                                    // ページを自動リロード
+                                    window.location.reload();
+                                }
+                            });
+                        });
+                        
+                        // 1時間ごとに更新をチェック
+                        setInterval(() => {
+                            registration.update();
+                        }, 60 * 60 * 1000);
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker登録失敗:', error);
+                    });
+                    .then((registration) => {
+                        console.log('✅ Service Worker登録成功:', registration.scope);
+                        
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    console.log('✅ 新しいService Workerがアクティブになりました');
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker登録失敗:', error);
+                    });
+            });
+        }
+    </script>        */
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>アイコン生成</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <canvas id="canvas180" width="180" height="180"></canvas>
+    
+    <script>
+        function createIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // 背景（青）
+            ctx.fillStyle = '#2196F3';
+            ctx.fillRect(0, 0, size, size);
+            
+            // 人物シルエット（白）
+            ctx.fillStyle = '#FFFFFF';
+            
+            // 頭
+            const headRadius = size * 0.12;
+            const headY = size * 0.25;
+            ctx.beginPath();
+            ctx.arc(size/2, headY, headRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 体
+            const bodyWidth = size * 0.15;
+            const bodyHeight = size * 0.25;
+            const bodyY = headY + headRadius + 5;
+            ctx.fillRect(size/2 - bodyWidth/2, bodyY, bodyWidth, bodyHeight);
+            
+            // 腕
+            const armWidth = size * 0.08;
+            const armHeight = size * 0.2;
+            ctx.fillRect(size/2 - bodyWidth/2 - armWidth - 5, bodyY + 10, armWidth, armHeight);
+            ctx.fillRect(size/2 + bodyWidth/2 + 5, bodyY + 10, armWidth, armHeight);
+            
+            // 脚
+            const legWidth = size * 0.08;
+            const legHeight = size * 0.25;
+            const legY = bodyY + bodyHeight;
+            ctx.fillRect(size/2 - legWidth - 5, legY, legWidth, legHeight);
+            ctx.fillRect(size/2 + 5, legY, legWidth, legHeight);
+            
+            // PNG形式でダウンロード
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = canvasId.replace('canvas', 'icon-') + '.png';
+                a.click();
+            });
+        }
+        
+        // 3つのサイズのアイコンを生成
+        setTimeout(() => createIcon('canvas192', 192), 500);
+        setTimeout(() => createIcon('canvas512', 512), 1000);
+        setTimeout(() => {
+            const canvas = document.getElementById('canvas180');
+            createIcon('canvas180', 180);
+            // 180x180をapple-touch-iconとしても保存
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'apple-touch-icon.png';
+                a.click();
+            });
+        }, 1500);
+    </script>
+</body>
+</html>
