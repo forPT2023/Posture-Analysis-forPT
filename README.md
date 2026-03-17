@@ -1,6 +1,11 @@
-# 姿勢分析ツール v1.0
+# 姿勢分析ツール v13.9.5
 
 整体院・治療院向けの、施術前後の姿勢を比較分析するWebアプリケーションです。AI（MediaPipe Pose）を使って骨格を自動検出し、Before/Afterの変化を視覚的に表示します。
+
+## 🌐 本番環境URL
+**https://posture-analysis.pages.dev**
+
+デプロイ済み！今すぐアクセスして使用できます。
 
 ## 🎯 主な特徴
 
@@ -106,13 +111,20 @@
 ## 📁 ファイル構成
 
 ```
-posture_analysis_app/
-├── index.html          # メインHTML
+webapp/
+├── index.html              # メインHTML
+├── manifest.json           # PWAマニフェスト
 ├── css/
-│   └── style.css       # スタイルシート
+│   ├── style.css           # メインスタイルシート
+│   └── camera-guide.css    # カメラガイドスタイル
 ├── js/
-│   └── main.js         # メインJavaScript
-└── README.md           # このファイル
+│   ├── main.js             # メインJavaScript
+│   ├── camera-guide.js     # カメラガイド機能
+│   ├── image-editor.js     # 画像編集機能
+│   └── landmark-editor.js  # ランドマーク編集機能
+├── icons/                  # PWAアイコン
+├── images/                 # 撮影面アイコン
+└── README.md               # このファイル
 ```
 
 ## 🛠️ 使用技術
@@ -125,6 +137,15 @@ posture_analysis_app/
 - **jsPDF**: PDF生成
 - **Font Awesome**: アイコン
 - **Google Fonts (Noto Sans JP)**: 日本語フォント
+- **Cloudflare Pages**: 高速グローバルデプロイ
+
+## 🚀 デプロイ情報
+
+- **プラットフォーム**: Cloudflare Pages
+- **本番URL**: https://posture-analysis.pages.dev
+- **デプロイ日**: 2026-03-17
+- **ステータス**: ✅ 稼働中
+- **ブランチ**: main
 
 ## 💡 使用上のヒント
 
@@ -206,10 +227,16 @@ posture_analysis_app/
 ---
 
 **開発者**: 整体院・治療院向けツール開発チーム  
-**バージョン**: 1.0  
-**リリース日**: 2025年
+**バージョン**: v13.9.5  
+**最終更新**: 2026-03-17
 
 ## 📝 更新履歴
+
+### v13.9.5 (2026-03-17)
+- Cloudflare Pagesにデプロイ完了
+- 本番環境: https://posture-analysis.pages.dev
+- カメラガイド機能統合
+- PWA対応完了
 
 ### v1.0 (2025年)
 - 初回リリース

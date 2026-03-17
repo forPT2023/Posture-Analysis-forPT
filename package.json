@@ -1,0 +1,15 @@
+{
+  "name": "webapp",
+  "version": "1.0.0",
+  "description": "整体院・治療院向けの、施術前後の姿勢を比較分析するWebアプリケーションです。AI（MediaPipe Pose）を使って骨格を自動検出し、Before/Afterの変化を視覚的に表示します。",
+  "main": "sw_with_expiry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "wrangler": "^4.74.0"
+  }
+}
