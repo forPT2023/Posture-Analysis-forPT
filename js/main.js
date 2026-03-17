@@ -1,5 +1,26 @@
-// 姿勢分析ツール v13.1.0 - メインスクリプト（カメラガイド機能追加）
-console.log('📦 main.js (v13.1.0) 読み込み完了');
+// 姿勢分析ツール v13.9.6 - メインスクリプト（カメラガイド機能追加）
+
+// デバッグモード設定
+const DEBUG_MODE = false; // 本番環境ではfalse
+
+// デバッグログ関数 (開発モードのみ出力)
+function debug(...args) {
+    if (DEBUG_MODE) {
+        console.log(...args);
+    }
+}
+
+// エラーログ関数 (常に出力)
+function logError(...args) {
+    console.error(...args);
+}
+
+// スタートアップログ
+if (DEBUG_MODE) {
+    console.log('🔧 デバッグモード: 有効');
+} else {
+    console.log('姿勢分析アプリ v13.9.6 起動');
+}
 
 let selectedPlane = 'frontal'; // 'frontal' または 'sagittal'
 let beforeImage = null;
@@ -235,6 +256,22 @@ function setupEventListeners() {
         });
     }
     
+    // 分析ボタンの状態を更新する関数
+    function updateAnalyzeButton() {
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        
+        if (!analyzeBtn) return;
+        
+        const hasBeforeImage = beforeImage !== null;
+        const hasAfterImage = afterImage !== null;
+        
+        // 両方アップロード済みの場合のみボタンを有効化
+        analyzeBtn.disabled = !(hasBeforeImage && hasAfterImage);
+    }
+    
+    // 初期状態の更新
+    updateAnalyzeButton();
+    
     // 分析ボタン
     const analyzeBtn = document.getElementById('analyzeBtn');
     if (analyzeBtn) {
@@ -363,21 +400,53 @@ function setupEventListeners() {
         loadDataInput.addEventListener('change', loadData);
     }
     
-    // エクスポート
-    const exportPdfBtn = document.getElementById('exportPdfBtn');
-    const exportPngBtn = document.getElementById('exportPngBtn');
-    const exportJpgBtn = document.getElementById('exportJpgBtn');
+    // エクスポートドロップダウン
+    const exportDropdownBtn = document.getElementById('exportDropdownBtn');
+    const exportMenu = document.getElementById('exportMenu');
+    const exportChevron = document.getElementById('exportChevron');
     
-    if (exportPdfBtn) {
-        exportPdfBtn.addEventListener('click', () => exportDoc('pdf'));
-    }
-    
-    if (exportPngBtn) {
-        exportPngBtn.addEventListener('click', () => exportDoc('png'));
-    }
-    
-    if (exportJpgBtn) {
-        exportJpgBtn.addEventListener('click', () => exportDoc('jpg'));
+    if (exportDropdownBtn && exportMenu) {
+        // ドロップダウンの開閉
+        exportDropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = exportMenu.style.display === 'block';
+            exportMenu.style.display = isOpen ? 'none' : 'block';
+            if (exportChevron) {
+                exportChevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        });
+        
+        // メニュー外クリックで閉じる
+        document.addEventListener('click', () => {
+            if (exportMenu && exportMenu.style.display === 'block') {
+                exportMenu.style.display = 'none';
+                if (exportChevron) {
+                    exportChevron.style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+        
+        // メニューアイテムのクリック処理
+        const menuItems = exportMenu.querySelectorAll('.export-menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const format = item.getAttribute('data-format');
+                exportDoc(format);
+                exportMenu.style.display = 'none';
+                if (exportChevron) {
+                    exportChevron.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // ホバー効果
+            item.addEventListener('mouseenter', () => {
+                item.style.background = '#F5F5F5';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = 'white';
+            });
+        });
     }
     
     // 矢状面分析設定
@@ -459,6 +528,105 @@ function showStatus(message, type = 'info') {
     statusEl.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
 }
 
+// トーストメッセージ表示関数
+function showToast(message, type = 'info', duration = 3000) {
+    // 既存のトーストを削除
+    const existingToast = document.querySelector('.toast-message');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // トースト要素作成
+    const toast = document.createElement('div');
+    toast.className = `toast-message toast-${type}`;
+    
+    // アイコンと色の設定
+    let icon = 'fa-info-circle';
+    let color = '#2196F3';
+    if (type === 'success') {
+        icon = 'fa-check-circle';
+        color = '#4CAF50';
+    } else if (type === 'error') {
+        icon = 'fa-exclamation-triangle';
+        color = '#F44336';
+        duration = 5000; // エラーは長く表示
+    } else if (type === 'warning') {
+        icon = 'fa-exclamation-circle';
+        color = '#FF9800';
+    }
+    
+    toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+    
+    // スタイル適用
+    Object.assign(toast.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        backgroundColor: 'white',
+        color: '#333',
+        padding: '16px 24px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        zIndex: '10000',
+        minWidth: '280px',
+        maxWidth: '400px',
+        borderLeft: `4px solid ${color}`,
+        animation: 'slideInRight 0.3s ease-out',
+        fontSize: '14px'
+    });
+    
+    document.body.appendChild(toast);
+    
+    // 自動削除
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// トーストアニメーション用のCSSを動的追加
+if (!document.querySelector('#toast-animations')) {
+    const style = document.createElement('style');
+    style.id = 'toast-animations';
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        .toast-message i {
+            font-size: 18px;
+        }
+        @media (max-width: 768px) {
+            .toast-message {
+                right: 10px !important;
+                left: 10px !important;
+                max-width: calc(100vw - 20px) !important;
+                min-width: auto !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 function updateLayoutButtons() {
     const horizontalBtn = document.getElementById('layoutHorizontal');
     const verticalBtn = document.getElementById('layoutVertical');
@@ -486,7 +654,7 @@ function handleImageUpload(file, type) {
     
     // ファイルタイプチェック
     if (!file.type.startsWith('image/')) {
-        alert('画像ファイルを選択してください');
+        showToast('画像ファイルを選択してください', 'warning');
         return;
     }
     
@@ -504,6 +672,8 @@ function handleImageUpload(file, type) {
                 // 画像編集ボタンを表示
                 const editBtn = document.getElementById('editBeforeBtn');
                 if (editBtn) editBtn.style.display = 'block';
+                // 分析ボタンの状態を更新
+                updateAnalyzeButton();
             } else {
                 afterImage = img;
                 afterPose = null;  // 新しい画像なので姿勢データをクリア
@@ -512,6 +682,8 @@ function handleImageUpload(file, type) {
                 // 画像編集ボタンを表示
                 const editBtn = document.getElementById('editAfterBtn');
                 if (editBtn) editBtn.style.display = 'block';
+                // 分析ボタンの状態を更新
+                updateAnalyzeButton();
             }
             
             // 両方の画像がアップロードされたら分析ボタンを有効化
@@ -520,7 +692,7 @@ function handleImageUpload(file, type) {
         
         img.onerror = () => {
             console.error(`❌ 画像読み込みエラー: ${type}`);
-            alert('画像の読み込みに失敗しました');
+            showToast('画像の読み込みに失敗しました', 'error');
         };
         
         img.src = e.target.result;
@@ -528,7 +700,7 @@ function handleImageUpload(file, type) {
     
     reader.onerror = () => {
         console.error(`❌ ファイル読み込みエラー: ${type}`);
-        alert('ファイルの読み込みに失敗しました');
+        showToast('ファイルの読み込みに失敗しました', 'error');
     };
     
     reader.readAsDataURL(file);
@@ -554,12 +726,12 @@ function updateAnalyzeButton() {
 
 async function analyzePose() {
     if (!beforeImage || !afterImage) {
-        alert('ビフォーとアフターの両方の画像をアップロードしてください');
+        showToast('Before/After両方の画像をアップロードしてください', 'warning');
         return;
     }
     
     if (!pose) {
-        alert('MediaPipe Poseが初期化されていません。ページをリロードしてください。');
+        showToast('MediaPipe Pose初期化エラー。ページをリロードしてください。', 'error');
         return;
     }
     
@@ -608,7 +780,7 @@ async function analyzePose() {
     } catch (error) {
         console.error('❌ 姿勢分析エラー:', error);
         showStatus('分析エラー', 'error');
-        alert(error.message || '姿勢の分析中にエラーが発生しました');
+        showToast(error.message || '姿勢の分析中にエラーが発生しました', 'error');
     }
 }
 
@@ -790,11 +962,7 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     if (showSkeleton && poseResults && poseResults.poseLandmarks) {
         drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
     }
-    
-    // 矢状面分析を描画（矢状面選択時のみ）
-    if (selectedPlane === 'sagittal' && poseResults && poseResults.poseLandmarks) {
-        drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
-    }
+    // 矢状面分析はdrawSkeleton内で描画される
 }
 
 function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
@@ -1017,6 +1185,43 @@ function drawReferenceLine(ctx, landmarks, canvasWidth, canvasHeight) {
     
     ctx.setLineDash([]);  // 破線解除
     ctx.restore();
+}
+
+// ========================================
+// 矢状面分析: 角度計算関数（メトリクス用）
+// ========================================
+function calculateAlignmentAngle(ear, shoulder, facingSide) {
+    if (!ear || !shoulder) return 0;
+    
+    // 耳-肩線と垂直線の角度計算
+    const dx = shoulder.x - ear.x;
+    const dy = shoulder.y - ear.y;
+    
+    // atan2で角度計算（垂直線を基準、度数に変換）
+    let angle = Math.atan2(Math.abs(dx), Math.abs(dy)) * (180 / Math.PI);
+    
+    return angle;
+}
+
+function calculateROMAngle(ear, eye, facingSide) {
+    if (!ear || !eye) return 0;
+    
+    // 耳-目線と水平線の角度計算
+    const dx = eye.x - ear.x;
+    const dy = eye.y - ear.y;
+    
+    // 水平線からの角度（度数）
+    let angle = Math.atan2(-dy, dx) * (180 / Math.PI);
+    
+    // 0-180度の範囲に正規化
+    if (angle < 0) angle += 180;
+    
+    // 左側面の場合は180度から引く（右側面と統一）
+    if (facingSide === 'left') {
+        angle = 180 - angle;
+    }
+    
+    return angle;
 }
 
 // ========================================
@@ -1559,7 +1764,7 @@ function saveData() {
     console.log('💾 データ保存開始');
     
     if (!beforeImage || !afterImage) {
-        alert('保存するデータがありません');
+        showToast('保存するデータがありません', 'warning');
         return;
     }
     
@@ -1678,7 +1883,7 @@ function loadData(e) {
             
         } catch (error) {
             console.error('❌ データ読み込みエラー:', error);
-            alert('データの読み込みに失敗しました');
+            showToast('データの読み込みに失敗しました', 'error');
         }
     };
     
@@ -1687,14 +1892,18 @@ function loadData(e) {
 
 async function exportDoc(format) {
     if (!beforePose || !afterPose) {
-        alert('エクスポートする内容がありません');
+        showToast('エクスポートする内容がありません', 'warning');
         return;
     }
     
-    console.log(`📄 エクスポート開始: ${format}`);
+    debug(`📄 エクスポート開始: ${format}`);
     showStatus(`${format.toUpperCase()}を生成中...`, 'analyzing');
     
     const previewCanvas = document.getElementById('previewCanvas');
+    if (!previewCanvas) {
+        showToast('プレビューが見つかりません', 'error');
+        return;
+    }
     
     // レイアウトに応じてA4サイズを決定
     const isVertical = currentLayout === 'vertical';
@@ -1704,18 +1913,108 @@ async function exportDoc(format) {
     
     // mm → px 変換（96dpi: 1mm = 3.7795275591px）
     const mmToPx = 3.7795275591;
+    const a4WidthPx = Math.round(a4Width * mmToPx);
+    const a4HeightPx = Math.round(a4Height * mmToPx);
+    
+    debug('A4サイズ:', a4Width, 'mm ×', a4Height, 'mm');
+    debug('ピクセル:', a4WidthPx, 'px ×', a4HeightPx, 'px');
     
     try {
-        // previewCanvasをキャプチャ（A4サイズを厳密に維持）
+        // エクスポート専用の設定を適用
+        // !importantを上書きするため、既存スタイルを全て削除してから適用
+        const tempClass = 'export-mode-final';
+        const styleEl = document.createElement('style');
+        styleEl.id = 'export-temp-style-final';
+        
+        // A4サイズを厳密に適用（全ての既存スタイルを上書き）
+        styleEl.textContent = `
+            .${tempClass} {
+                position: relative !important;
+                width: ${a4WidthPx}px !important;
+                height: ${a4HeightPx}px !important;
+                min-width: ${a4WidthPx}px !important;
+                max-width: ${a4WidthPx}px !important;
+                min-height: ${a4HeightPx}px !important;
+                max-height: ${a4HeightPx}px !important;
+                padding: 20mm !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                background: white !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .${tempClass} .document-header {
+                flex-shrink: 0 !important;
+                padding-bottom: 8px !important;
+                margin-bottom: 12px !important;
+                border-bottom: 2px solid #2196F3 !important;
+            }
+            .${tempClass} .comparison-area {
+                flex: 1 !important;
+                display: flex !important;
+                gap: 15px !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .${tempClass}.layout-horizontal .comparison-area {
+                flex-direction: row !important;
+            }
+            .${tempClass}.layout-vertical .comparison-area {
+                flex-direction: column !important;
+            }
+            .${tempClass} .comparison-item {
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+            }
+            .${tempClass} .comparison-canvas {
+                max-width: 100% !important;
+                max-height: 100% !important;
+                width: 100% !important;
+                height: auto !important;
+                object-fit: contain !important;
+            }
+            .${tempClass} .metrics-area {
+                flex-shrink: 0 !important;
+                margin-top: 12px !important;
+            }
+        `;
+        
+        document.head.appendChild(styleEl);
+        previewCanvas.classList.add(tempClass);
+        
+        // DOMの再描画を十分に待つ（モバイルブラウザでは時間がかかる）
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // 実際のサイズをログ出力（デバッグ用）
+        const rect = previewCanvas.getBoundingClientRect();
+        debug('実測サイズ:', Math.round(rect.width), 'px ×', Math.round(rect.height), 'px');
+        
+        // 画像間の間隔
+        const gapPx = 15;
+
+        
+        // html2canvasでキャプチャ（実測サイズを使用）
         const canvas = await html2canvas(previewCanvas, {
             scale: 2,
             useCORS: true,
-            backgroundColor: '#fff',
-            width: a4Width * mmToPx,
-            height: a4Height * mmToPx,
-            windowWidth: a4Width * mmToPx,
-            windowHeight: a4Height * mmToPx
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: a4WidthPx,
+            height: a4HeightPx,
+            windowWidth: a4WidthPx,
+            windowHeight: a4HeightPx
         });
+        
+        // 一時スタイルを削除
+        previewCanvas.classList.remove(tempClass);
+        const tempStyleEl = document.getElementById('export-temp-style-final');
+        if (tempStyleEl) {
+            tempStyleEl.remove();
+        }
         
         const patientName = document.getElementById('patientName').value || '無題';
         const date = document.getElementById('reportDate').value.replace(/-/g, '');
@@ -1752,8 +2051,8 @@ async function exportDoc(format) {
         showStatus('エクスポート完了', 'success');
         
     } catch (error) {
-        console.error('❌ エクスポートエラー:', error);
+        logError('❌ エクスポートエラー:', error);
         showStatus('エクスポート失敗', 'error');
-        alert('エクスポート中にエラーが発生しました');
+        showToast('エクスポート中にエラーが発生しました', 'error');
     }
 }

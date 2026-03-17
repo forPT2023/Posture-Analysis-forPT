@@ -480,19 +480,27 @@ input[type="range"]::-moz-range-thumb {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    /* min-width: 297mm を削除 - スマホ版で個別設定 */
+    position: relative;
 }
 
 /* A4横向き（デフォルト・横並びレイアウト用） */
 .preview-canvas.layout-horizontal {
     width: 297mm;
     height: 210mm;
+    min-width: 297mm;
+    min-height: 210mm;
+    max-width: 297mm;
+    max-height: 210mm;
 }
 
 /* A4縦向き（縦並びレイアウト用） */
 .preview-canvas.layout-vertical {
-    width: 210mm;  /* A4縦向きの正しい幅 */
-    min-height: 297mm;  /* A4縦向きの正しい高さ */
+    width: 210mm;
+    height: 297mm;
+    min-width: 210mm;
+    min-height: 297mm;
+    max-width: 210mm;
+    max-height: 297mm;
 }
 
 /* スマホ対応: 削除（重複ブロックのため、後のブロックで統合） */
@@ -527,7 +535,7 @@ input[type="range"]::-moz-range-thumb {
 .document-header {
     flex-shrink: 0;
     padding-bottom: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     border-bottom: 2px solid var(--primary-color);
 }
 
@@ -558,13 +566,12 @@ input[type="range"]::-moz-range-thumb {
 
 /* 比較エリア: 常に横並び（最重要） */
 .comparison-area {
-    flex: 0 0 auto;
+    flex: 1;
     display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 10px;
-    min-height: 0;
-    align-items: flex-start;
+    gap: 15px;
+    align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 /* 横向きレイアウト: 画像を横並び */
@@ -576,36 +583,20 @@ input[type="range"]::-moz-range-thumb {
 .comparison-area.layout-vertical {
     flex-direction: column !important;
     align-items: center;
-    gap: 15px;  /* 上下間隔を確保 */
-}
-
-/* 縦向きレイアウト: 各画像のサイズを制限 */
-.layout-vertical .comparison-item {
-    max-width: 90%;  /* A4縦（210mm）に収まるように */
-    max-height: 40%;  /* 上下2枚で約80%、余白20% */
-}
-
-/* 縦向きレイアウト: キャンバスの高さを制限 */
-.layout-vertical .comparison-canvas {
-    max-height: 35vh;  /* ビューポート高の35% */
-    object-fit: contain;  /* アスペクト比を維持 */
 }
 
 .comparison-item {
-    flex: 0 0 auto;  /* 自動サイズ調整に変更（均等分割を無効化） */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
     border: 2px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    max-width: 100%;  /* 修正: width fit-content → max-width 100%（親要素を超えないように） */
-    box-sizing: border-box;  /* padding/borderを含めたサイズ計算 */
-}
-
-/* 横向きレイアウト: 各画像の幅を制限 */
-.layout-horizontal .comparison-item {
-    max-width: 48%;  /* 左右2枚で96%、gapを考慮 */
+    max-width: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
 }
 
 .comparison-label {
@@ -622,27 +613,29 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .comparison-canvas-wrapper {
-    flex: 0 0 auto;  /* 修正: 1 → 0 0 auto（内容サイズに応じる） */
+    flex: 0 0 auto;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f9f9f9;
-    width: fit-content;  /* 新規追加: 内容幅に合わせる */
-    margin: 0 auto;  /* 新規追加: 中央寄せ */
+    background: transparent;  /* グレー背景を削除 */
+    width: fit-content;
+    margin: 0 auto;
 }
 
 .comparison-canvas {
     display: block;
-    max-width: 100%;  /* 親コンテナ幅を超えないように */
-    width: 100%;      /* 親コンテナ幅に合わせる */
-    height: auto;     /* アスペクト比を維持 */
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
 }
 
 /* 数値データエリア */
 .metrics-area {
     flex-shrink: 0;
-    margin-top: 10px;
+    margin-top: 12px;
     padding: 10px;
     background: rgba(33, 150, 243, 0.05);
     border-radius: 8px;
@@ -731,45 +724,7 @@ input[type="range"]::-moz-range-thumb {
         grid-template-columns: 350px 1fr;  /* PC: サイドバー + プレビュー */
     }
     
-    .preview-canvas {
-        min-width: 297mm;  /* PC版でA4最小幅を確保 */
-    }
-    
-    .preview-canvas.layout-horizontal {
-        width: 297mm;
-        height: 210mm;
-    }
-    
-    .preview-canvas.layout-vertical {
-        width: 210mm;  /* A4縦向きの正しい幅 */
-        height: 297mm;
-    }
-    
-    /* PC/タブレット: レイアウト切り替え対応 */
-    /* 横向きレイアウト: 画像を横並び */
-    .comparison-area.layout-horizontal {
-        flex-direction: row !important;
-        justify-content: center;
-        gap: 20px;
-    }
-    
-    /* 縦向きレイアウト: 画像を縦並び */
-    .comparison-area.layout-vertical {
-        flex-direction: column !important;
-        align-items: center;
-        gap: 20px;
-    }
-    
-    /* 縦向きレイアウト: 各画像のサイズを制限（PC/タブレット版） */
-    .layout-vertical .comparison-item {
-        max-width: 85%;  /* A4縦（210mm）に収まるように */
-        max-height: 42%;  /* 上下2枚で約84%、余白16% */
-    }
-    
-    /* 縦向きレイアウト: キャンバスの高さを制限（PC/タブレット版） */
-    .layout-vertical .comparison-canvas {
-        max-height: 500px;  /* 画像が大きくなりすぎないように */
-    }
+    /* PC版: 基本設定を継承（重複削除） */
 }
 
 @media (max-width: 1024px) {
@@ -904,21 +859,9 @@ input[type="range"]::-moz-range-thumb {
     }
     
     /* スマホ: プレビューキャンバスのA4サイズを維持 */
+    /* スマホ: プレビューキャンバスは基本設定を継承（A4サイズ維持） */
     .preview-canvas {
-        padding: 10px;  /* 余白を小さく */
-        min-width: 0;  /* 最小幅制限を解除 */
-    }
-    
-    /* スマホ: A4横向き（297mm × 210mm を維持） */
-    .preview-canvas.layout-horizontal {
-        width: 297mm !important;  /* A4横向き固定 */
-        min-height: 210mm;
-    }
-    
-    /* スマホ: A4縦向き（210mm × 297mm を維持） */
-    .preview-canvas.layout-vertical {
-        width: 210mm !important;  /* A4縦向き固定 */
-        min-height: 297mm;
+        padding: 20mm;
     }
     
     /* スマホ: プレビュー内部のヘッダーを小さく */
@@ -933,6 +876,9 @@ input[type="range"]::-moz-range-thumb {
     
     .preview-canvas .document-info {
         font-size: 0.7rem !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 3px !important;
     }
     
     /* スマホ: プレビュー内部の比較ラベルを小さく */
@@ -955,45 +901,7 @@ input[type="range"]::-moz-range-thumb {
         grid-template-columns: 1fr;
     }
     
-    /* スマホ: 比較エリアのレイアウト切り替え対応 */
-    /* 横向きレイアウト: 画像を横並び */
-    .comparison-area.layout-horizontal {
-        flex-direction: row !important;
-        justify-content: center;
-        gap: 8px;
-        padding: 0 5px;  /* 左右に余白 */
-    }
-    
-    /* 縦向きレイアウト: 画像を縦並び */
-    .comparison-area.layout-vertical {
-        flex-direction: column !important;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 0;  /* 上下に余白 */
-    }
-    
-    /* スマホ: 横向きレイアウトの各画像サイズ制限 */
-    .layout-horizontal .comparison-item {
-        max-width: 48%;  /* 左右2枚で96% + gap 8px = 104%を防ぐ */
-    }
-    
-    /* スマホ: 縦向きレイアウトの各画像サイズ制限 */
-    .layout-vertical .comparison-item {
-        max-width: 95%;  /* 縦向きは画像を大きく表示 */
-        max-height: 40%;  /* 上下2枚で約80%、余白20% */
-    }
-    
-    /* スマホ: 縦向きレイアウトのキャンバス高さ制限 */
-    .layout-vertical .comparison-canvas {
-        max-height: 350px;  /* 画像が大きくなりすぎないように */
-    }
-    
-    /* スマホでの画像サイズ調整 */
-    .comparison-canvas {
-        max-width: 100%;
-        width: 100%;
-        height: auto !important;
-    }
+    /* スマホ: 比較エリアは基本設定を継承 */
     
     /* スマホでの数値データグリッド */
     .metrics-grid {
@@ -1013,11 +921,7 @@ input[type="range"]::-moz-range-thumb {
         gap: 5px;
     }
     
-    /* スマホでの比較アイテム */
-    .comparison-item {
-        min-height: 200px;
-        box-sizing: border-box;  /* padding/borderを含めたサイズ計算 */
-    }
+    /* スマホでの比較アイテムは基本設定を継承 */
     
     /* スマホでのメトリクスエリア */
     .metrics-area {
@@ -1247,4 +1151,107 @@ input[type="range"]::-moz-range-thumb {
     #landmarkCanvas {
         max-height: 300px;
     }
+}
+
+/* ==================== カメラガイド（シンプル版） ==================== */
+.camera-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 10000;
+    flex-direction: column;
+}
+
+.camera-modal.active {
+    display: flex;
+}
+
+.camera-container {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.center-line-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.guide-text {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    z-index: 10001;
+}
+
+.camera-controls {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    z-index: 10001;
+}
+
+.capture-button {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #fff;
+    border: 5px solid #2196F3;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.capture-button:hover {
+    transform: scale(1.1);
+}
+
+.capture-button:active {
+    transform: scale(0.95);
+}
+
+.close-camera-button {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.close-camera-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.close-camera-button i {
+    margin-right: 5px;
 }

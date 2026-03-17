@@ -1,36 +1,18 @@
 /**
- * カメラガイド機能 v13.0.0
- * フレーミングガイド + 水平チェッカー
+ * カメラガイド機能 v13.9.5 - シンプル版
+ * 中央に縦線のみ表示（耳の位置合わせ用）
  */
 
 class CameraGuide {
     constructor(targetType) {
         this.targetType = targetType; // 'before' or 'after'
         this.stream = null;
-        this.tilt = 0;
-        this.isLevel = false;
         
         // DOM要素の参照
         this.modal = null;
         this.video = null;
         this.canvas = null;
         this.ctx = null;
-        this.levelIndicator = null;
-        this.levelBubble = null;
-        this.statusText = null;
-        
-        // ガイド設定
-        this.guideSettings = {
-            frameWidth: 0.5,    // 画面の50%幅
-            frameHeight: 0.75,  // 画面の75%高さ
-            frameColor: 'rgba(255, 255, 255, 0.8)',
-            frameLineWidth: 3,
-            frameDashPattern: [15, 10],
-            levelThreshold: 3   // ±3度以内でOK
-        };
-        
-        // 前回の枠位置を記憶（施術前後で同じ構図にする）
-        this.savedFramePosition = this.loadSavedFramePosition();
     }
     
     /**
@@ -44,9 +26,8 @@ class CameraGuide {
             // カメラを起動
             await this.startCamera();
             
-            // ガイド機能を開始
-            this.startFramingGuide();
-            this.startLevelChecker();
+            // 中央縦線ガイドを開始
+            this.startCenterLineGuide();
             
             // モーダルを表示
             this.modal.classList.add('active');
@@ -71,26 +52,16 @@ class CameraGuide {
         // モーダルHTML
         const modalHTML = `
             <div id="cameraGuideModal" class="camera-modal">
-                <!-- 水平インジケーター -->
-                <div id="levelIndicator" class="level-indicator">
-                    <div class="level-label">
-                        <i class="fas fa-level"></i>
-                        <span>カメラの傾き</span>
-                    </div>
-                    <div class="level-meter">
-                        <div class="level-bubble" id="levelBubble"></div>
-                    </div>
-                    <div id="levelStatus" class="status-text">調整中...</div>
-                </div>
-                
                 <!-- カメラコンテナ -->
                 <div class="camera-container">
                     <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
-                    <canvas id="framingGuideCanvas" class="framing-guide-canvas"></canvas>
+                    <canvas id="centerLineCanvas" class="center-line-canvas"></canvas>
                 </div>
                 
-                <!-- カウントダウンオーバーレイ -->
-                <div id="countdownOverlay" class="countdown-overlay"></div>
+                <!-- ガイドテキスト -->
+                <div class="guide-text">
+                    中央の縦線に耳の位置を合わせてください
+                </div>
                 
                 <!-- カメラコントロール -->
                 <div class="camera-controls">
@@ -98,9 +69,6 @@ class CameraGuide {
                         <i class="fas fa-times"></i> キャンセル
                     </button>
                     <button id="captureBtn" class="capture-button" title="撮影"></button>
-                    <button id="switchCameraBtn" class="close-camera-button" style="display: none;">
-                        <i class="fas fa-sync-alt"></i> カメラ切替
-                    </button>
                 </div>
             </div>
         `;
@@ -111,11 +79,8 @@ class CameraGuide {
         // 要素の参照を取得
         this.modal = document.getElementById('cameraGuideModal');
         this.video = document.getElementById('cameraVideo');
-        this.canvas = document.getElementById('framingGuideCanvas');
+        this.canvas = document.getElementById('centerLineCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.levelIndicator = document.getElementById('levelIndicator');
-        this.levelBubble = document.getElementById('levelBubble');
-        this.statusText = document.getElementById('levelStatus');
         
         // イベントリスナー
         document.getElementById('closeCameraBtn').addEventListener('click', () => this.close());
@@ -152,143 +117,52 @@ class CameraGuide {
     }
     
     /**
-     * フレーミングガイドを開始
+     * 中央縦線ガイドを開始
      */
-    startFramingGuide() {
-        const drawGuide = () => {
+    startCenterLineGuide() {
+        const drawCenterLine = () => {
             if (!this.modal.classList.contains('active')) return;
             
             // キャンバスクリア
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
-            // ガイド枠のサイズと位置を計算
-            const frameWidth = this.canvas.width * this.guideSettings.frameWidth;
-            const frameHeight = this.canvas.height * this.guideSettings.frameHeight;
-            const frameX = (this.canvas.width - frameWidth) / 2;
-            const frameY = this.canvas.height * 0.125; // 上から12.5%の位置
+            // 中央のX座標
+            const centerX = this.canvas.width / 2;
             
-            // 保存された位置があればそれを使用（After撮影時）
-            let actualFrameY = frameY;
-            if (this.targetType === 'after' && this.savedFramePosition) {
-                actualFrameY = this.savedFramePosition.y;
-            }
+            // 中央に縦線を描画
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, 0);
+            this.ctx.lineTo(centerX, this.canvas.height);
+            this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)'; // 黄色
+            this.ctx.lineWidth = 3;
+            this.ctx.setLineDash([10, 10]); // 破線
+            this.ctx.stroke();
             
-            // ガイド枠を描画
-            this.ctx.strokeStyle = this.guideSettings.frameColor;
-            this.ctx.lineWidth = this.guideSettings.frameLineWidth;
-            this.ctx.setLineDash(this.guideSettings.frameDashPattern);
-            this.ctx.strokeRect(frameX, actualFrameY, frameWidth, frameHeight);
+            // 線の両端に三角マーカーを追加（視認性向上）
+            const markerSize = 20;
             
-            // 説明テキスト
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = 'bold 20px sans-serif';
-            this.ctx.textAlign = 'center';
-            this.ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            this.ctx.shadowBlur = 8;
+            // 上部マーカー
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, markerSize);
+            this.ctx.lineTo(centerX - markerSize / 2, 0);
+            this.ctx.lineTo(centerX + markerSize / 2, 0);
+            this.ctx.closePath();
+            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+            this.ctx.fill();
             
-            if (this.targetType === 'before') {
-                this.ctx.fillText('全身をこの枠内に収めてください', this.canvas.width / 2, actualFrameY - 20);
-            } else {
-                this.ctx.fillText('前回と同じ位置に合わせてください', this.canvas.width / 2, actualFrameY - 20);
-            }
-            
-            this.ctx.shadowBlur = 0;
-            
-            // Before撮影時は位置を保存
-            if (this.targetType === 'before') {
-                this.savedFramePosition = {
-                    x: frameX,
-                    y: actualFrameY,
-                    width: frameWidth,
-                    height: frameHeight
-                };
-            }
+            // 下部マーカー
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, this.canvas.height - markerSize);
+            this.ctx.lineTo(centerX - markerSize / 2, this.canvas.height);
+            this.ctx.lineTo(centerX + markerSize / 2, this.canvas.height);
+            this.ctx.closePath();
+            this.ctx.fill();
             
             // 次のフレーム
-            requestAnimationFrame(drawGuide);
+            requestAnimationFrame(drawCenterLine);
         };
         
-        drawGuide();
-    }
-    
-    /**
-     * 水平チェッカーを開始
-     */
-    async startLevelChecker() {
-        // デバイスの向きセンサーをチェック
-        if (!window.DeviceOrientationEvent) {
-            console.warn('⚠️ このデバイスは傾き検出に非対応です');
-            this.levelIndicator.style.display = 'none';
-            return;
-        }
-        
-        // iOS 13+ のパーミッション要求
-        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            try {
-                console.log('📱 iOS: 傾き検出パーミッション要求中...');
-                const permission = await DeviceOrientationEvent.requestPermission();
-                
-                if (permission !== 'granted') {
-                    console.warn('⚠️ 傾き検出のパーミッションが拒否されました');
-                    this.levelIndicator.style.display = 'none';
-                    // パーミッション拒否時のメッセージ
-                    this.showMessage('傾き検出が無効です。設定から許可してください。', 'warning');
-                    return;
-                }
-                
-                console.log('✅ iOS: 傾き検出パーミッション許可されました');
-            } catch (error) {
-                console.error('❌ パーミッション要求エラー:', error);
-                this.levelIndicator.style.display = 'none';
-                return;
-            }
-        }
-        
-        // 向きセンサーのイベントリスナー
-        const handleOrientation = (event) => {
-            if (!this.modal.classList.contains('active')) return;
-            
-            // gamma: 左右の傾き（-90〜+90度）
-            this.tilt = event.gamma || 0;
-            
-            // 傾きが閾値以内かチェック
-            this.isLevel = Math.abs(this.tilt) < this.guideSettings.levelThreshold;
-            
-            // 表示を更新
-            this.updateLevelDisplay();
-        };
-        
-        window.addEventListener('deviceorientation', handleOrientation);
-        
-        // クリーンアップ用に保存
-        this.orientationHandler = handleOrientation;
-        
-        console.log('📐 傾き検出を開始しました');
-    }
-    
-    /**
-     * 水平インジケーターの表示を更新
-     */
-    updateLevelDisplay() {
-        // 気泡の位置を計算（-30度〜+30度を0〜100%にマッピング）
-        const maxTilt = 30; // 最大表示傾き
-        const normalizedTilt = Math.max(-maxTilt, Math.min(maxTilt, this.tilt));
-        const bubblePosition = 50 + (normalizedTilt / maxTilt) * 50;
-        
-        this.levelBubble.style.left = `${bubblePosition}%`;
-        
-        // ステータス表示
-        if (this.isLevel) {
-            this.statusText.textContent = '✅ 水平です！';
-            this.statusText.className = 'status-text status-ok';
-            this.levelIndicator.className = 'level-indicator ok';
-        } else {
-            const direction = this.tilt > 0 ? '左' : '右';
-            const angle = Math.abs(this.tilt).toFixed(1);
-            this.statusText.textContent = `⚠️ ${direction}に${angle}度傾けてください`;
-            this.statusText.className = 'status-text status-warning';
-            this.levelIndicator.className = 'level-indicator warning';
-        }
+        drawCenterLine();
     }
     
     /**
@@ -296,22 +170,6 @@ class CameraGuide {
      */
     async capture() {
         try {
-            // 水平チェック
-            if (!this.isLevel) {
-                const confirmCapture = confirm(
-                    'カメラが傾いています。\n' +
-                    'このまま撮影しますか？\n\n' +
-                    '撮影条件を統一するため、水平にすることをお勧めします。'
-                );
-                
-                if (!confirmCapture) {
-                    return;
-                }
-            }
-            
-            // カウントダウン表示
-            await this.showCountdown(3);
-            
             // キャンバスに現在のフレームを描画
             const captureCanvas = document.createElement('canvas');
             captureCanvas.width = this.video.videoWidth;
@@ -337,16 +195,13 @@ class CameraGuide {
                         this.setImageToInput(e.target.result, 'After');
                     }
                     
-                    // Before撮影時は位置を保存
-                    if (this.targetType === 'before') {
-                        this.saveFramePosition();
-                    }
-                    
                     // モーダルを閉じる
                     this.close();
                     
                     // 完了メッセージ
-                    this.showMessage('📸 撮影完了！', 'success');
+                    if (typeof showToast === 'function') {
+                        showToast('📸 撮影完了！', 'success');
+                    }
                 };
                 reader.readAsDataURL(blob);
             }, 'image/jpeg', 0.95);
@@ -355,34 +210,6 @@ class CameraGuide {
             console.error('❌ 撮影エラー:', error);
             alert('撮影に失敗しました。もう一度お試しください。');
         }
-    }
-    
-    /**
-     * カウントダウンを表示
-     */
-    showCountdown(seconds) {
-        return new Promise((resolve) => {
-            const overlay = document.getElementById('countdownOverlay');
-            let count = seconds;
-            
-            const countdown = () => {
-                if (count > 0) {
-                    overlay.textContent = count;
-                    overlay.classList.add('show');
-                    
-                    setTimeout(() => {
-                        overlay.classList.remove('show');
-                        count--;
-                        setTimeout(countdown, 200);
-                    }, 500);
-                } else {
-                    overlay.textContent = '';
-                    resolve();
-                }
-            };
-            
-            countdown();
-        });
     }
     
     /**
@@ -441,18 +268,6 @@ class CameraGuide {
     }
     
     /**
-     * メッセージを表示
-     */
-    showMessage(text, type = 'info') {
-        // 既存のメッセージ表示機能を使用
-        if (typeof showMessage === 'function') {
-            showMessage(text, type);
-        } else {
-            console.log(text);
-        }
-    }
-    
-    /**
      * カメラを停止してモーダルを閉じる
      */
     close() {
@@ -460,12 +275,6 @@ class CameraGuide {
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
             this.stream = null;
-        }
-        
-        // イベントリスナーを削除
-        if (this.orientationHandler) {
-            window.removeEventListener('deviceorientation', this.orientationHandler);
-            this.orientationHandler = null;
         }
         
         // モーダルを非表示
@@ -496,43 +305,9 @@ class CameraGuide {
         alert(message);
         this.close();
     }
-    
-    /**
-     * 枠位置を保存
-     */
-    saveFramePosition() {
-        if (this.savedFramePosition) {
-            try {
-                localStorage.setItem(
-                    'cameraGuideFramePosition',
-                    JSON.stringify(this.savedFramePosition)
-                );
-                console.log('💾 枠位置を保存しました', this.savedFramePosition);
-            } catch (error) {
-                console.warn('⚠️ 枠位置の保存に失敗:', error);
-            }
-        }
-    }
-    
-    /**
-     * 保存された枠位置を読み込み
-     */
-    loadSavedFramePosition() {
-        try {
-            const saved = localStorage.getItem('cameraGuideFramePosition');
-            if (saved) {
-                const position = JSON.parse(saved);
-                console.log('📂 保存された枠位置を読み込みました', position);
-                return position;
-            }
-        } catch (error) {
-            console.warn('⚠️ 枠位置の読み込みに失敗:', error);
-        }
-        return null;
-    }
 }
 
 // グローバルに公開
 window.CameraGuide = CameraGuide;
 
-console.log('✅ カメラガイド機能 v13.0.0 ロード完了');
+console.log('✅ カメラガイド機能 v13.9.5 (シンプル版) ロード完了');

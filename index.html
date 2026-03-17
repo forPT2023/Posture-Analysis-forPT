@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>姿勢分析 - カメラガイド機能 v13.1.3</title>
+    <title>姿勢分析 - カメラガイド機能 v13.9.6</title>
     
     <!-- キャッシュ制御 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -21,8 +21,8 @@
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     
     <!-- スタイルシート -->
-    <link rel="stylesheet" href="css/style.css?v=13.1.3">
-    <link rel="stylesheet" href="css/camera-guide.css?v=13.1.3">
+    <link rel="stylesheet" href="css/style.css?v=13.5.0">
+    <link rel="stylesheet" href="css/camera-guide.css?v=13.5.0">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 </head>
@@ -307,15 +307,36 @@
                     
                     <div class="divider"></div>
                     
-                    <button class="btn btn-primary" id="exportPdfBtn">
-                        <i class="fas fa-file-pdf"></i> PDFでダウンロード
-                    </button>
-                    <button class="btn btn-primary" id="exportPngBtn">
-                        <i class="fas fa-file-image"></i> PNGでダウンロード
-                    </button>
-                    <button class="btn btn-primary" id="exportJpgBtn">
-                        <i class="fas fa-file-image"></i> JPGでダウンロード
-                    </button>
+                    <!-- エクスポートドロップダウン -->
+                    <div style="position: relative;">
+                        <button class="btn btn-primary" id="exportDropdownBtn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fas fa-download"></i> エクスポート 
+                            <i class="fas fa-chevron-down" id="exportChevron" style="font-size: 12px; transition: transform 0.3s;"></i>
+                        </button>
+                        <div id="exportMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 4px; z-index: 1000; overflow: hidden;">
+                            <button class="export-menu-item" data-format="pdf" style="width: 100%; padding: 12px 16px; border: none; background: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
+                                <i class="fas fa-file-pdf" style="color: #F44336; font-size: 18px;"></i>
+                                <div>
+                                    <div style="font-weight: 500; color: #333;">PDF形式</div>
+                                    <div style="font-size: 11px; color: #999;">印刷に最適</div>
+                                </div>
+                            </button>
+                            <button class="export-menu-item" data-format="png" style="width: 100%; padding: 12px 16px; border: none; background: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
+                                <i class="fas fa-file-image" style="color: #2196F3; font-size: 18px;"></i>
+                                <div>
+                                    <div style="font-weight: 500; color: #333;">PNG形式</div>
+                                    <div style="font-size: 11px; color: #999;">高画質画像</div>
+                                </div>
+                            </button>
+                            <button class="export-menu-item" data-format="jpg" style="width: 100%; padding: 12px 16px; border: none; background: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
+                                <i class="fas fa-file-image" style="color: #4CAF50; font-size: 18px;"></i>
+                                <div>
+                                    <div style="font-weight: 500; color: #333;">JPG形式</div>
+                                    <div style="font-size: 11px; color: #999;">汎用画像</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
@@ -436,10 +457,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- メインスクリプト -->
-    <script src="js/camera-guide.js?v=13.1.3"></script>
-    <script src="js/image-editor.js?v=13.1.3"></script>
-    <script src="js/landmark-editor.js?v=13.1.3"></script>
-    <script src="js/main.js?v=13.1.3"></script>
+    <script src="js/camera-guide.js?v=13.5.0"></script>
+    <script src="js/image-editor.js?v=13.5.0"></script>
+    <script src="js/landmark-editor.js?v=13.5.0"></script>
+    <script src="js/main.js?v=13.5.0"></script>
     
     <!-- Service Worker登録 -->
     <script>
