@@ -27,6 +27,20 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- 初期化ローディング表示 -->
+    <div id="initLoadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
+            <h2 style="color: #2196F3; margin-bottom: 10px;">姿勢分析ツール起動中...</h2>
+            <p style="color: #666;">MediaPipeライブラリを読み込んでいます</p>
+            <div style="margin-top: 20px;">
+                <div style="width: 300px; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden;">
+                    <div id="loadingProgress" style="width: 0%; height: 100%; background: #2196F3; transition: width 0.3s;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- ヘッダー -->
         <header class="header">

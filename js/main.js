@@ -67,8 +67,30 @@ let draggedLandmarkIndex = -1;
 
 // MediaPipe Pose インスタンス
 let pose = null;
+let mediaPipeReady = false;
+
+// ローディング表示を更新
+function updateLoadingProgress(percent) {
+    const progressBar = document.getElementById('loadingProgress');
+    if (progressBar) {
+        progressBar.style.width = percent + '%';
+    }
+}
+
+// ローディング表示を非表示
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('initLoadingOverlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOMContentLoaded: ページ読み込み完了');
+    updateLoadingProgress(20);
     
     // 今日の日付を設定
     const today = new Date().toISOString().split('T')[0];
@@ -79,19 +101,47 @@ document.addEventListener('DOMContentLoaded', function() {
         datePreview.textContent = formatDate(today);
     }
     
-    // MediaPipe Pose初期化
-    initMediaPipe();
+    updateLoadingProgress(40);
     
-    // イベントリスナー設定
+    // イベントリスナー設定（MediaPipe初期化前に実行）
     setupEventListeners();
     
+    updateLoadingProgress(60);
+    
+    // MediaPipe Pose初期化（遅延実行）
+    console.log('⏳ MediaPipe読み込み待機中...');
+    waitForMediaPipe();
 });
 
+function waitForMediaPipe() {
+    // Poseクラスが利用可能になるまで待機
+    if (typeof Pose !== 'undefined') {
+        console.log('✅ MediaPipeライブラリ検出');
+        updateLoadingProgress(80);
+        initMediaPipe();
+    } else {
+        console.log('⏳ MediaPipeライブラリ待機中...');
+        setTimeout(waitForMediaPipe, 100);
+    }
+}
+
 function initMediaPipe() {
+    console.log('🚀 MediaPipe Pose初期化開始');
     
     try {
+        if (typeof Pose === 'undefined') {
+            console.error('❌ Poseクラスが見つかりません');
+            updateLoadingProgress(100);
+            hideLoadingOverlay();
+            setTimeout(() => {
+                alert('MediaPipeライブラリの読み込みに失敗しました。\nページを再読み込みしてください。');
+            }, 1000);
+            return;
+        }
+        
         pose = new Pose({
             locateFile: (file) => {
+                console.log('📦 MediaPipeファイル:', file);
                 return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
             }
         });
@@ -105,9 +155,22 @@ function initMediaPipe() {
             minTrackingConfidence: 0.3  
         });
         
+        mediaPipeReady = true;
+        updateLoadingProgress(100);
+        console.log('✅ MediaPipe Pose初期化完了');
+        
+        // ローディング表示を非表示
+        setTimeout(() => {
+            hideLoadingOverlay();
+        }, 500);
+        
     } catch (error) {
         console.error('❌ MediaPipe Pose 初期化エラー:', error);
-        showStatus('MediaPipe Poseの初期化に失敗しました', 'error');
+        updateLoadingProgress(100);
+        hideLoadingOverlay();
+        setTimeout(() => {
+            alert('MediaPipeの初期化に失敗しました。\nエラー: ' + error.message);
+        }, 1000);
     }
 }
 
@@ -730,9 +793,21 @@ async function analyzePose() {
         return;
     }
     
-    if (!pose) {
-        showToast('MediaPipe Pose初期化エラー。ページをリロードしてください。', 'error');
-        return;
+    if (!pose || !mediaPipeReady) {
+        showToast('MediaPipe Poseを初期化中です。少々お待ちください...', 'warning');
+        console.log('⏳ MediaPipe準備待機中...');
+        
+        // MediaPipeの準備ができるまで待機（最大10秒）
+        let waitTime = 0;
+        while (!mediaPipeReady && waitTime < 10000) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            waitTime += 500;
+        }
+        
+        if (!mediaPipeReady) {
+            showToast('MediaPipeの初期化に失敗しました。ページを再読み込みしてください。', 'error');
+            return;
+        }
     }
     
     console.log('🤖 姿勢分析開始');
