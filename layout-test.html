@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>レイアウトテスト</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: #2196F3;
+        }
+        
+        .device-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .device-info p {
+            margin: 5px 0;
+        }
+        
+        /* A4横向きプレビュー */
+        .preview-canvas {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 20mm;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+        }
+        
+        .preview-canvas.layout-horizontal {
+            width: 297mm;
+            height: 210mm;
+        }
+        
+        .preview-canvas.layout-vertical {
+            width: 210mm;
+            height: 297mm;
+        }
+        
+        /* 比較エリア */
+        .comparison-area {
+            flex: 1;
+            display: flex !important;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2196F3;
+            padding: 10px;
+            background: #f5f5f5;
+        }
+        
+        .comparison-area.layout-horizontal {
+            flex-direction: row !important;
+        }
+        
+        .comparison-area.layout-vertical {
+            flex-direction: column !important;
+        }
+        
+        .comparison-item {
+            flex: 1;
+            background: #e8eaf6;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #9fa8da;
+            min-height: 100px;
+        }
+        
+        /* スマホ用スクロールコンテナ */
+        .scroll-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background: #e0e0e0;
+            padding: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .test-container {
+                padding: 15px;
+            }
+            
+            /* スマホではプレビューエリアを横スクロール可能に */
+            .preview-canvas {
+                padding: 15mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 レイアウトテスト</h1>
+    
+    <div class="device-info">
+        <p><strong>画面幅:</strong> <span id="screenWidth"></span>px</p>
+        <p><strong>画面高さ:</strong> <span id="screenHeight"></span>px</p>
+        <p><strong>ビューポート幅:</strong> <span id="viewportWidth"></span>px</p>
+        <p><strong>デバイス種別:</strong> <span id="deviceType"></span></p>
+    </div>
+    
+    <!-- テスト1: A4横向き（デフォルト） -->
+    <div class="test-container">
+        <h2>テスト1: A4横向き（297mm × 210mm）</h2>
+        <p>スマホでは横スクロール可能</p>
+        <div class="scroll-container">
+            <div class="preview-canvas layout-horizontal">
+                <div class="comparison-area layout-horizontal">
+                    <div class="comparison-item">Before</div>
+                    <div class="comparison-item">After</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- テスト2: A4縦向き -->
+    <div class="test-container">
+        <h2>テスト2: A4縦向き（210mm × 297mm）</h2>
+        <p>画像は横並びのまま</p>
+        <div class="scroll-container">
+            <div class="preview-canvas layout-vertical">
+                <div class="comparison-area layout-horizontal">
+                    <div class="comparison-item">Before</div>
+                    <div class="comparison-item">After</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- テスト3: 比較エリア詳細 -->
+    <div class="test-container">
+        <h2>テスト3: 比較エリアのflexbox検証</h2>
+        <div style="background: #e0e0e0; padding: 15px;">
+            <div class="comparison-area layout-horizontal" style="height: 200px;">
+                <div class="comparison-item">
+                    <strong>Before</strong><br>
+                    flex: 1<br>
+                    flex-direction: row
+                </div>
+                <div class="comparison-item">
+                    <strong>After</strong><br>
+                    flex: 1<br>
+                    flex-direction: row
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // デバイス情報を表示
+        function updateDeviceInfo() {
+            document.getElementById('screenWidth').textContent = window.screen.width;
+            document.getElementById('screenHeight').textContent = window.screen.height;
+            document.getElementById('viewportWidth').textContent = window.innerWidth;
+            
+            const isMobile = window.innerWidth <= 768;
+            const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+            const isDesktop = window.innerWidth > 1024;
+            
+            let deviceType = '';
+            if (isMobile) deviceType = 'スマートフォン';
+            else if (isTablet) deviceType = 'タブレット';
+            else deviceType = 'デスクトップ';
+            
+            document.getElementById('deviceType').textContent = deviceType;
+        }
+        
+        updateDeviceInfo();
+        window.addEventListener('resize', updateDeviceInfo);
+        
+        // 比較エリアの計算済みスタイルをログ出力
+        document.querySelectorAll('.comparison-area').forEach((area, index) => {
+            const computed = window.getComputedStyle(area);
+            console.log(`比較エリア ${index + 1}:`);
+            console.log('  display:', computed.display);
+            console.log('  flex-direction:', computed.flexDirection);
+            console.log('  gap:', computed.gap);
+        });
+    </script>
+</body>
+</html>

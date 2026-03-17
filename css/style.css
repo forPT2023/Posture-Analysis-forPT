@@ -579,9 +579,9 @@ input[type="range"]::-moz-range-thumb {
     flex-direction: row !important;
 }
 
-/* 縦向きレイアウト: 画像を縦並び */
+/* 縦向きレイアウト: 画像を横並び（用紙が縦でも画像は横並び） */
 .comparison-area.layout-vertical {
-    flex-direction: column !important;
+    flex-direction: row !important;
     align-items: center;
 }
 

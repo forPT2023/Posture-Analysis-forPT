@@ -2064,7 +2064,7 @@ async function exportDoc(format) {
                 flex-direction: row !important;
             }
             .${tempClass}.layout-vertical .comparison-area {
-                flex-direction: column !important;
+                flex-direction: row !important;
             }
             .${tempClass} .comparison-item {
                 flex: 1 !important;
