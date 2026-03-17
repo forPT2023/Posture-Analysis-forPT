@@ -7,6 +7,7 @@ class CameraGuide {
     constructor(targetType) {
         this.targetType = targetType; // 'before' or 'after'
         this.stream = null;
+        this.drawingStarted = false; // 描画開始フラグ
         
         // DOM要素の参照
         this.modal = null;
@@ -106,9 +107,18 @@ class CameraGuide {
             
             // ビデオが読み込まれたらキャンバスサイズを設定
             this.video.addEventListener('loadedmetadata', () => {
-                this.canvas.width = this.video.videoWidth;
-                this.canvas.height = this.video.videoHeight;
-                console.log(`📹 カメラ解像度: ${this.canvas.width}x${this.canvas.height}`);
+                // キャンバスサイズをビューポートサイズに設定
+                const updateCanvasSize = () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    console.log(`📹 キャンバスサイズ: ${this.canvas.width}x${this.canvas.height}`);
+                };
+                
+                updateCanvasSize();
+                
+                // 画面回転時にも対応
+                window.addEventListener('resize', updateCanvasSize);
+                window.addEventListener('orientationchange', updateCanvasSize);
             });
             
         } catch (error) {
@@ -120,8 +130,26 @@ class CameraGuide {
      * 中央縦線ガイドを開始
      */
     startCenterLineGuide() {
+        console.log('🎨 startCenterLineGuide 呼び出し');
+        
         const drawCenterLine = () => {
-            if (!this.modal.classList.contains('active')) return;
+            if (!this.modal || !this.modal.classList.contains('active')) {
+                console.log('⚠️ モーダル非アクティブ、描画中止');
+                return;
+            }
+            
+            // キャンバスサイズが未設定の場合は次のフレームで再試行
+            if (this.canvas.width === 0 || this.canvas.height === 0) {
+                console.log(`⏳ キャンバスサイズ待機中: ${this.canvas.width}x${this.canvas.height}`);
+                requestAnimationFrame(drawCenterLine);
+                return;
+            }
+            
+            // 初回のみログ出力
+            if (!this.drawingStarted) {
+                console.log(`✅ 縦線描画開始: ${this.canvas.width}x${this.canvas.height}`);
+                this.drawingStarted = true;
+            }
             
             // キャンバスクリア
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
