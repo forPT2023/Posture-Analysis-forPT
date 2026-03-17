@@ -441,7 +441,19 @@ function setupEventListeners() {
     // 表示更新ボタン
     const updateDisplayBtn = document.getElementById('updateDisplayBtn');
     if (updateDisplayBtn) {
-        updateDisplayBtn.addEventListener('click', updateDisplay);
+        updateDisplayBtn.addEventListener('click', () => {
+            // ボタンアニメーション
+            const icon = updateDisplayBtn.querySelector('i');
+            if (icon) {
+                icon.classList.add('fa-spin');
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                }, 1000);
+            }
+            
+            // 表示を更新
+            updateDisplay();
+        });
     }
     
     // データ保存・読み込み
@@ -1820,8 +1832,22 @@ function updateDisplay() {
     
     console.log('🔄 表示更新 - currentLayout:', currentLayout);
     
-    // preview-canvasのレイアウトクラスを更新
+    // プレビューエリアを完全にクリア
+    const previewArea = document.getElementById('previewArea');
     const previewCanvas = document.getElementById('previewCanvas');
+    
+    if (previewArea) {
+        // 既存のコンテンツをクリア
+        previewArea.innerHTML = '';
+        
+        // previewCanvasを再作成
+        const newCanvas = document.createElement('div');
+        newCanvas.id = 'previewCanvas';
+        newCanvas.className = `preview-canvas layout-${currentLayout}`;
+        previewArea.appendChild(newCanvas);
+    }
+    
+    // preview-canvasのレイアウトクラスを更新
     if (previewCanvas) {
         previewCanvas.className = `preview-canvas layout-${currentLayout}`;
     }
@@ -1833,6 +1859,9 @@ function updateDisplay() {
     if (showMetrics) {
         generateMetrics();
     }
+    
+    console.log('✅ プレビュー画面をリロードしました');
+    showToast('プレビューを更新しました', 'success');
 }
 
 function saveData() {
