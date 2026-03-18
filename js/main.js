@@ -571,7 +571,19 @@ function setupAnalysisListeners() {
                 left: document.getElementById('facingSideLeft')?.checked,
                 right: document.getElementById('facingSideRight')?.checked
             });
-            updateDisplay();
+            console.log('   → 次のランドマークを使用予定:', {
+                earIdx: facingSide === 'right' ? 8 : 7,
+                shoulderIdx: facingSide === 'right' ? 12 : 11,
+                eyeIdx: facingSide === 'right' ? 5 : 2
+            });
+            
+            // 分析済みの場合は表示を更新
+            if (beforePose && afterPose) {
+                console.log('   → 分析済みデータあり、表示を更新します');
+                updateDisplay();
+            } else {
+                console.log('   → まだ分析されていません（表示更新なし）');
+            }
         });
     });
     
