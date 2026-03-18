@@ -259,25 +259,41 @@
                             </div>
                         </div>
                         
-                        <!-- 測定モード -->
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">測定モード</label>
+                        <!-- 測定モード切り替え -->
+                        <div style="margin-bottom: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 2px solid #dee2e6;">
+                            <label style="display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; color: #495057;">
+                                <i class="fas fa-exchange-alt" style="margin-right: 5px;"></i>測定モード
+                            </label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <button type="button" id="cervicalModeToggle" 
+                                        style="flex: 1; padding: 10px; border: 2px solid #6c757d; background: white; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;"
+                                        onclick="toggleCervicalMode()">
+                                    <i class="fas fa-user-circle" style="margin-right: 5px;"></i>全身姿勢モード
+                                </button>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #6c757d; line-height: 1.5;">
+                                <span id="modeDescription">全身の姿勢バランスを分析します（5指標）</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 頸部詳細設定（初期非表示） -->
+                        <div id="cervicalDetailSettings" style="display: none; margin-bottom: 15px; padding: 12px; background: #fff3cd; border-radius: 8px; border: 2px solid #ffc107;">
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #856404;">
+                                <i class="fas fa-sliders-h" style="margin-right: 5px;"></i>頸部測定項目
+                            </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" id="enableAlignment">
                                 <span>アライメント評価</span>
                             </label>
-                            <div style="font-size: 0.75rem; color: #666; margin-left: 24px; margin-top: 2px;">
-                                頭部前方偏位の評価
+                            <div style="font-size: 0.75rem; color: #856404; margin-left: 24px; margin-top: 2px; margin-bottom: 8px;">
+                                頭部前方偏位の角度と距離
                             </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 12px;">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="enableROM">
                                 <span>後屈可動域測定</span>
                             </label>
-                            <div style="font-size: 0.75rem; color: #666; margin-left: 24px; margin-top: 2px;">
-                                頸部伸展角度の評価
+                            <div style="font-size: 0.75rem; color: #856404; margin-left: 24px; margin-top: 2px;">
+                                頸部伸展角度と制限度
                             </div>
                         </div>
                         
