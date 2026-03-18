@@ -92,6 +92,9 @@ let showSagittalLines = true; // 測定線表示
 let showSagittalReference = true; // 基準線表示
 let showCervicalMetrics = true; // 頸部モードの数値データ表示（初期値: true）
 
+// A4プレビュー用ZOOM変数
+let previewZoomScale = 1.0; // A4プレビュー全体のズーム倍率
+
 // 姿勢検出キャッシュ（同じ画像なら再検出しない）
 let beforeImageSrc = null;
 let afterImageSrc = null;
@@ -233,6 +236,7 @@ function setupEventListeners() {
     setupPlaneSelectionListeners();
     setupImageUploadListeners();
     setupAnalysisListeners();
+    setupPreviewZoomControls();
     console.log('✅ イベントリスナー設定完了');
 }
 
@@ -1061,6 +1065,9 @@ function displayResults() {
     if (editLandmarksBtn) {
         editLandmarksBtn.style.display = 'block';
     }
+    
+    // A4プレビューZOOMコントロールを表示
+    showPreviewZoomControls();
 }
 
 function generateComparisonArea() {
@@ -2634,4 +2641,78 @@ async function exportDoc(format) {
         showStatus('エクスポート失敗', 'error');
         showToast('エクスポート中にエラーが発生しました', 'error');
     }
+}
+
+// ========================================
+// A4プレビュー全体のZOOM機能
+// ========================================
+
+function setupPreviewZoomControls() {
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const zoomResetBtn = document.getElementById('zoomReset');
+    
+    if (!zoomInBtn || !zoomOutBtn || !zoomResetBtn) return;
+    
+    zoomInBtn.addEventListener('click', () => {
+        adjustPreviewZoom(0.1);
+    });
+    
+    zoomOutBtn.addEventListener('click', () => {
+        adjustPreviewZoom(-0.1);
+    });
+    
+    zoomResetBtn.addEventListener('click', () => {
+        resetPreviewZoom();
+    });
+    
+    console.log('✅ A4プレビューZOOMコントロール設定完了');
+}
+
+function adjustPreviewZoom(delta) {
+    previewZoomScale = Math.max(0.5, Math.min(2.0, previewZoomScale + delta));
+    applyPreviewZoom();
+    updatePreviewZoomDisplay();
+}
+
+function resetPreviewZoom() {
+    previewZoomScale = 1.0;
+    applyPreviewZoom();
+    updatePreviewZoomDisplay();
+    
+    // スクロール位置もリセット
+    const previewArea = document.getElementById('previewArea');
+    if (previewArea) {
+        previewArea.scrollTop = 0;
+        previewArea.scrollLeft = 0;
+    }
+}
+
+function applyPreviewZoom() {
+    const previewCanvas = document.getElementById('previewCanvas');
+    if (previewCanvas) {
+        previewCanvas.style.transform = `scale(${previewZoomScale})`;
+    }
+}
+
+function updatePreviewZoomDisplay() {
+    const zoomLevelDisplay = document.getElementById('zoomLevel');
+    if (zoomLevelDisplay) {
+        zoomLevelDisplay.textContent = `${Math.round(previewZoomScale * 100)}%`;
+    }
+}
+
+function showPreviewZoomControls() {
+    const zoomControls = document.getElementById('zoomControls');
+    if (zoomControls) {
+        zoomControls.style.display = 'flex';
+    }
+}
+
+function hidePreviewZoomControls() {
+    const zoomControls = document.getElementById('zoomControls');
+    if (zoomControls) {
+        zoomControls.style.display = 'none';
+    }
+    resetPreviewZoom();
 }

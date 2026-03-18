@@ -1275,3 +1275,81 @@ input[type="range"]::-moz-range-thumb {
 .close-camera-button i {
     margin-right: 5px;
 }
+
+/* ========================================
+   ZOOM Controls for A4 Preview
+   ======================================== */
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 10px;
+}
+
+.zoom-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--primary-color);
+    background: #fff;
+    color: var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.zoom-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.zoom-btn:active {
+    transform: scale(0.95);
+}
+
+.zoom-level {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    min-width: 60px;
+    text-align: center;
+}
+
+#previewArea {
+    overflow: auto;
+    max-height: 80vh;
+    transition: transform 0.2s ease-out;
+}
+
+#previewCanvas {
+    transform-origin: top center;
+    transition: transform 0.2s ease-out;
+}
+
+@media (max-width: 768px) {
+    .zoom-controls {
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .zoom-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .zoom-level {
+        font-size: 0.9rem;
+        min-width: 50px;
+    }
+}
