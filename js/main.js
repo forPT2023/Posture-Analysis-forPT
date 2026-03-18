@@ -1049,7 +1049,13 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     if (showSkeleton && poseResults && poseResults.poseLandmarks) {
         drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
     }
-    // 矢状面分析はdrawSkeleton内で描画される
+    
+    // 矢状面の頸部マーカーは独立して描画（showSkeletonに依存しない）
+    if (selectedPlane === 'sagittal' && poseResults && poseResults.poseLandmarks) {
+        if (enableAlignment || enableROM) {
+            drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
+        }
+    }
 }
 
 function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
@@ -1214,10 +1220,7 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
         }
     });
     
-    // 矢状面分析の描画（矢状面モードかつ有効化されている場合）
-    if (selectedPlane === 'sagittal' && (enableAlignment || enableROM)) {
-        drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color);
-    }
+    // 矢状面分析の描画はdrawComparisonCanvas内で独立して実行される
 }
 
 function drawReferenceLine(ctx, landmarks, canvasWidth, canvasHeight) {
