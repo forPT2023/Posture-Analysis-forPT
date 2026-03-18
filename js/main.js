@@ -1372,40 +1372,96 @@ function calculateAlignmentAngle(ear, shoulder) {
 }
 
 function calculateROMAngle(ear, eye, shoulder) {
-    if (!ear || !eye) return 0;
-    
-    // 頸部後屈可動域の計算
-    // 方法: 耳-目線の角度から、肩-耳線（体幹基準）を引いて頭部の傾きを算出
-    
-    // 1. 耳-目線の角度
-    const eyeDx = eye.x - ear.x;
-    const eyeDy = eye.y - ear.y;
-    const eyeAngle = Math.atan2(-eyeDy, eyeDx) * (180 / Math.PI);
-    
-    // 2. 肩-耳線の角度（体幹の傾きの基準）
-    let shoulderAngle = 90; // デフォルトは垂直
-    if (shoulder) {
-        const shoulderDx = ear.x - shoulder.x;
-        const shoulderDy = ear.y - shoulder.y;
-        shoulderAngle = Math.atan2(-shoulderDy, shoulderDx) * (180 / Math.PI);
+    // 入力チェック：必須ランドマークが存在しない場合は0を返す
+    if (!ear || !eye || !shoulder) {
+        console.warn('⚠️ ROM計算に必要なランドマークが不足しています');
+        return 0;
     }
     
-    // 3. 頭部の傾き = 耳-目線の角度 - 体幹の角度
-    let headTilt = eyeAngle - shoulderAngle;
+    // 座標の検証（NaN, undefined, nullチェック）
+    if (typeof ear.x !== 'number' || typeof ear.y !== 'number' ||
+        typeof eye.x !== 'number' || typeof eye.y !== 'number' ||
+        typeof shoulder.x !== 'number' || typeof shoulder.y !== 'number') {
+        console.error('❌ ROM計算: 無効な座標データ', { ear, eye, shoulder });
+        return 0;
+    }
     
-    // 4. 0-180度の範囲に正規化
-    if (headTilt < 0) headTilt += 180;
-    if (headTilt > 180) headTilt -= 180;
+    // 頸部後屈可動域の計算（肩-耳-目の内角方式）
+    // コンセプト: 耳を頂点として、「耳→肩」と「耳→目」のベクトルがなす角度を計算
     
-    // 5. 後屈角度に変換
-    // 90度を中間位（正面）とし、90度からの偏差を後屈角度とする
-    // 90度より大きい = 後屈、90度より小さい = 前屈
-    let romAngle = headTilt - 90;
+    // ベクトル1: 耳から肩へ（体幹方向）
+    const toShoulder = {
+        x: shoulder.x - ear.x,
+        y: shoulder.y - ear.y
+    };
     
-    // 負の値（前屈）も許容（ただし、後屈測定としては0度とする場合もある）
-    // ここでは実際の角度を返す
+    // ベクトル2: 耳から目へ（視線方向）
+    const toEye = {
+        x: eye.x - ear.x,
+        y: eye.y - ear.y
+    };
     
-    return romAngle;
+    // 内積を計算
+    const dotProduct = toShoulder.x * toEye.x + toShoulder.y * toEye.y;
+    
+    // 各ベクトルの長さを計算
+    const magnitudeShoulder = Math.sqrt(toShoulder.x ** 2 + toShoulder.y ** 2);
+    const magnitudeEye = Math.sqrt(toEye.x ** 2 + toEye.y ** 2);
+    
+    // ゼロベクトルチェック（ランドマークが同じ位置にある場合）
+    if (magnitudeShoulder < 0.001 || magnitudeEye < 0.001) {
+        console.warn('⚠️ ROM計算: ランドマーク間の距離が極端に小さい', {
+            earToShoulder: magnitudeShoulder,
+            earToEye: magnitudeEye
+        });
+        return 0;
+    }
+    
+    // cosθ = 内積 / (長さ1 × 長さ2)
+    const cosAngle = dotProduct / (magnitudeShoulder * magnitudeEye);
+    
+    // cosAngleを-1～1の範囲にクランプ（浮動小数点誤差対策）
+    const clampedCosAngle = Math.max(-1, Math.min(1, cosAngle));
+    
+    // arccos で角度（ラジアン）を取得
+    const angleRad = Math.acos(clampedCosAngle);
+    
+    // ラジアンから度に変換
+    const internalAngle = angleRad * (180 / Math.PI);
+    
+    // 正面姿勢の基準角度（キャリブレーション値）
+    // 解剖学的に、正面姿勢では肩-耳-目の内角は約90-100度
+    const neutralAngle = 95;
+    
+    // 後屈角度 = 測定した内角 - 正面姿勢の基準角度
+    const romAngle = internalAngle - neutralAngle;
+    
+    // デバッグログ（開発時のみ）
+    if (typeof debugMode !== 'undefined' && debugMode) {
+        console.log('🔍 ROM詳細計算:', {
+            肩耳目の内角: internalAngle.toFixed(1) + '度',
+            正面基準角度: neutralAngle + '度',
+            後屈角度: romAngle.toFixed(1) + '度',
+            座標: {
+                ear: `(${ear.x.toFixed(3)}, ${ear.y.toFixed(3)})`,
+                eye: `(${eye.x.toFixed(3)}, ${eye.y.toFixed(3)})`,
+                shoulder: `(${shoulder.x.toFixed(3)}, ${shoulder.y.toFixed(3)})`
+            }
+        });
+    }
+    
+    // 範囲チェック：異常値の検出
+    if (romAngle < -90 || romAngle > 180) {
+        console.warn('⚠️ ROM計算: 異常な角度が検出されました', {
+            内角: internalAngle,
+            ROM角度: romAngle
+        });
+    }
+    
+    // 0～90度に制限（負の値は0、90度超は90度）
+    const clampedROM = Math.max(0, Math.min(90, romAngle));
+    
+    return clampedROM;
 }
 
 // ========================================
