@@ -1193,8 +1193,17 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         if (poseResults && poseResults.poseLandmarks && (enableAlignment || enableROM)) {
             drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
         }
+    } else if (selectedPlane === 'sagittal' && !cervicalModeEnabled) {
+        // 矢状面・全身モード: 全身骨格線 + 矢状面分析マーカー
+        if (showSkeleton && poseResults && poseResults.poseLandmarks) {
+            drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
+        }
+        // 矢状面分析マーカーも描画（全身モードでも）
+        if (poseResults && poseResults.poseLandmarks) {
+            drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
+        }
     } else {
-        // 全身モード: 骨格線を描画
+        // 前額面モード: 全身骨格線のみ
         if (showSkeleton && poseResults && poseResults.poseLandmarks) {
             drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
         }
@@ -1655,11 +1664,16 @@ function calculateROM(landmarks, side) {
 // 矢状面分析: ビジュアル描画
 // ========================================
 function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) {
-    console.log('🔍 drawSagittalAnalysis 呼び出し: facingSide =', facingSide);
+    console.log('🔍 drawSagittalAnalysis 呼び出し: facingSide =', facingSide, 'cervicalModeEnabled =', cervicalModeEnabled);
     
-    if (!enableAlignment && !enableROM) {
-        return; // 両モードとも無効なら何も描画しない
+    // 頸部モードの場合のみ enableAlignment/enableROM をチェック
+    if (cervicalModeEnabled && !enableAlignment && !enableROM) {
+        console.log('   → 頸部モードだが測定項目が未選択のため描画スキップ');
+        return;
     }
+    
+    // 全身モードの場合は常に矢状面マーカーを描画
+    console.log('   → 矢状面マーカーを描画します');
     
     // ユーザーが選択した撮影側面を使用（医療標準）
     // facingSide: 'right' = 右側面撮影（身体の右側を測定）, 'left' = 左側面撮影（身体の左側を測定）
@@ -1686,8 +1700,8 @@ function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) 
     const earX = ear.x * canvasWidth;
     const earY = ear.y * canvasHeight;
     
-    // アライメント評価モード
-    if (enableAlignment && shoulder) {
+    // 全身モードまたはアライメント評価モード
+    if (shoulder && (cervicalModeEnabled ? enableAlignment : true)) {
         const shoulderX = shoulder.x * canvasWidth;
         const shoulderY = shoulder.y * canvasHeight;
         
