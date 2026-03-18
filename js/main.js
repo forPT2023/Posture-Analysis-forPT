@@ -2487,6 +2487,19 @@ async function exportDoc(format) {
         // A4サイズを厳密に適用（全ての既存スタイルを上書き）
         // スマホのメディアクエリを上書きして、デスクトップ版と同じスタイルを強制適用
         styleEl.textContent = `
+            /* エクスポート時：親要素を完全に白背景・透明化 */
+            #previewWrapper {
+                background: #ffffff !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            
+            #previewArea {
+                background: #ffffff !important;
+                overflow: visible !important;
+            }
+            
+            /* エクスポート対象のキャンバスを厳密にA4サイズに固定 */
             .${tempClass} {
                 position: relative !important;
                 width: ${a4WidthPx}px !important;
@@ -2501,13 +2514,16 @@ async function exportDoc(format) {
                 background: white !important;
                 display: flex !important;
                 flex-direction: column !important;
+                margin: 0 !important;
             }
+            
             .${tempClass} .document-header {
                 flex-shrink: 0 !important;
                 padding-bottom: 8px !important;
                 margin-bottom: 12px !important;
                 border-bottom: 2px solid #2196F3 !important;
             }
+            
             .${tempClass} .document-title {
                 font-size: 1.3rem !important;
                 font-weight: 700 !important;
@@ -2515,6 +2531,7 @@ async function exportDoc(format) {
                 margin: 0 0 6px 0 !important;
                 line-height: 1.2 !important;
             }
+            
             .${tempClass} .document-info {
                 display: flex !important;
                 flex-direction: row !important;
@@ -2524,27 +2541,46 @@ async function exportDoc(format) {
                 margin: 0 !important;
                 gap: 0 !important;
             }
+            
             .${tempClass} .comparison-area {
                 flex: 1 !important;
                 display: flex !important;
+                flex-direction: row !important;
                 gap: 15px !important;
                 align-items: center !important;
                 justify-content: center !important;
+                overflow: hidden !important;
             }
+            
             .${tempClass}.layout-horizontal .comparison-area {
                 flex-direction: row !important;
             }
+            
             .${tempClass}.layout-vertical .comparison-area {
                 flex-direction: row !important;
             }
+            
             .${tempClass} .comparison-item {
                 flex: 1 !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
+                justify-content: center !important;
                 min-width: 0 !important;
                 max-height: 100% !important;
+                overflow: hidden !important;
             }
+            
+            .${tempClass} .comparison-canvas-wrapper {
+                flex: 1 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+                height: 100% !important;
+                position: relative !important;
+            }
+            
             .${tempClass} .comparison-label {
                 position: absolute !important;
                 top: 10px !important;
@@ -2557,13 +2593,16 @@ async function exportDoc(format) {
                 font-weight: 600 !important;
                 z-index: 10 !important;
             }
+            
             .${tempClass} .comparison-canvas {
                 max-width: 100% !important;
                 max-height: 100% !important;
-                width: 100% !important;
+                width: auto !important;
                 height: auto !important;
                 object-fit: contain !important;
+                display: block !important;
             }
+            
             .${tempClass} .metrics-area {
                 flex-shrink: 0 !important;
                 margin-top: 12px !important;
@@ -2572,17 +2611,20 @@ async function exportDoc(format) {
                 border-radius: 8px !important;
                 border: 1px solid #ddd !important;
             }
+            
             .${tempClass} .metrics-title {
                 font-size: 0.9rem !important;
                 font-weight: 600 !important;
                 margin-bottom: 8px !important;
                 color: #333 !important;
             }
+            
             .${tempClass} .metrics-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
             }
+            
             .${tempClass} .metric-item {
                 display: flex !important;
                 justify-content: space-between !important;
@@ -2592,14 +2634,17 @@ async function exportDoc(format) {
                 border: 1px solid #ddd !important;
                 font-size: 0.85rem !important;
             }
+            
             .${tempClass} .metric-label {
                 font-weight: 500 !important;
                 color: #333 !important;
             }
+            
             .${tempClass} .metric-value {
                 font-weight: 600 !important;
                 color: #2196F3 !important;
             }
+            
             .${tempClass} .metric-value.improved {
                 color: #4CAF50 !important;
             }
@@ -2607,13 +2652,6 @@ async function exportDoc(format) {
         
         document.head.appendChild(styleEl);
         previewCanvas.classList.add(tempClass);
-        
-        // エクスポート時は preview-wrapper の背景を白に（グレー背景を除去）
-        const previewWrapper = document.getElementById('previewWrapper');
-        const originalWrapperBg = previewWrapper ? previewWrapper.style.background : '';
-        if (previewWrapper) {
-            previewWrapper.style.background = '#ffffff';
-        }
         
         // DOMの再描画を十分に待つ（モバイルブラウザでは時間がかかる）
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -2656,11 +2694,6 @@ async function exportDoc(format) {
         const tempStyleEl = document.getElementById('export-temp-style-final');
         if (tempStyleEl) {
             tempStyleEl.remove();
-        }
-        
-        // preview-wrapper の背景を元に戻す
-        if (previewWrapper) {
-            previewWrapper.style.background = originalWrapperBg;
         }
         
         const patientName = document.getElementById('patientName').value || '無題';
