@@ -277,6 +277,13 @@ function setupPlaneSelectionListeners() {
                 sagittalModeCard.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
             }
             
+            // 矢状面分析グループ（撮影側面選択など）の表示/非表示
+            const sagittalAnalysisGroup = document.getElementById('sagittalAnalysisGroup');
+            if (sagittalAnalysisGroup) {
+                sagittalAnalysisGroup.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
+                console.log('📐 矢状面分析グループ:', selectedPlane === 'sagittal' ? '表示' : '非表示');
+            }
+            
             // 前額面モード時は矢状面分析を無効化
             if (selectedPlane !== 'sagittal') {
                 cervicalModeEnabled = false;
