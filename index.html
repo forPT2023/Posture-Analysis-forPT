@@ -458,6 +458,38 @@
     <script src="js/landmark-editor.js?v=13.10.0"></script>
     <script src="js/main.js?v=13.10.0"></script>
     
-    <!-- Service Worker登録: 無効化（キャッシュ問題のため） -->
+    <!-- Service Worker登録: PWA完全対応 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw_with_expiry.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker登録成功:', registration.scope);
+                        console.log('🎉 PWA完全対応: オフライン動作が有効になりました');
+                        
+                        // 更新チェック
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('🔄 新しいバージョンを検出しました');
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    console.log('✨ 新しいバージョンがアクティブになりました');
+                                    // ユーザーに更新を通知（オプション）
+                                    if (confirm('新しいバージョンが利用可能です。ページを再読み込みしますか？')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker登録失敗:', error);
+                    });
+            });
+        } else {
+            console.log('⚠️ このブラウザはService Workerに対応していません');
+        }
+    </script>
 </body>
 </html>

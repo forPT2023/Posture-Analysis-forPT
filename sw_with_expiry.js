@@ -1,13 +1,20 @@
 // Service Worker with Expiry Date
-const CACHE_NAME = 'posture-analysis-v12.2.0';
+const CACHE_NAME = 'posture-analysis-v13.10.0';
 const EXPIRY_DATE = new Date('2025-12-31T23:59:59').getTime(); // ← 有効期限
 
 const urlsToCache = [
     '/',
     '/index.html',
     '/css/style.css',
+    '/css/camera-guide.css',
     '/js/main.js',
-    '/manifest.json'
+    '/js/camera-guide.js',
+    '/js/landmark-editor.js',
+    '/manifest.json',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
+    '/icons/apple-touch-icon.png',
+    // 外部CDNは常にオンライン取得（最新版を使用）
 ];
 
 // インストール時
@@ -104,26 +111,77 @@ self.addEventListener('fetch', (event) => {
             }
             
             // 有効期限内の場合は通常の動作
+            const url = new URL(event.request.url);
+            
+            // 外部CDN（MediaPipe等）は常にネットワーク優先
+            if (url.origin !== self.location.origin) {
+                try {
+                    const response = await fetch(event.request);
+                    return response;
+                } catch (error) {
+                    console.log('🌐 外部リソース取得失敗（オフライン）:', url.href);
+                    return new Response('オフライン: 外部リソースを取得できません', { status: 503 });
+                }
+            }
+            
+            // 自サイトのリソース: Cache First戦略
             try {
-                // ネットワークから取得を試みる
+                // まずキャッシュを確認
+                const cachedResponse = await caches.match(event.request);
+                if (cachedResponse) {
+                    console.log('💾 キャッシュから取得:', url.pathname);
+                    
+                    // バックグラウンドでキャッシュを更新
+                    fetch(event.request).then(response => {
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then(cache => {
+                            cache.put(event.request, responseClone);
+                        });
+                    }).catch(() => {
+                        // ネットワークエラーは無視（キャッシュを使用中）
+                    });
+                    
+                    return cachedResponse;
+                }
+                
+                // キャッシュにない場合はネットワークから取得
+                console.log('🌐 ネットワークから取得:', url.pathname);
                 const response = await fetch(event.request);
                 
-                // 成功したらキャッシュも更新
+                // 成功したらキャッシュに保存
                 const responseClone = response.clone();
                 const cache = await caches.open(CACHE_NAME);
                 cache.put(event.request, responseClone);
                 
                 return response;
             } catch (error) {
-                // ネットワークが失敗したらキャッシュから取得
-                const cachedResponse = await caches.match(event.request);
-                if (cachedResponse) {
-                    return cachedResponse;
+                // ネットワークもキャッシュも失敗
+                console.log('❌ 取得失敗（オフライン）:', url.pathname);
+                
+                // HTMLリクエストの場合はオフラインページを返す
+                if (event.request.destination === 'document') {
+                    return caches.match('/index.html');
                 }
                 
-                // キャッシュもない場合
                 return new Response('オフラインです', { status: 503 });
             }
         })()
     );
 });
+
+// オンライン/オフライン状態の監視
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+// バックグラウンド同期（将来の拡張用）
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-data') {
+        console.log('🔄 バックグラウンド同期開始');
+        // 将来的にデータ同期機能を追加可能
+    }
+});
+
+console.log('🎉 Service Worker v13.10.0 読み込み完了');
