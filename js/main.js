@@ -1374,19 +1374,29 @@ function calculateAlignmentAngle(ear, shoulder) {
 function calculateROMAngle(ear, eye) {
     if (!ear || !eye) return 0;
     
-    // 耳-目線と水平線の角度計算
+    // 頸部後屈可動域の計算
+    // 耳-目線と水平線のなす角度を計算
+    // 目が耳より上にある（後屈）ほど角度が大きくなる
     const dx = eye.x - ear.x;
     const dy = eye.y - ear.y;
     
     // 水平線からの角度（度数）
+    // dyが負（目が上）の場合、角度が大きくなる
     let angle = Math.atan2(-dy, dx) * (180 / Math.PI);
     
     // 0-180度の範囲に正規化
     if (angle < 0) angle += 180;
     
-    return angle;
+    // 後屈角度に変換（水平を0度、上向きを正の角度とする）
+    // 90度を基準に、90度からの差分を後屈角度とする
+    // 例: angle=110度 → ROM=20度（後屈）
+    //     angle=70度 → ROM=-20度（前屈）
+    let romAngle = angle - 90;
     
-    return angle;
+    // 負の値は0とする（前屈は測定対象外）
+    if (romAngle < 0) romAngle = 0;
+    
+    return romAngle;
 }
 
 // ========================================
@@ -1997,26 +2007,38 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         metrics[`metric${metricCount}Improved`] = distanceImproved;
     }
     
-    // 後屈可動域測定モード: 耳-目線と水平基準線の角度
+    // 後屈可動域測定モード: 頸椎伸展角度を測定
     if (enableROM && beforeEar && beforeEye && afterEar && afterEye) {
         const beforeROMAngle = calculateROMAngle(beforeEar, beforeEye);
         const afterROMAngle = calculateROMAngle(afterEar, afterEye);
         
-        // 改善判定（90度に近づく = 可動域改善）
-        const angleImproved = Math.abs(90 - afterROMAngle) < Math.abs(90 - beforeROMAngle);
+        // デバッグ: ROM角度を出力
+        console.log('🔍 ROM角度:', {
+            beforeROM: beforeROMAngle.toFixed(1),
+            afterROM: afterROMAngle.toFixed(1)
+        });
+        
+        // 改善判定（角度が大きくなる = 可動域が増える = 改善）
+        // Before: 中間位（通常姿勢）
+        // After: 後屈姿勢（頭を後ろに倒す）
+        // After > Before なら可動域が改善している
+        const angleImproved = afterROMAngle > beforeROMAngle;
         
         metricCount++;
         metrics[`metric${metricCount}Label`] = '頸部後屈可動域';
         metrics[`metric${metricCount}Value`] = `${beforeROMAngle.toFixed(1)} → ${afterROMAngle.toFixed(1)}`;
         metrics[`metric${metricCount}Unit`] = '度';
         metrics[`metric${metricCount}Improved`] = angleImproved;
-        metrics[`metric${metricCount}Status`] = afterROMAngle >= 80 ? '正常可動域' :
-                                                 afterROMAngle >= 60 ? '軽度制限' :
-                                                 afterROMAngle >= 40 ? '中等度制限' : '重度制限';
         
-        // 正常可動域との差分
-        const beforeDeficit = Math.max(0, 90 - beforeROMAngle);
-        const afterDeficit = Math.max(0, 90 - afterROMAngle);
+        // 判定基準（正常な頸椎後屈可動域は50-60度）
+        metrics[`metric${metricCount}Status`] = afterROMAngle >= 50 ? '正常可動域' :
+                                                 afterROMAngle >= 40 ? '軽度制限' :
+                                                 afterROMAngle >= 25 ? '中等度制限' : '重度制限';
+        
+        // 正常可動域（50度）との差分
+        const normalROM = 50;
+        const beforeDeficit = Math.max(0, normalROM - beforeROMAngle);
+        const afterDeficit = Math.max(0, normalROM - afterROMAngle);
         const deficitImproved = afterDeficit < beforeDeficit;
         
         metricCount++;
@@ -2024,6 +2046,11 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         metrics[`metric${metricCount}Value`] = `${beforeDeficit.toFixed(1)} → ${afterDeficit.toFixed(1)}`;
         metrics[`metric${metricCount}Unit`] = '度';
         metrics[`metric${metricCount}Improved`] = deficitImproved;
+        
+        // 注意事項を追加
+        if (beforeROMAngle < 5 && afterROMAngle < 5) {
+            console.warn('⚠️ Before/After両方の後屈角度が小さすぎます。後屈姿勢を撮影してください。');
+        }
     }
     
     // チェックボックスが両方OFFの場合は警告
