@@ -2101,9 +2101,10 @@ async function exportDoc(format) {
         const gapPx = 15;
 
         
-        // html2canvasでキャプチャ（実測サイズを使用）
+        // html2canvasでキャプチャ
+        // scale: 2で高解像度化するが、PDFには元のA4サイズで配置する
         const canvas = await html2canvas(previewCanvas, {
-            scale: 2,
+            scale: 2,  // 高解像度化（2倍）
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
@@ -2112,6 +2113,11 @@ async function exportDoc(format) {
             windowWidth: a4WidthPx,
             windowHeight: a4HeightPx
         });
+        
+        console.log('📊 html2canvas結果:');
+        console.log('  - キャンバスサイズ:', canvas.width, 'x', canvas.height);
+        console.log('  - 期待サイズ (scale=2):', a4WidthPx * 2, 'x', a4HeightPx * 2);
+        console.log('  - PDFサイズ:', a4Width, 'mm x', a4Height, 'mm');
         
         // 一時スタイルを削除
         previewCanvas.classList.remove(tempClass);
@@ -2131,17 +2137,31 @@ async function exportDoc(format) {
                 unit: 'mm', 
                 format: 'a4' 
             });
+            
+            // PDFのページサイズを確認
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            console.log('📄 PDF実際のページサイズ:', pageWidth, 'mm x', pageHeight, 'mm');
+            
+            // 画像をPDFに配置（0,0から開始、A4サイズで配置）
             pdf.addImage(
                 canvas.toDataURL('image/jpeg', 0.95), 
                 'JPEG', 
-                0, 
-                0, 
-                a4Width, 
-                a4Height
+                0,  // x位置
+                0,  // y位置
+                a4Width,  // 幅（mm）
+                a4Height  // 高さ（mm）
             );
+            
+            console.log('✅ PDF生成完了:', `${filename}.pdf`);
             pdf.save(`${filename}.pdf`);
         } else {
+            // PNG/JPGエクスポート
             const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+            console.log(`🖼️ 画像エクスポート (${format.toUpperCase()}):`);
+            console.log('  - サイズ:', canvas.width, 'x', canvas.height, 'px');
+            console.log('  - A4換算:', Math.round(canvas.width / mmToPx / 2), 'x', Math.round(canvas.height / mmToPx / 2), 'mm');
+            
             canvas.toBlob(blob => {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -2149,6 +2169,7 @@ async function exportDoc(format) {
                 a.download = `${filename}.${format}`;
                 a.click();
                 URL.revokeObjectURL(url);
+                console.log('✅ 画像エクスポート完了:', `${filename}.${format}`);
             }, mime, 0.95);
         }
         
