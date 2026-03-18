@@ -43,6 +43,7 @@ let enableROM = false; // 後屈可動域測定モード（初期値: false）
 let showSagittalMarkers = true; // マーカー表示
 let showSagittalLines = true; // 測定線表示
 let showSagittalReference = true; // 基準線表示
+let showCervicalMetrics = true; // 頸部モードの数値データ表示（初期値: true）
 
 // 姿勢検出キャッシュ（同じ画像なら再検出しない）
 let beforeImageSrc = null;
@@ -581,6 +582,15 @@ function setupEventListeners() {
         });
     }
     
+    const showCervicalMetricsCheckbox = document.getElementById('showCervicalMetrics');
+    if (showCervicalMetricsCheckbox) {
+        showCervicalMetricsCheckbox.addEventListener('change', (e) => {
+            showCervicalMetrics = e.target.checked;
+            console.log('🔄 頸部モード数値データ表示:', showCervicalMetrics);
+            updateDisplay();
+        });
+    }
+    
 }
 
 function formatDate(dateStr) {
@@ -942,7 +952,11 @@ function displayResults() {
     generateComparisonArea();
     
     // 数値データを生成
-    if (showMetrics) {
+    // 矢状面モードかつ頸部モードの場合はshowCervicalMetrics、それ以外はshowMetricsで判定
+    const isUsingCervicalMetrics = (selectedPlane === 'sagittal' && (enableAlignment || enableROM));
+    const shouldShowMetrics = isUsingCervicalMetrics ? showCervicalMetrics : showMetrics;
+    
+    if (shouldShowMetrics) {
         generateMetrics();
     }
     
@@ -1621,7 +1635,12 @@ function generateMetrics() {
     // 既存のコンテンツをクリア
     metricsArea.innerHTML = '';
     
-    metricsArea.style.display = showMetrics ? 'block' : 'none';
+    // 矢状面モードかつ頸部モードがONの場合は、showCervicalMetricsで制御
+    // それ以外（前額面モードまたは矢状面デフォルトモード）は、showMetricsで制御
+    const isUsingCervicalMetrics = (selectedPlane === 'sagittal' && (enableAlignment || enableROM));
+    const shouldShowMetrics = isUsingCervicalMetrics ? showCervicalMetrics : showMetrics;
+    
+    metricsArea.style.display = shouldShowMetrics ? 'block' : 'none';
     
     const beforeLandmarks = beforePose.poseLandmarks;
     const afterLandmarks = afterPose.poseLandmarks;
