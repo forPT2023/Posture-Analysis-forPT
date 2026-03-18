@@ -1376,7 +1376,6 @@ function calculateROMAngle(ear, eye) {
     
     // 頸部後屈可動域の計算
     // 耳-目線と水平線のなす角度を計算
-    // 目が耳より上にある（後屈）ほど角度が大きくなる
     const dx = eye.x - ear.x;
     const dy = eye.y - ear.y;
     
@@ -1387,16 +1386,8 @@ function calculateROMAngle(ear, eye) {
     // 0-180度の範囲に正規化
     if (angle < 0) angle += 180;
     
-    // 後屈角度に変換（水平を0度、上向きを正の角度とする）
-    // 90度を基準に、90度からの差分を後屈角度とする
-    // 例: angle=110度 → ROM=20度（後屈）
-    //     angle=70度 → ROM=-20度（前屈）
-    let romAngle = angle - 90;
-    
-    // 負の値は0とする（前屈は測定対象外）
-    if (romAngle < 0) romAngle = 0;
-    
-    return romAngle;
+    // angleをそのまま返す（Before/Afterの差分で後屈角度を計算する）
+    return angle;
 }
 
 // ========================================
@@ -2009,20 +2000,25 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
     
     // 後屈可動域測定モード: 頸椎伸展角度を測定
     if (enableROM && beforeEar && beforeEye && afterEar && afterEye) {
-        const beforeROMAngle = calculateROMAngle(beforeEar, beforeEye);
-        const afterROMAngle = calculateROMAngle(afterEar, afterEye);
+        // Before/Afterの頭部角度を計算
+        const beforeHeadAngle = calculateROMAngle(beforeEar, beforeEye);
+        const afterHeadAngle = calculateROMAngle(afterEar, afterEye);
+        
+        // 後屈可動域 = After角度 - Before角度
+        // Before画像（中間位）を基準（0度）として、Afterとの差分が後屈角度
+        const beforeROMAngle = 0;  // Before画像が基準なので常に0度
+        const afterROMAngle = afterHeadAngle - beforeHeadAngle;  // Before基準での後屈角度
         
         // デバッグ: ROM角度を出力
         console.log('🔍 ROM角度:', {
-            beforeROM: beforeROMAngle.toFixed(1),
-            afterROM: afterROMAngle.toFixed(1)
+            beforeHeadAngle: beforeHeadAngle.toFixed(1),
+            afterHeadAngle: afterHeadAngle.toFixed(1),
+            romAngle: afterROMAngle.toFixed(1)
         });
         
-        // 改善判定（角度が大きくなる = 可動域が増える = 改善）
-        // Before: 中間位（通常姿勢）
-        // After: 後屈姿勢（頭を後ろに倒す）
-        // After > Before なら可動域が改善している
-        const angleImproved = afterROMAngle > beforeROMAngle;
+        // 改善判定は不要（Before/Afterの比較ではなく、単純にROMの測定）
+        // しかし、治療前後の比較をする場合は、ROMが増加することが改善
+        const angleImproved = afterROMAngle > 0;  // 後屈できていれば基本的にOK
         
         metricCount++;
         metrics[`metric${metricCount}Label`] = '頸部後屈可動域';
@@ -2037,19 +2033,23 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         
         // 正常可動域（50度）との差分
         const normalROM = 50;
-        const beforeDeficit = Math.max(0, normalROM - beforeROMAngle);
-        const afterDeficit = Math.max(0, normalROM - afterROMAngle);
-        const deficitImproved = afterDeficit < beforeDeficit;
+        const deficit = Math.max(0, normalROM - afterROMAngle);
         
         metricCount++;
         metrics[`metric${metricCount}Label`] = '可動域制限度';
-        metrics[`metric${metricCount}Value`] = `${beforeDeficit.toFixed(1)} → ${afterDeficit.toFixed(1)}`;
-        metrics[`metric${metricCount}Unit`] = '度';
-        metrics[`metric${metricCount}Improved`] = deficitImproved;
+        metrics[`metric${metricCount}Value`] = `${deficit.toFixed(1)} 度の制限`;
+        metrics[`metric${metricCount}Unit`] = '';
+        metrics[`metric${metricCount}Improved`] = deficit === 0;
+        metrics[`metric${metricCount}Status`] = deficit === 0 ? '制限なし' :
+                                                 deficit <= 10 ? '軽度制限' :
+                                                 deficit <= 25 ? '中等度制限' : '重度制限';
         
         // 注意事項を追加
-        if (beforeROMAngle < 5 && afterROMAngle < 5) {
-            console.warn('⚠️ Before/After両方の後屈角度が小さすぎます。後屈姿勢を撮影してください。');
+        if (afterROMAngle < 5) {
+            console.warn('⚠️ 後屈角度が小さすぎます（' + afterROMAngle.toFixed(1) + '度）。After画像で頭を後ろに倒した姿勢を撮影してください。');
+        }
+        if (afterROMAngle < 0) {
+            console.warn('⚠️ 負の角度が検出されました。After画像が前屈姿勢になっている可能性があります。');
         }
     }
     
