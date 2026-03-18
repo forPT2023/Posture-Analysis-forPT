@@ -877,6 +877,12 @@ async function analyzePose() {
             if (!beforePose || !beforePose.poseLandmarks) {
                 throw new Error('Before画像から姿勢を検出できませんでした。\n人物が正面または横向きで全身が写っているか確認してください。');
             }
+            
+            console.log('✅ Before画像の分析完了:', {
+                imageId: beforePose._imageId,
+                landmarkCount: beforePose.poseLandmarks.length,
+                ear: beforePose.poseLandmarks[7] ? `(${beforePose.poseLandmarks[7].x.toFixed(3)}, ${beforePose.poseLandmarks[7].y.toFixed(3)})` : 'null'
+            });
         }
         
         
@@ -892,6 +898,12 @@ async function analyzePose() {
             if (!afterPose || !afterPose.poseLandmarks) {
                 throw new Error('After画像から姿勢を検出できませんでした。\n人物が正面または横向きで全身が写っているか確認してください。');
             }
+            
+            console.log('✅ After画像の分析完了:', {
+                imageId: afterPose._imageId,
+                landmarkCount: afterPose.poseLandmarks.length,
+                ear: afterPose.poseLandmarks[7] ? `(${afterPose.poseLandmarks[7].x.toFixed(3)}, ${afterPose.poseLandmarks[7].y.toFixed(3)})` : 'null'
+            });
         }
         
         
@@ -932,23 +944,48 @@ function detectPose(image) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0, width, height);
         
+        // 画像の一意な識別子を生成（同じ画像かどうかを判定するため）
+        const imageId = `${Date.now()}_${Math.random()}`;
+        
         // タイムアウト設定（10秒）
         const timeout = setTimeout(() => {
+            isResolved = true;
             reject(new Error('姿勢検出がタイムアウトしました（10秒）'));
         }, 10000);
         
+        // 処理が完了したかどうかのフラグ
+        let isResolved = false;
+        
+        // 現在処理中の画像IDをグローバルに記録
+        const currentImageId = imageId;
+        
         // MediaPipe Poseで検出
-        // 重要: onResultsは一度だけ設定し、resultsを受け取ったら即座にresolve
         const onResultsHandler = (results) => {
+            // 既に処理済みなら無視（非同期コールバックの重複呼び出しを防ぐ）
+            if (isResolved) {
+                console.log('⚠️ 既に処理済みのため、この結果を無視します (imageId:', currentImageId, ')');
+                return;
+            }
+            
             clearTimeout(timeout);
-            console.log('📦 MediaPipe結果受信:', {
+            isResolved = true;
+            
+            console.log('📦 MediaPipe結果受信 (imageId:', currentImageId, '):', {
                 poseLandmarks: results.poseLandmarks ? results.poseLandmarks.length : 0,
-                poseWorldLandmarks: results.poseWorldLandmarks ? 'あり' : 'なし'
+                poseWorldLandmarks: results.poseWorldLandmarks ? 'あり' : 'なし',
+                ear7: results.poseLandmarks && results.poseLandmarks[7] ? 
+                      `(${results.poseLandmarks[7].x.toFixed(3)}, ${results.poseLandmarks[7].y.toFixed(3)})` : 'null',
+                shoulder11: results.poseLandmarks && results.poseLandmarks[11] ? 
+                           `(${results.poseLandmarks[11].x.toFixed(3)}, ${results.poseLandmarks[11].y.toFixed(3)})` : 'null'
             });
             
             if (!results.poseLandmarks || results.poseLandmarks.length === 0) {
                 reject(new Error('姿勢を検出できませんでした。\n人物が正面または横向きで全身が写っているか確認してください。'));
             } else {
+                // 結果に画像IDを追加（デバッグ用）
+                results._imageId = currentImageId;
+                // ランドマークをディープコピー（参照の共有を防ぐ）
+                results.poseLandmarks = JSON.parse(JSON.stringify(results.poseLandmarks));
                 resolve(results);
             }
         };
@@ -957,9 +994,12 @@ function detectPose(image) {
         pose.onResults(onResultsHandler);
         
         pose.send({ image: canvas }).catch((error) => {
-            clearTimeout(timeout);
-            console.error('❌ MediaPipe Pose送信エラー:', error);
-            reject(error);
+            if (!isResolved) {
+                clearTimeout(timeout);
+                isResolved = true;
+                console.error('❌ MediaPipe Pose送信エラー:', error);
+                reject(error);
+            }
         });
     });
 }
