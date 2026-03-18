@@ -951,14 +951,8 @@ function displayResults() {
     // 比較エリアを生成
     generateComparisonArea();
     
-    // 数値データを生成
-    // 矢状面モードかつ頸部モードの場合はshowCervicalMetrics、それ以外はshowMetricsで判定
-    const isUsingCervicalMetrics = (selectedPlane === 'sagittal' && (enableAlignment || enableROM));
-    const shouldShowMetrics = isUsingCervicalMetrics ? showCervicalMetrics : showMetrics;
-    
-    if (shouldShowMetrics) {
-        generateMetrics();
-    }
+    // 数値データを生成（常に呼び出して、内部で表示/非表示を制御）
+    generateMetrics();
     
     // ランドマーク編集ボタンを表示
     const editLandmarksBtn = document.getElementById('editLandmarksBtn');
