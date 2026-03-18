@@ -1318,7 +1318,7 @@ function drawReferenceLine(ctx, landmarks, canvasWidth, canvasHeight) {
 // ========================================
 // 矢状面分析: 角度計算関数（メトリクス用）
 // ========================================
-function calculateAlignmentAngle(ear, shoulder, facingSide) {
+function calculateAlignmentAngle(ear, shoulder) {
     if (!ear || !shoulder) return 0;
     
     // 耳-肩線と垂直線の角度計算
@@ -1331,7 +1331,7 @@ function calculateAlignmentAngle(ear, shoulder, facingSide) {
     return angle;
 }
 
-function calculateROMAngle(ear, eye, facingSide) {
+function calculateROMAngle(ear, eye) {
     if (!ear || !eye) return 0;
     
     // 耳-目線と水平線の角度計算
@@ -1344,10 +1344,7 @@ function calculateROMAngle(ear, eye, facingSide) {
     // 0-180度の範囲に正規化
     if (angle < 0) angle += 180;
     
-    // 左側面の場合は180度から引く（右側面と統一）
-    if (facingSide === 'left') {
-        angle = 180 - angle;
-    }
+    return angle;
     
     return angle;
 }
@@ -1831,26 +1828,59 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         
     } else {
         // 矢状面（側面）分析
-        // 使用するランドマークを撮影側面に応じて選択
-        const earIdx = facingSide === 'left' ? 7 : 8;
-        const shoulderIdx = facingSide === 'left' ? 11 : 12;
-        const hipIdx = facingSide === 'left' ? 23 : 24;
-        const kneeIdx = facingSide === 'left' ? 25 : 26;
-        const ankleIdx = facingSide === 'left' ? 27 : 28;
-        const eyeIdx = facingSide === 'left' ? 2 : 5;
+        // Before画像: z座標ベースでサイドを判定
+        const beforeLeftShoulder = beforeLandmarks[11];
+        const beforeRightShoulder = beforeLandmarks[12];
+        let beforeIsLeftFront = true;
         
-        const beforeEar = beforeLandmarks[earIdx];
-        const beforeShoulder = beforeLandmarks[shoulderIdx];
-        const beforeHip = beforeLandmarks[hipIdx];
-        const beforeKnee = beforeLandmarks[kneeIdx];
-        const beforeAnkle = beforeLandmarks[ankleIdx];
-        const beforeEye = beforeLandmarks[eyeIdx];
-        const afterEar = afterLandmarks[earIdx];
-        const afterShoulder = afterLandmarks[shoulderIdx];
-        const afterHip = afterLandmarks[hipIdx];
-        const afterKnee = afterLandmarks[kneeIdx];
-        const afterAnkle = afterLandmarks[ankleIdx];
-        const afterEye = afterLandmarks[eyeIdx];
+        if (beforeLeftShoulder && beforeRightShoulder && 
+            typeof beforeLeftShoulder.z !== 'undefined' && 
+            typeof beforeRightShoulder.z !== 'undefined') {
+            beforeIsLeftFront = beforeLeftShoulder.z < beforeRightShoulder.z;
+        }
+        
+        const beforeEarIdx = beforeIsLeftFront ? 7 : 8;
+        const beforeShoulderIdx = beforeIsLeftFront ? 11 : 12;
+        const beforeHipIdx = beforeIsLeftFront ? 23 : 24;
+        const beforeKneeIdx = beforeIsLeftFront ? 25 : 26;
+        const beforeAnkleIdx = beforeIsLeftFront ? 27 : 28;
+        const beforeEyeIdx = beforeIsLeftFront ? 2 : 5;
+        
+        // After画像: z座標ベースでサイドを判定（Before とは独立）
+        const afterLeftShoulder = afterLandmarks[11];
+        const afterRightShoulder = afterLandmarks[12];
+        let afterIsLeftFront = true;
+        
+        if (afterLeftShoulder && afterRightShoulder && 
+            typeof afterLeftShoulder.z !== 'undefined' && 
+            typeof afterRightShoulder.z !== 'undefined') {
+            afterIsLeftFront = afterLeftShoulder.z < afterRightShoulder.z;
+        }
+        
+        const afterEarIdx = afterIsLeftFront ? 7 : 8;
+        const afterShoulderIdx = afterIsLeftFront ? 11 : 12;
+        const afterHipIdx = afterIsLeftFront ? 23 : 24;
+        const afterKneeIdx = afterIsLeftFront ? 25 : 26;
+        const afterAnkleIdx = afterIsLeftFront ? 27 : 28;
+        const afterEyeIdx = afterIsLeftFront ? 2 : 5;
+        
+        const beforeEar = beforeLandmarks[beforeEarIdx];
+        const beforeShoulder = beforeLandmarks[beforeShoulderIdx];
+        const beforeHip = beforeLandmarks[beforeHipIdx];
+        const beforeKnee = beforeLandmarks[beforeKneeIdx];
+        const beforeAnkle = beforeLandmarks[beforeAnkleIdx];
+        const beforeEye = beforeLandmarks[beforeEyeIdx];
+        const afterEar = afterLandmarks[afterEarIdx];
+        const afterShoulder = afterLandmarks[afterShoulderIdx];
+        const afterHip = afterLandmarks[afterHipIdx];
+        const afterKnee = afterLandmarks[afterKneeIdx];
+        const afterAnkle = afterLandmarks[afterAnkleIdx];
+        const afterEye = afterLandmarks[afterEyeIdx];
+        
+        console.log('🔍 サイド判定:', { 
+            before: beforeIsLeftFront ? 'left' : 'right', 
+            after: afterIsLeftFront ? 'left' : 'right' 
+        });
         
         // ========================================
         // 頸部モードと全身モードで完全に分離
@@ -1861,7 +1891,7 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
             return calculateCervicalMetrics(
                 beforeEar, beforeShoulder, beforeEye,
                 afterEar, afterShoulder, afterEye,
-                enableAlignment, enableROM, facingSide
+                enableAlignment, enableROM
             );
         } else {
             // 全身姿勢モード：全身指標のみを計算・返却
@@ -1874,7 +1904,7 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
 }
 
 // 頸部専用メトリクス計算関数（シンプル・明確）
-function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar, afterShoulder, afterEye, enableAlignment, enableROM, facingSide) {
+function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar, afterShoulder, afterEye, enableAlignment, enableROM) {
     const metrics = {};
     let metricCount = 0;
     
@@ -1882,8 +1912,8 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
     
     // アライメント評価モード: 耳-肩線と垂直基準線の角度
     if (enableAlignment && beforeEar && beforeShoulder && afterEar && afterShoulder) {
-        const beforeAlignmentAngle = calculateAlignmentAngle(beforeEar, beforeShoulder, facingSide);
-        const afterAlignmentAngle = calculateAlignmentAngle(afterEar, afterShoulder, facingSide);
+        const beforeAlignmentAngle = calculateAlignmentAngle(beforeEar, beforeShoulder);
+        const afterAlignmentAngle = calculateAlignmentAngle(afterEar, afterShoulder);
         
         // 水平距離（前方偏位距離）
         const beforeDistance = Math.abs(beforeEar.x - beforeShoulder.x) * 1000;
@@ -1911,8 +1941,8 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
     
     // 後屈可動域測定モード: 耳-目線と水平基準線の角度
     if (enableROM && beforeEar && beforeEye && afterEar && afterEye) {
-        const beforeROMAngle = calculateROMAngle(beforeEar, beforeEye, facingSide);
-        const afterROMAngle = calculateROMAngle(afterEar, afterEye, facingSide);
+        const beforeROMAngle = calculateROMAngle(beforeEar, beforeEye);
+        const afterROMAngle = calculateROMAngle(afterEar, afterEye);
         
         // 改善判定（90度に近づく = 可動域改善）
         const angleImproved = Math.abs(90 - afterROMAngle) < Math.abs(90 - beforeROMAngle);
