@@ -332,50 +332,39 @@
                     </button>
                 </div>
 
-                <!-- データ保存・エクスポート -->
-                <div class="card" id="exportSection" style="display: none;">
-                    <h2 class="card-title"><i class="fas fa-download"></i> エクスポート</h2>
+                <!-- データ管理 -->
+                <div class="card" id="dataManagementSection" style="display: none;">
+                    <h2 class="card-title"><i class="fas fa-database"></i> データ管理</h2>
                     
-                    <button class="btn btn-success" id="saveDataBtn">
-                        <i class="fas fa-save"></i> データを保存
+                    <button class="btn btn-success" id="saveDataBtn" style="margin-bottom: 8px;">
+                        <i class="fas fa-save"></i> プロジェクトを保存
                     </button>
                     <button class="btn btn-success" id="loadDataBtn">
-                        <i class="fas fa-folder-open"></i> データを読み込み
+                        <i class="fas fa-folder-open"></i> プロジェクトを読み込み
                     </button>
                     <input type="file" id="loadDataInput" accept=".json" style="display: none;">
                     
-                    <div class="divider"></div>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 12px; line-height: 1.5;">
+                        <i class="fas fa-info-circle"></i> 作業中のデータ（画像・姿勢データ・設定）をJSON形式で保存できます。
+                    </p>
+                </div>
+
+                <!-- エクスポート -->
+                <div class="card" id="exportSection" style="display: none;">
+                    <h2 class="card-title"><i class="fas fa-download"></i> エクスポート</h2>
                     
-                    <!-- エクスポートドロップダウン -->
-                    <div style="position: relative;">
-                        <button class="btn btn-primary" id="exportDropdownBtn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <i class="fas fa-download"></i> エクスポート 
-                            <i class="fas fa-chevron-down" id="exportChevron" style="font-size: 12px; transition: transform 0.3s;"></i>
-                        </button>
-                        <div id="exportMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-top: 4px; z-index: 1000; overflow: hidden;">
-                            <button class="export-menu-item" data-format="pdf" style="width: 100%; padding: 12px 16px; border: none; background: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
-                                <i class="fas fa-file-pdf" style="color: #F44336; font-size: 18px;"></i>
-                                <div>
-                                    <div style="font-weight: 500; color: #333;">PDF形式</div>
-                                    <div style="font-size: 11px; color: #999;">印刷に最適</div>
-                                </div>
-                            </button>
-                            <button class="export-menu-item" data-format="png" style="width: 100%; padding: 12px 16px; border: none; background: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
-                                <i class="fas fa-file-image" style="color: #2196F3; font-size: 18px;"></i>
-                                <div>
-                                    <div style="font-weight: 500; color: #333;">PNG形式</div>
-                                    <div style="font-size: 11px; color: #999;">高画質画像</div>
-                                </div>
-                            </button>
-                            <button class="export-menu-item" data-format="jpg" style="width: 100%; padding: 12px 16px; border: none; background: white; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s;">
-                                <i class="fas fa-file-image" style="color: #4CAF50; font-size: 18px;"></i>
-                                <div>
-                                    <div style="font-weight: 500; color: #333;">JPG形式</div>
-                                    <div style="font-size: 11px; color: #999;">汎用画像</div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
+                    <button class="btn btn-primary" id="exportPdfBtn" style="margin-bottom: 8px;">
+                        <i class="fas fa-file-pdf"></i> PDFで保存
+                        <span style="font-size: 0.75rem; opacity: 0.8; margin-left: 8px;">印刷用</span>
+                    </button>
+                    <button class="btn btn-primary" id="exportPngBtn" style="margin-bottom: 8px;">
+                        <i class="fas fa-file-image"></i> PNG画像で保存
+                        <span style="font-size: 0.75rem; opacity: 0.8; margin-left: 8px;">高画質</span>
+                    </button>
+                    <button class="btn btn-primary" id="exportJpgBtn">
+                        <i class="fas fa-file-image"></i> JPG画像で保存
+                        <span style="font-size: 0.75rem; opacity: 0.8; margin-left: 8px;">汎用</span>
+                    </button>
                 </div>
             </aside>
 

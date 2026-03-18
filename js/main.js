@@ -530,51 +530,29 @@ function setupAnalysisListeners() {
     }
     
     // エクスポートドロップダウン
-    const exportDropdownBtn = document.getElementById('exportDropdownBtn');
-    const exportMenu = document.getElementById('exportMenu');
-    const exportChevron = document.getElementById('exportChevron');
+    // エクスポートボタン（直接実行）
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const exportPngBtn = document.getElementById('exportPngBtn');
+    const exportJpgBtn = document.getElementById('exportJpgBtn');
     
-    if (exportDropdownBtn && exportMenu) {
-        // ドロップダウンの開閉
-        exportDropdownBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = exportMenu.style.display === 'block';
-            exportMenu.style.display = isOpen ? 'none' : 'block';
-            if (exportChevron) {
-                exportChevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-            }
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', () => {
+            console.log('📄 PDF出力開始');
+            exportDoc('pdf');
         });
-        
-        // メニュー外クリックで閉じる
-        document.addEventListener('click', () => {
-            if (exportMenu && exportMenu.style.display === 'block') {
-                exportMenu.style.display = 'none';
-                if (exportChevron) {
-                    exportChevron.style.transform = 'rotate(0deg)';
-                }
-            }
+    }
+    
+    if (exportPngBtn) {
+        exportPngBtn.addEventListener('click', () => {
+            console.log('🖼️ PNG出力開始');
+            exportDoc('png');
         });
-        
-        // メニューアイテムのクリック処理
-        const menuItems = exportMenu.querySelectorAll('.export-menu-item');
-        menuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const format = item.getAttribute('data-format');
-                exportDoc(format);
-                exportMenu.style.display = 'none';
-                if (exportChevron) {
-                    exportChevron.style.transform = 'rotate(0deg)';
-                }
-            });
-            
-            // ホバー効果
-            item.addEventListener('mouseenter', () => {
-                item.style.background = '#F5F5F5';
-            });
-            item.addEventListener('mouseleave', () => {
-                item.style.background = 'white';
-            });
+    }
+    
+    if (exportJpgBtn) {
+        exportJpgBtn.addEventListener('click', () => {
+            console.log('🖼️ JPG出力開始');
+            exportDoc('jpg');
         });
     }
     
@@ -933,10 +911,12 @@ async function analyzePose() {
         showStatus('分析完了！結果を表示しています', 'success');
         displayResults();
         
-        // 設定パネルとエクスポートセクションを表示
+        // 設定パネル、データ管理、エクスポートセクションを表示
         const displaySettings = document.getElementById('displaySettings');
+        const dataManagementSection = document.getElementById('dataManagementSection');
         const exportSection = document.getElementById('exportSection');
         if (displaySettings) displaySettings.style.display = 'block';
+        if (dataManagementSection) dataManagementSection.style.display = 'block';
         if (exportSection) exportSection.style.display = 'block';
         
     } catch (error) {
@@ -2448,8 +2428,10 @@ function loadData(e) {
                     displayResults();
                     
                     const displaySettings = document.getElementById('displaySettings');
+                    const dataManagementSection = document.getElementById('dataManagementSection');
                     const exportSection = document.getElementById('exportSection');
                     if (displaySettings) displaySettings.style.display = 'block';
+                    if (dataManagementSection) dataManagementSection.style.display = 'block';
                     if (exportSection) exportSection.style.display = 'block';
                     
                     showStatus('データの読み込みが完了しました', 'success');
