@@ -1643,6 +1643,8 @@ function calculateROM(landmarks, side) {
 // 矢状面分析: ビジュアル描画
 // ========================================
 function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) {
+    console.log('🔍 drawSagittalAnalysis 呼び出し: facingSide =', facingSide);
+    
     if (!enableAlignment && !enableROM) {
         return; // 両モードとも無効なら何も描画しない
     }
