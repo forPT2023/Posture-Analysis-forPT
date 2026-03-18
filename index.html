@@ -98,6 +98,7 @@
                     </div>
                 </div>
 
+                <!-- 撮影側面選択（矢状面選択時のみ表示） -->
                 <!-- 矢状面モード選択（矢状面選択時のみ表示） -->
                 <div class="card" id="sagittalModeCard" style="display: none;">
                     <h2 class="card-title">
@@ -125,6 +126,27 @@
                                 <small>頭部前方偏位・後屈可動域など</small>
                             </div>
                         </label>
+                    </div>
+                    
+                    <!-- 撮影側面の選択（矢状面共通） -->
+                    <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; border: 2px solid #2196F3;">
+                        <label style="display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: #1565c0;">
+                            <i class="fas fa-camera" style="margin-right: 5px;"></i>撮影側面を選択
+                        </label>
+                        <div style="display: flex; gap: 10px;">
+                            <label class="radio-label" style="flex: 1;">
+                                <input type="radio" name="facingSide" value="left" id="facingSideLeft">
+                                <span>左側面</span>
+                            </label>
+                            <label class="radio-label" style="flex: 1;">
+                                <input type="radio" name="facingSide" value="right" id="facingSideRight" checked>
+                                <span>右側面</span>
+                            </label>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #1565c0; margin-top: 8px; line-height: 1.5;">
+                            <strong>右側面:</strong> 被写体の右側から撮影（画面には左半身）<br>
+                            <strong>左側面:</strong> 被写体の左側から撮影（画面には右半身）
+                        </div>
                     </div>
                     
                     <!-- 頸部詳細設定（頸部モード選択時のみ表示） -->
@@ -281,22 +303,6 @@
                                 ✓ <strong>後屈可動域測定</strong>: 頸部の伸展角度を測定
                             </p>
                         </div>
-                        
-                        <!-- 撮影側面の選択 -->
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">撮影側面</label>
-                            <div style="display: flex; gap: 10px;">
-                                <label class="radio-label" style="flex: 1;">
-                                    <input type="radio" name="facingSide" value="left" id="facingSideLeft">
-                                    <span>左側面</span>
-                                </label>
-                                <label class="radio-label" style="flex: 1;">
-                                    <input type="radio" name="facingSide" value="right" id="facingSideRight" checked>
-                                    <span>右側面</span>
-                                </label>
-                            </div>
-                        </div>
-                        
                         
                         <!-- 表示オプション -->
                         <div style="margin-bottom: 12px;">
