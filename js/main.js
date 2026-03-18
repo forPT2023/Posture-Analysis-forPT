@@ -2525,7 +2525,7 @@ async function exportDoc(format) {
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
-                max-width: 100% !important;
+                min-width: 0 !important;
                 max-height: 100% !important;
             }
             .${tempClass} .comparison-canvas {
