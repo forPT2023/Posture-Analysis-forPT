@@ -83,7 +83,7 @@ let beforeColor = COLORS.BEFORE;
 let afterColor = COLORS.AFTER;
 
 // 矢状面分析設定（矢状面モード選択時のみ有効）
-let facingSide = 'right'; // 'left' または 'right'
+let facingSide = 'left'; // 'left' または 'right'（デフォルト: 左側面）
 let cervicalModeEnabled = false; // 頸部モードの有効/無効（初期値: false = 全身姿勢モード）
 let enableAlignment = false; // アライメント評価モード（初期値: false）
 let enableROM = false; // 後屈可動域測定モード（初期値: false）
