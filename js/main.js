@@ -1710,13 +1710,16 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         // 使用するランドマークを撮影側面に応じて選択
         const earIdx = facingSide === 'left' ? 7 : 8;
         const shoulderIdx = facingSide === 'left' ? 11 : 12;
+        const hipIdx = facingSide === 'left' ? 23 : 24;
         const eyeIdx = facingSide === 'left' ? 2 : 5;
         
         const beforeEar = beforeLandmarks[earIdx];
         const beforeShoulder = beforeLandmarks[shoulderIdx];
+        const beforeHip = beforeLandmarks[hipIdx];
         const beforeEye = beforeLandmarks[eyeIdx];
         const afterEar = afterLandmarks[earIdx];
         const afterShoulder = afterLandmarks[shoulderIdx];
+        const afterHip = afterLandmarks[hipIdx];
         const afterEye = afterLandmarks[eyeIdx];
         
         const metrics = {};
@@ -1783,18 +1786,18 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         // 既存の一般的な矢状面評価も追加
         if (!enableAlignment && !enableROM) {
             // どちらのモードも無効な場合は、従来の矢状面分析を実行
-            const beforeHeadForward = (beforeLeftEar.x - beforeShoulderCenter.x) * 1000;
-            const afterHeadForward = (afterLeftEar.x - afterShoulderCenter.x) * 1000;
+            const beforeHeadForward = (beforeEar.x - beforeShoulder.x) * 1000;
+            const afterHeadForward = (afterEar.x - afterShoulder.x) * 1000;
             const headImproved = Math.abs(afterHeadForward) < Math.abs(beforeHeadForward);
             
             const beforeTrunkTilt = Math.abs(Math.atan2(
-                beforeShoulderCenter.x - beforeHipCenter.x,
-                beforeHipCenter.y - beforeShoulderCenter.y
+                beforeShoulder.x - beforeHip.x,
+                beforeHip.y - beforeShoulder.y
             ) * 180 / Math.PI);
             
             const afterTrunkTilt = Math.abs(Math.atan2(
-                afterShoulderCenter.x - afterHipCenter.x,
-                afterHipCenter.y - afterShoulderCenter.y
+                afterShoulder.x - afterHip.x,
+                afterHip.y - afterShoulder.y
             ) * 180 / Math.PI);
             
             const trunkImproved = afterTrunkTilt < beforeTrunkTilt;
