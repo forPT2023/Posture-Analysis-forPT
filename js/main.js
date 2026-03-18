@@ -1830,258 +1830,263 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         const afterAnkle = afterLandmarks[ankleIdx];
         const afterEye = afterLandmarks[eyeIdx];
         
-        const metrics = {};
-        let metricCount = 0;
-        
-        // アライメント評価モード: 耳-肩線と垂直基準線の角度
-        if (enableAlignment && beforeEar && beforeShoulder && afterEar && afterShoulder) {
-            const beforeAlignmentAngle = calculateAlignmentAngle(beforeEar, beforeShoulder, facingSide);
-            const afterAlignmentAngle = calculateAlignmentAngle(afterEar, afterShoulder, facingSide);
-            
-            // 水平距離（前方偏位距離）
-            const beforeDistance = Math.abs(beforeEar.x - beforeShoulder.x) * 1000;
-            const afterDistance = Math.abs(afterEar.x - afterShoulder.x) * 1000;
-            
-            // 改善判定
-            const angleImproved = afterAlignmentAngle < beforeAlignmentAngle;
-            const distanceImproved = afterDistance < beforeDistance;
-            
-            metricCount++;
-            metrics[`metric${metricCount}Label`] = '頭部前方偏位角度';
-            metrics[`metric${metricCount}Value`] = `${beforeAlignmentAngle.toFixed(1)} → ${afterAlignmentAngle.toFixed(1)}`;
-            metrics[`metric${metricCount}Unit`] = '度';
-            metrics[`metric${metricCount}Improved`] = angleImproved;
-            metrics[`metric${metricCount}Status`] = afterAlignmentAngle < 15 ? '正常' : 
-                                                     afterAlignmentAngle < 30 ? '軽度前方偏位' :
-                                                     afterAlignmentAngle < 45 ? '中等度前方偏位' : '重度前方偏位';
-            
-            metricCount++;
-            metrics[`metric${metricCount}Label`] = '頭部前方偏位距離';
-            metrics[`metric${metricCount}Value`] = `${beforeDistance.toFixed(1)} → ${afterDistance.toFixed(1)}`;
-            metrics[`metric${metricCount}Unit`] = 'mm';
-            metrics[`metric${metricCount}Improved`] = distanceImproved;
-        }
-        
-        // 後屈可動域測定モード: 耳-目線と水平基準線の角度
-        if (enableROM && beforeEar && beforeEye && afterEar && afterEye) {
-            const beforeROMAngle = calculateROMAngle(beforeEar, beforeEye, facingSide);
-            const afterROMAngle = calculateROMAngle(afterEar, afterEye, facingSide);
-            
-            // 改善判定（90度に近づく = 可動域改善）
-            const angleImproved = Math.abs(90 - afterROMAngle) < Math.abs(90 - beforeROMAngle);
-            
-            metricCount++;
-            metrics[`metric${metricCount}Label`] = '頸部後屈可動域';
-            metrics[`metric${metricCount}Value`] = `${beforeROMAngle.toFixed(1)} → ${afterROMAngle.toFixed(1)}`;
-            metrics[`metric${metricCount}Unit`] = '度';
-            metrics[`metric${metricCount}Improved`] = angleImproved;
-            metrics[`metric${metricCount}Status`] = afterROMAngle >= 80 ? '正常可動域' :
-                                                     afterROMAngle >= 60 ? '軽度制限' :
-                                                     afterROMAngle >= 40 ? '中等度制限' : '重度制限';
-            
-            // 正常可動域との差分
-            const beforeDeficit = Math.max(0, 90 - beforeROMAngle);
-            const afterDeficit = Math.max(0, 90 - afterROMAngle);
-            const deficitImproved = afterDeficit < beforeDeficit;
-            
-            metricCount++;
-            metrics[`metric${metricCount}Label`] = '可動域制限度';
-            metrics[`metric${metricCount}Value`] = `${beforeDeficit.toFixed(1)} → ${afterDeficit.toFixed(1)}`;
-            metrics[`metric${metricCount}Unit`] = '度';
-            metrics[`metric${metricCount}Improved`] = deficitImproved;
-        }
-        
         // ========================================
-        // メトリクスの組み立て（完全分離）
+        // 頸部モードと全身モードで完全に分離
         // ========================================
         
-        // 頸部モードがONの場合は、頸部指標のみを表示（全身指標は計算しない）
-        // 重要: cervicalModeEnabledがtrueであれば、enableAlignment/enableROMの有無に関わらず頸部モード
         if (cervicalModeEnabled) {
-            // 頸部専用モード（チェックボックスがONになっていなくても頸部モード扱い）
-            console.log('✅ 頸部モード: 全身指標を計算しない', { metricCount, enableAlignment, enableROM });
-            
-            // チェックボックスが両方OFFの場合は警告
-            if (!enableAlignment && !enableROM) {
-                console.warn('⚠️ 頸部モードですが、測定項目が選択されていません');
-            }
-            
+            // 頸部専用モード：頸部指標のみを計算・返却
+            return calculateCervicalMetrics(
+                beforeEar, beforeShoulder, beforeEye,
+                afterEar, afterShoulder, afterEye,
+                enableAlignment, enableROM, facingSide
+            );
         } else {
-            // デフォルトモード（全身姿勢モード）：全身指標のみを表示
-            console.log('✅ 全身姿勢モード: 全身指標を計算');
-            
-            // 全身の姿勢指標を計算
-            
-            // 1. 頭部前方偏位
-            const beforeHeadForward = (beforeEar.x - beforeShoulder.x) * 1000;
-            const afterHeadForward = (afterEar.x - afterShoulder.x) * 1000;
-            const headImproved = Math.abs(afterHeadForward) < Math.abs(beforeHeadForward);
-            
-            // 2. 体幹の前後傾き
-            const beforeTrunkTilt = Math.abs(Math.atan2(
-                beforeShoulder.x - beforeHip.x,
-                beforeHip.y - beforeShoulder.y
-            ) * 180 / Math.PI);
-            
-            const afterTrunkTilt = Math.abs(Math.atan2(
-                afterShoulder.x - afterHip.x,
-                afterHip.y - afterShoulder.y
-            ) * 180 / Math.PI);
-            
-            const trunkImproved = afterTrunkTilt < beforeTrunkTilt;
-            
-            // 3. 全身垂直アライメント（姿勢バランススコア）
-            let beforeAlignment = null;
-            let afterAlignment = null;
-            let alignmentImproved = false;
-            
-            if (beforeEar && beforeShoulder && beforeHip && beforeAnkle && 
-                afterEar && afterShoulder && afterHip && afterAnkle) {
-                // 各点のX座標を取得
-                const beforePoints = [beforeEar.x, beforeShoulder.x, beforeHip.x, beforeAnkle.x];
-                const afterPoints = [afterEar.x, afterShoulder.x, afterHip.x, afterAnkle.x];
-                
-                // 標準偏差を計算（値が小さいほど良い姿勢）
-                beforeAlignment = calculateStandardDeviation(beforePoints) * 1000; // mm単位
-                afterAlignment = calculateStandardDeviation(afterPoints) * 1000;
-                
-                alignmentImproved = afterAlignment < beforeAlignment;
-            }
-            
-            // 4. 骨盤の前傾/後傾角度
-            let beforePelvicTilt = null;
-            let afterPelvicTilt = null;
-            let pelvicImproved = false;
-            
-            if (beforeHip && beforeKnee && afterHip && afterKnee) {
-                // 腰-膝の線と垂直線の角度
-                beforePelvicTilt = Math.atan2(
-                    beforeKnee.x - beforeHip.x,
-                    beforeKnee.y - beforeHip.y
-                ) * 180 / Math.PI;
-                
-                afterPelvicTilt = Math.atan2(
-                    afterKnee.x - afterHip.x,
-                    afterKnee.y - afterHip.y
-                ) * 180 / Math.PI;
-                
-                // 正常範囲（10-15度）に近づくことが改善
-                const normalRange = 12.5; // 正常範囲の中央値
-                const beforeDiff = Math.abs(beforePelvicTilt - normalRange);
-                const afterDiff = Math.abs(afterPelvicTilt - normalRange);
-                pelvicImproved = afterDiff < beforeDiff;
-            }
-            
-            // 5. 膝の過伸展/屈曲角度
-            let beforeKneeAngle = null;
-            let afterKneeAngle = null;
-            let kneeImproved = false;
-            
-            if (beforeHip && beforeKnee && beforeAnkle && 
-                afterHip && afterKnee && afterAnkle) {
-                // 腰-膝-足首の角度
-                beforeKneeAngle = calculateJointAngle(beforeHip, beforeKnee, beforeAnkle);
-                afterKneeAngle = calculateJointAngle(afterHip, afterKnee, afterAnkle);
-                
-                // 180度（真っすぐ）に近づくことが改善
-                const beforeDiff = Math.abs(180 - beforeKneeAngle);
-                const afterDiff = Math.abs(180 - afterKneeAngle);
-                kneeImproved = afterDiff < beforeDiff;
-            }
-            
-            // メトリクスを設定
-            metricCount = 5;
-            
-            // 全身垂直アライメント（最重要なので最初に表示）
-            if (beforeAlignment !== null && afterAlignment !== null) {
-                metrics.metric1Label = '姿勢バランススコア';
-                metrics.metric1Value = `${beforeAlignment.toFixed(1)} → ${afterAlignment.toFixed(1)}`;
-                metrics.metric1Unit = 'mm';
-                metrics.metric1Improved = alignmentImproved;
-                metrics.metric1Status = afterAlignment < 25 ? '良好' : 
-                                       afterAlignment < 40 ? '普通' : '要改善';
-                
-                // 骨盤角度をmetric2に
-                if (beforePelvicTilt !== null && afterPelvicTilt !== null) {
-                    metrics.metric2Label = '骨盤前傾角度';
-                    metrics.metric2Value = `${beforePelvicTilt.toFixed(1)} → ${afterPelvicTilt.toFixed(1)}`;
-                    metrics.metric2Unit = '度';
-                    metrics.metric2Improved = pelvicImproved;
-                    metrics.metric2Status = (afterPelvicTilt >= 10 && afterPelvicTilt <= 15) ? '正常範囲' :
-                                            afterPelvicTilt > 20 ? '過度な前傾' :
-                                            afterPelvicTilt < 5 ? '後傾' : '軽度の偏り';
-                }
-                
-                // 膝角度をmetric3に
-                if (beforeKneeAngle !== null && afterKneeAngle !== null) {
-                    metrics.metric3Label = '膝の角度';
-                    metrics.metric3Value = `${beforeKneeAngle.toFixed(1)} → ${afterKneeAngle.toFixed(1)}`;
-                    metrics.metric3Unit = '度';
-                    metrics.metric3Improved = kneeImproved;
-                    metrics.metric3Status = (afterKneeAngle >= 175 && afterKneeAngle <= 180) ? '正常' :
-                                            afterKneeAngle > 185 ? '反張膝' :
-                                            afterKneeAngle < 165 ? '屈曲位' : '軽度の偏り';
-                }
-                
-                // 頭部前方偏位をmetric4に
-                metrics.metric4Label = '頭部前方偏位';
-                metrics.metric4Value = `${Math.abs(beforeHeadForward).toFixed(1)} → ${Math.abs(afterHeadForward).toFixed(1)}`;
-                metrics.metric4Unit = 'mm';
-                metrics.metric4Improved = headImproved;
-                
-                // 体幹の前後傾きをmetric5に
-                metrics.metric5Label = '体幹の前後傾き';
-                metrics.metric5Value = `${beforeTrunkTilt.toFixed(1)} → ${afterTrunkTilt.toFixed(1)}`;
-                metrics.metric5Unit = '度';
-                metrics.metric5Improved = trunkImproved;
-                
-            } else {
-                // 全身アライメントが計算できない場合
-                metrics.metric1Label = '頭部前方偏位';
-                metrics.metric1Value = `${Math.abs(beforeHeadForward).toFixed(1)} → ${Math.abs(afterHeadForward).toFixed(1)}`;
-                metrics.metric1Unit = 'mm';
-                metrics.metric1Improved = headImproved;
-                
-                metrics.metric2Label = '体幹の前後傾き';
-                metrics.metric2Value = `${beforeTrunkTilt.toFixed(1)} → ${afterTrunkTilt.toFixed(1)}`;
-                metrics.metric2Unit = '度';
-                metrics.metric2Improved = trunkImproved;
-                
-                // 骨盤と膝を3,4として追加
-                if (beforePelvicTilt !== null && afterPelvicTilt !== null) {
-                    metrics.metric3Label = '骨盤前傾角度';
-                    metrics.metric3Value = `${beforePelvicTilt.toFixed(1)} → ${afterPelvicTilt.toFixed(1)}`;
-                    metrics.metric3Unit = '度';
-                    metrics.metric3Improved = pelvicImproved;
-                    metrics.metric3Status = (afterPelvicTilt >= 10 && afterPelvicTilt <= 15) ? '正常範囲' :
-                                            afterPelvicTilt > 20 ? '過度な前傾' :
-                                            afterPelvicTilt < 5 ? '後傾' : '軽度の偏り';
-                }
-                
-                if (beforeKneeAngle !== null && afterKneeAngle !== null) {
-                    metrics.metric4Label = '膝の角度';
-                    metrics.metric4Value = `${beforeKneeAngle.toFixed(1)} → ${afterKneeAngle.toFixed(1)}`;
-                    metrics.metric4Unit = '度';
-                    metrics.metric4Improved = kneeImproved;
-                    metrics.metric4Status = (afterKneeAngle >= 175 && afterKneeAngle <= 180) ? '正常' :
-                                            afterKneeAngle > 185 ? '反張膝' :
-                                            afterKneeAngle < 165 ? '屈曲位' : '軽度の偏り';
-                }
-            }
+            // 全身姿勢モード：全身指標のみを計算・返却
+            return calculateFullBodyMetrics(
+                beforeEar, beforeShoulder, beforeHip, beforeKnee, beforeAnkle,
+                afterEar, afterShoulder, afterHip, afterKnee, afterAnkle
+            );
+        }
+    }
+}
+
+// 頸部専用メトリクス計算関数（シンプル・明確）
+function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar, afterShoulder, afterEye, enableAlignment, enableROM, facingSide) {
+    const metrics = {};
+    let metricCount = 0;
+    
+    console.log('✅ 頸部モード: 頸部指標のみを計算', { enableAlignment, enableROM });
+    
+    // アライメント評価モード: 耳-肩線と垂直基準線の角度
+    if (enableAlignment && beforeEar && beforeShoulder && afterEar && afterShoulder) {
+        const beforeAlignmentAngle = calculateAlignmentAngle(beforeEar, beforeShoulder, facingSide);
+        const afterAlignmentAngle = calculateAlignmentAngle(afterEar, afterShoulder, facingSide);
+        
+        // 水平距離（前方偏位距離）
+        const beforeDistance = Math.abs(beforeEar.x - beforeShoulder.x) * 1000;
+        const afterDistance = Math.abs(afterEar.x - afterShoulder.x) * 1000;
+        
+        // 改善判定
+        const angleImproved = afterAlignmentAngle < beforeAlignmentAngle;
+        const distanceImproved = afterDistance < beforeDistance;
+        
+        metricCount++;
+        metrics[`metric${metricCount}Label`] = '頭部前方偏位角度';
+        metrics[`metric${metricCount}Value`] = `${beforeAlignmentAngle.toFixed(1)} → ${afterAlignmentAngle.toFixed(1)}`;
+        metrics[`metric${metricCount}Unit`] = '度';
+        metrics[`metric${metricCount}Improved`] = angleImproved;
+        metrics[`metric${metricCount}Status`] = afterAlignmentAngle < 15 ? '正常' : 
+                                                 afterAlignmentAngle < 30 ? '軽度前方偏位' :
+                                                 afterAlignmentAngle < 45 ? '中等度前方偏位' : '重度前方偏位';
+        
+        metricCount++;
+        metrics[`metric${metricCount}Label`] = '頭部前方偏位距離';
+        metrics[`metric${metricCount}Value`] = `${beforeDistance.toFixed(1)} → ${afterDistance.toFixed(1)}`;
+        metrics[`metric${metricCount}Unit`] = 'mm';
+        metrics[`metric${metricCount}Improved`] = distanceImproved;
+    }
+    
+    // 後屈可動域測定モード: 耳-目線と水平基準線の角度
+    if (enableROM && beforeEar && beforeEye && afterEar && afterEye) {
+        const beforeROMAngle = calculateROMAngle(beforeEar, beforeEye, facingSide);
+        const afterROMAngle = calculateROMAngle(afterEar, afterEye, facingSide);
+        
+        // 改善判定（90度に近づく = 可動域改善）
+        const angleImproved = Math.abs(90 - afterROMAngle) < Math.abs(90 - beforeROMAngle);
+        
+        metricCount++;
+        metrics[`metric${metricCount}Label`] = '頸部後屈可動域';
+        metrics[`metric${metricCount}Value`] = `${beforeROMAngle.toFixed(1)} → ${afterROMAngle.toFixed(1)}`;
+        metrics[`metric${metricCount}Unit`] = '度';
+        metrics[`metric${metricCount}Improved`] = angleImproved;
+        metrics[`metric${metricCount}Status`] = afterROMAngle >= 80 ? '正常可動域' :
+                                                 afterROMAngle >= 60 ? '軽度制限' :
+                                                 afterROMAngle >= 40 ? '中等度制限' : '重度制限';
+        
+        // 正常可動域との差分
+        const beforeDeficit = Math.max(0, 90 - beforeROMAngle);
+        const afterDeficit = Math.max(0, 90 - afterROMAngle);
+        const deficitImproved = afterDeficit < beforeDeficit;
+        
+        metricCount++;
+        metrics[`metric${metricCount}Label`] = '可動域制限度';
+        metrics[`metric${metricCount}Value`] = `${beforeDeficit.toFixed(1)} → ${afterDeficit.toFixed(1)}`;
+        metrics[`metric${metricCount}Unit`] = '度';
+        metrics[`metric${metricCount}Improved`] = deficitImproved;
+    }
+    
+    // チェックボックスが両方OFFの場合は警告
+    if (!enableAlignment && !enableROM) {
+        console.warn('⚠️ 頸部モードですが、測定項目が選択されていません');
+    }
+    
+    console.log('🔍 頸部メトリクス返却:', { metricCount, metricsKeys: Object.keys(metrics).filter(k => k.includes('Label')) });
+    return metrics;
+}
+
+// 全身姿勢メトリクス計算関数（シンプル・明確）
+function calculateFullBodyMetrics(beforeEar, beforeShoulder, beforeHip, beforeKnee, beforeAnkle, afterEar, afterShoulder, afterHip, afterKnee, afterAnkle) {
+    const metrics = {};
+    
+    console.log('✅ 全身姿勢モード: 全身指標のみを計算');
+    
+    // 1. 頭部前方偏位
+    const beforeHeadForward = (beforeEar.x - beforeShoulder.x) * 1000;
+    const afterHeadForward = (afterEar.x - afterShoulder.x) * 1000;
+    const headImproved = Math.abs(afterHeadForward) < Math.abs(beforeHeadForward);
+    
+    // 2. 体幹の前後傾き
+    const beforeTrunkTilt = Math.abs(Math.atan2(
+        beforeShoulder.x - beforeHip.x,
+        beforeHip.y - beforeShoulder.y
+    ) * 180 / Math.PI);
+    
+    const afterTrunkTilt = Math.abs(Math.atan2(
+        afterShoulder.x - afterHip.x,
+        afterHip.y - afterShoulder.y
+    ) * 180 / Math.PI);
+    
+    const trunkImproved = afterTrunkTilt < beforeTrunkTilt;
+    
+    // 3. 全身垂直アライメント（姿勢バランススコア）
+    let beforeAlignment = null;
+    let afterAlignment = null;
+    let alignmentImproved = false;
+    
+    if (beforeEar && beforeShoulder && beforeHip && beforeAnkle && 
+        afterEar && afterShoulder && afterHip && afterAnkle) {
+        // 各点のX座標を取得
+        const beforePoints = [beforeEar.x, beforeShoulder.x, beforeHip.x, beforeAnkle.x];
+        const afterPoints = [afterEar.x, afterShoulder.x, afterHip.x, afterAnkle.x];
+        
+        // 標準偏差を計算（値が小さいほど良い姿勢）
+        beforeAlignment = calculateStandardDeviation(beforePoints) * 1000; // mm単位
+        afterAlignment = calculateStandardDeviation(afterPoints) * 1000;
+        
+        alignmentImproved = afterAlignment < beforeAlignment;
+    }
+    
+    // 4. 骨盤の前傾/後傾角度
+    let beforePelvicTilt = null;
+    let afterPelvicTilt = null;
+    let pelvicImproved = false;
+    
+    if (beforeHip && beforeKnee && afterHip && afterKnee) {
+        // 腰-膝の線と垂直線の角度
+        beforePelvicTilt = Math.atan2(
+            beforeKnee.x - beforeHip.x,
+            beforeKnee.y - beforeHip.y
+        ) * 180 / Math.PI;
+        
+        afterPelvicTilt = Math.atan2(
+            afterKnee.x - afterHip.x,
+            afterKnee.y - afterHip.y
+        ) * 180 / Math.PI;
+        
+        // 正常範囲（10-15度）に近づくことが改善
+        const normalRange = 12.5; // 正常範囲の中央値
+        const beforeDiff = Math.abs(beforePelvicTilt - normalRange);
+        const afterDiff = Math.abs(afterPelvicTilt - normalRange);
+        pelvicImproved = afterDiff < beforeDiff;
+    }
+    
+    // 5. 膝の過伸展/屈曲角度
+    let beforeKneeAngle = null;
+    let afterKneeAngle = null;
+    let kneeImproved = false;
+    
+    if (beforeHip && beforeKnee && beforeAnkle && 
+        afterHip && afterKnee && afterAnkle) {
+        // 腰-膝-足首の角度
+        beforeKneeAngle = calculateJointAngle(beforeHip, beforeKnee, beforeAnkle);
+        afterKneeAngle = calculateJointAngle(afterHip, afterKnee, afterAnkle);
+        
+        // 180度（真っすぐ）に近づくことが改善
+        const beforeDiff = Math.abs(180 - beforeKneeAngle);
+        const afterDiff = Math.abs(180 - afterKneeAngle);
+        kneeImproved = afterDiff < beforeDiff;
+    }
+    
+    // 全身垂直アライメント（最重要なので最初に表示）
+    if (beforeAlignment !== null && afterAlignment !== null) {
+        metrics.metric1Label = '姿勢バランススコア';
+        metrics.metric1Value = `${beforeAlignment.toFixed(1)} → ${afterAlignment.toFixed(1)}`;
+        metrics.metric1Unit = 'mm';
+        metrics.metric1Improved = alignmentImproved;
+        metrics.metric1Status = afterAlignment < 25 ? '良好' : 
+                               afterAlignment < 40 ? '普通' : '要改善';
+        
+        // 骨盤角度をmetric2に
+        if (beforePelvicTilt !== null && afterPelvicTilt !== null) {
+            metrics.metric2Label = '骨盤前傾角度';
+            metrics.metric2Value = `${beforePelvicTilt.toFixed(1)} → ${afterPelvicTilt.toFixed(1)}`;
+            metrics.metric2Unit = '度';
+            metrics.metric2Improved = pelvicImproved;
+            metrics.metric2Status = (afterPelvicTilt >= 10 && afterPelvicTilt <= 15) ? '正常範囲' :
+                                    afterPelvicTilt > 20 ? '過度な前傾' :
+                                    afterPelvicTilt < 5 ? '後傾' : '軽度の偏り';
         }
         
-        // デバッグ: 返却するメトリクスを確認
-        console.log('🔍 calculateMetrics返却値:', { 
-            cervicalModeEnabled, 
-            enableAlignment, 
-            enableROM, 
-            metricCount,
-            metricsKeys: Object.keys(metrics).filter(k => k.includes('Label'))
-        });
+        // 膝角度をmetric3に
+        if (beforeKneeAngle !== null && afterKneeAngle !== null) {
+            metrics.metric3Label = '膝の角度';
+            metrics.metric3Value = `${beforeKneeAngle.toFixed(1)} → ${afterKneeAngle.toFixed(1)}`;
+            metrics.metric3Unit = '度';
+            metrics.metric3Improved = kneeImproved;
+            metrics.metric3Status = (afterKneeAngle >= 175 && afterKneeAngle <= 180) ? '正常' :
+                                    afterKneeAngle > 185 ? '反張膝' :
+                                    afterKneeAngle < 165 ? '屈曲位' : '軽度の偏り';
+        }
         
-        // メトリクスオブジェクトを返す
-        return metrics;
+        // 頭部前方偏位をmetric4に
+        metrics.metric4Label = '頭部前方偏位';
+        metrics.metric4Value = `${Math.abs(beforeHeadForward).toFixed(1)} → ${Math.abs(afterHeadForward).toFixed(1)}`;
+        metrics.metric4Unit = 'mm';
+        metrics.metric4Improved = headImproved;
+        
+        // 体幹の前後傾きをmetric5に
+        metrics.metric5Label = '体幹の前後傾き';
+        metrics.metric5Value = `${beforeTrunkTilt.toFixed(1)} → ${afterTrunkTilt.toFixed(1)}`;
+        metrics.metric5Unit = '度';
+        metrics.metric5Improved = trunkImproved;
+        
+    } else {
+        // 全身アライメントが計算できない場合
+        metrics.metric1Label = '頭部前方偏位';
+        metrics.metric1Value = `${Math.abs(beforeHeadForward).toFixed(1)} → ${Math.abs(afterHeadForward).toFixed(1)}`;
+        metrics.metric1Unit = 'mm';
+        metrics.metric1Improved = headImproved;
+        
+        metrics.metric2Label = '体幹の前後傾き';
+        metrics.metric2Value = `${beforeTrunkTilt.toFixed(1)} → ${afterTrunkTilt.toFixed(1)}`;
+        metrics.metric2Unit = '度';
+        metrics.metric2Improved = trunkImproved;
+        
+        // 骨盤と膝を3,4として追加
+        if (beforePelvicTilt !== null && afterPelvicTilt !== null) {
+            metrics.metric3Label = '骨盤前傾角度';
+            metrics.metric3Value = `${beforePelvicTilt.toFixed(1)} → ${afterPelvicTilt.toFixed(1)}`;
+            metrics.metric3Unit = '度';
+            metrics.metric3Improved = pelvicImproved;
+            metrics.metric3Status = (afterPelvicTilt >= 10 && afterPelvicTilt <= 15) ? '正常範囲' :
+                                    afterPelvicTilt > 20 ? '過度な前傾' :
+                                    afterPelvicTilt < 5 ? '後傾' : '軽度の偏り';
+        }
+        
+        if (beforeKneeAngle !== null && afterKneeAngle !== null) {
+            metrics.metric4Label = '膝の角度';
+            metrics.metric4Value = `${beforeKneeAngle.toFixed(1)} → ${afterKneeAngle.toFixed(1)}`;
+            metrics.metric4Unit = '度';
+            metrics.metric4Improved = kneeImproved;
+            metrics.metric4Status = (afterKneeAngle >= 175 && afterKneeAngle <= 180) ? '正常' :
+                                    afterKneeAngle > 185 ? '反張膝' :
+                                    afterKneeAngle < 165 ? '屈曲位' : '軽度の偏り';
+        }
     }
+    
+    console.log('🔍 全身メトリクス返却:', { metricsKeys: Object.keys(metrics).filter(k => k.includes('Label')) });
+    return metrics;
 }
 
 function generateMetricHTML(label, value, unit, improved, status) {
