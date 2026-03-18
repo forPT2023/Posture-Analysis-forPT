@@ -590,6 +590,63 @@ function setupEventListeners() {
         });
     }
     
+    // 頸部モード切り替えボタン
+    const cervicalModeToggle = document.getElementById('cervicalModeToggle');
+    if (cervicalModeToggle) {
+        cervicalModeToggle.addEventListener('click', toggleCervicalMode);
+    }
+    
+}
+
+// 頸部モード切り替え関数
+function toggleCervicalMode() {
+    cervicalModeEnabled = !cervicalModeEnabled;
+    
+    const modeButtonText = document.getElementById('modeButtonText');
+    const modeDescription = document.getElementById('modeDescription');
+    const cervicalDetailSettings = document.getElementById('cervicalDetailSettings');
+    const cervicalModeToggle = document.getElementById('cervicalModeToggle');
+    const toggleIcon = cervicalModeToggle ? cervicalModeToggle.querySelector('i') : null;
+    
+    if (cervicalModeEnabled) {
+        // 頸部モードON
+        if (modeButtonText) modeButtonText.textContent = '頸部機能評価モード';
+        if (modeDescription) modeDescription.textContent = '頸部の詳細機能を測定します（アライメント・可動域）';
+        if (cervicalDetailSettings) cervicalDetailSettings.style.display = 'block';
+        if (cervicalModeToggle) {
+            cervicalModeToggle.style.borderColor = '#ffc107';
+            cervicalModeToggle.style.background = '#fff3cd';
+            cervicalModeToggle.style.color = '#856404';
+        }
+        if (toggleIcon) {
+            toggleIcon.className = 'fas fa-head-side-cough';
+        }
+        console.log('✅ 頸部機能評価モード: ON');
+    } else {
+        // 頸部モードOFF（全身姿勢モード）
+        if (modeButtonText) modeButtonText.textContent = '全身姿勢モード';
+        if (modeDescription) modeDescription.textContent = '全身の姿勢バランスを分析します（5指標）';
+        if (cervicalDetailSettings) cervicalDetailSettings.style.display = 'none';
+        if (cervicalModeToggle) {
+            cervicalModeToggle.style.borderColor = '#6c757d';
+            cervicalModeToggle.style.background = 'white';
+            cervicalModeToggle.style.color = 'inherit';
+        }
+        if (toggleIcon) {
+            toggleIcon.className = 'fas fa-user-circle';
+        }
+        // 頸部モードOFFの場合、頸部測定項目も無効化
+        enableAlignment = false;
+        enableROM = false;
+        const enableAlignmentCheckbox = document.getElementById('enableAlignment');
+        const enableROMCheckbox = document.getElementById('enableROM');
+        if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = false;
+        if (enableROMCheckbox) enableROMCheckbox.checked = false;
+        console.log('✅ 全身姿勢モード: ON');
+    }
+    
+    // 表示を更新
+    updateDisplay();
 }
 
 function formatDate(dateStr) {
