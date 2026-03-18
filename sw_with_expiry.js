@@ -1,6 +1,6 @@
 // Service Worker with Expiry Date
-const CACHE_NAME = 'posture-analysis-v13.10.0';
-const EXPIRY_DATE = new Date('2025-12-31T23:59:59').getTime(); // ← 有効期限
+const CACHE_NAME = 'posture-analysis-v13.10.1';
+const EXPIRY_DATE = new Date('2035-12-31T23:59:59').getTime(); // ← 有効期限（10年先）
 
 const urlsToCache = [
     '/',
@@ -55,9 +55,15 @@ self.addEventListener('fetch', (event) => {
         (async () => {
             const now = new Date().getTime();
             
-            // 有効期限チェック
+            // 有効期限チェック（デバッグ情報付き）
+            console.log('⏰ 有効期限チェック:', {
+                現在時刻: new Date(now).toLocaleString('ja-JP'),
+                有効期限: new Date(EXPIRY_DATE).toLocaleString('ja-JP'),
+                状態: now > EXPIRY_DATE ? '期限切れ' : '有効'
+            });
+            
             if (now > EXPIRY_DATE) {
-                console.log('⏰ 有効期限切れ: キャッシュを削除');
+                console.error('❌ 有効期限切れ: キャッシュを削除');
                 
                 // すべてのキャッシュを削除
                 await caches.delete(CACHE_NAME);
