@@ -859,6 +859,22 @@ input[type="range"]::-moz-range-thumb {
     }
     
     /* スマホ: プレビューキャンバスのA4サイズを維持 */
+    /* 横向き（A4横）は横スクロールで表示 */
+    .preview-canvas.layout-horizontal {
+        width: 297mm;
+        height: 210mm;
+        min-width: 297mm;
+        min-height: 210mm;
+    }
+    
+    /* 縦向き（A4縦）も横スクロールで表示 */
+    .preview-canvas.layout-vertical {
+        width: 210mm;
+        height: 297mm;
+        min-width: 210mm;
+        min-height: 297mm;
+    }
+    
     /* スマホ: プレビューキャンバスは基本設定を継承（A4サイズ維持） */
     .preview-canvas {
         padding: 20mm;

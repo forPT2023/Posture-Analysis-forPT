@@ -381,8 +381,8 @@ function setupImageUploadListeners() {
     const enableCameraGuideBefore = document.getElementById('enableCameraGuideBefore');
     if (enableCameraGuideBefore) {
         enableCameraGuideBefore.addEventListener('click', () => {
-            console.log('📸 カメラガイド起動: Before');
-            const cameraGuide = new CameraGuide('before');
+            console.log('📸 カメラガイド起動: Before, plane:', selectedPlane);
+            const cameraGuide = new CameraGuide('before', selectedPlane);
             cameraGuide.show();
         });
     }
@@ -390,8 +390,8 @@ function setupImageUploadListeners() {
     const enableCameraGuideAfter = document.getElementById('enableCameraGuideAfter');
     if (enableCameraGuideAfter) {
         enableCameraGuideAfter.addEventListener('click', () => {
-            console.log('📸 カメラガイド起動: After');
-            const cameraGuide = new CameraGuide('after');
+            console.log('📸 カメラガイド起動: After, plane:', selectedPlane);
+            const cameraGuide = new CameraGuide('after', selectedPlane);
             cameraGuide.show();
         });
     }

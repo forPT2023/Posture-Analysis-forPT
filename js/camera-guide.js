@@ -4,8 +4,9 @@
  */
 
 class CameraGuide {
-    constructor(targetType) {
+    constructor(targetType, plane = 'frontal') {
         this.targetType = targetType; // 'before' or 'after'
+        this.plane = plane; // 'frontal' or 'sagittal'
         this.stream = null;
         this.drawingStarted = false; // 描画開始フラグ
         
@@ -61,8 +62,8 @@ class CameraGuide {
                 </div>
                 
                 <!-- ガイドテキスト -->
-                <div class="guide-text">
-                    中央の縦線に耳の位置を合わせてください
+                <div class="guide-text" id="cameraGuideText">
+                    中央の縦線に体の中心を合わせてください
                 </div>
                 
                 <!-- カメラコントロール -->
@@ -83,6 +84,16 @@ class CameraGuide {
         this.video = document.getElementById('cameraVideo');
         this.canvas = document.getElementById('centerLineCanvas');
         this.ctx = this.canvas.getContext('2d');
+        
+        // ガイドテキストを面に応じて設定
+        const guideText = document.getElementById('cameraGuideText');
+        if (guideText) {
+            if (this.plane === 'sagittal') {
+                guideText.textContent = '中央の縦線に耳の位置を合わせてください（側面から撮影）';
+            } else {
+                guideText.textContent = '中央の縦線に体の中心を合わせてください（正面から撮影）';
+            }
+        }
         
         // イベントリスナー
         document.getElementById('closeCameraBtn').addEventListener('click', () => this.close());
