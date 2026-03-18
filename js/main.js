@@ -309,21 +309,21 @@ function setupPlaneSelectionListeners() {
                 cervicalDetailSettings.style.display = cervicalModeEnabled ? 'block' : 'none';
             }
             
-            // 頸部モードON時はアライメント評価をデフォルトでON
-            const enableAlignmentCheckbox = document.getElementById('enableAlignment');
-            const enableROMCheckbox = document.getElementById('enableROM');
+            // 頸部モードON時はアライメント評価をデフォルトで選択
+            const enableAlignmentRadio = document.getElementById('enableAlignment');
+            const enableROMRadio = document.getElementById('enableROM');
             
             if (cervicalModeEnabled) {
-                // 頸部モード有効化時: アライメント評価をON
+                // 頸部モード有効化時: アライメント評価を選択
                 enableAlignment = true;
-                if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = true;
-                console.log('✅ アライメント評価を自動ON');
+                enableROM = false;
+                if (enableAlignmentRadio) enableAlignmentRadio.checked = true;
+                console.log('✅ アライメント評価を自動選択');
             } else {
-                // 頸部モードOFF時はチェックボックスをリセット
+                // 頸部モードOFF時はリセット
                 enableAlignment = false;
                 enableROM = false;
-                if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = false;
-                if (enableROMCheckbox) enableROMCheckbox.checked = false;
+                if (enableAlignmentRadio) enableAlignmentRadio.checked = true;  // デフォルトに戻す
             }
             
             updateDisplay();
@@ -599,23 +599,25 @@ function setupAnalysisListeners() {
         });
     });
     
-    const enableAlignmentCheckbox = document.getElementById('enableAlignment');
-    if (enableAlignmentCheckbox) {
-        enableAlignmentCheckbox.addEventListener('change', (e) => {
-            enableAlignment = e.target.checked;
-            console.log('🔄 アライメント評価:', enableAlignment);
+    // 頸部測定項目の選択（ラジオボタン）
+    const cervicalMeasurementRadios = document.getElementsByName('cervicalMeasurement');
+    cervicalMeasurementRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const selectedValue = e.target.value;
+            
+            if (selectedValue === 'alignment') {
+                enableAlignment = true;
+                enableROM = false;
+                console.log('🔄 アライメント評価モード選択');
+            } else if (selectedValue === 'rom') {
+                enableAlignment = false;
+                enableROM = true;
+                console.log('🔄 後屈可動域測定モード選択');
+            }
+            
             updateDisplay();
         });
-    }
-    
-    const enableROMCheckbox = document.getElementById('enableROM');
-    if (enableROMCheckbox) {
-        enableROMCheckbox.addEventListener('change', (e) => {
-            enableROM = e.target.checked;
-            console.log('🔄 後屈可動域測定:', enableROM);
-            updateDisplay();
-        });
-    }
+    });
     
     const showSagittalMarkersCheckbox = document.getElementById('showSagittalMarkers');
     if (showSagittalMarkersCheckbox) {
