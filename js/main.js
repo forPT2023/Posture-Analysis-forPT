@@ -42,8 +42,8 @@ const DRAW_CONFIG = {
 const MEDIAPIPE_CONFIG = {
     MODEL_COMPLEXITY: 1,
     SMOOTH_LANDMARKS: true,
-    MIN_DETECTION_CONFIDENCE: 0.5,
-    MIN_TRACKING_CONFIDENCE: 0.5
+    MIN_DETECTION_CONFIDENCE: 0.3,  // 元の値に戻す
+    MIN_TRACKING_CONFIDENCE: 0.3    // 元の値に戻す
 };
 
 // ========================================
