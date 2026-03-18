@@ -2532,7 +2532,14 @@ async function exportDoc(format) {
         
         // 実際のサイズをログ出力（デバッグ用）
         const rect = previewCanvas.getBoundingClientRect();
-        debug('実測サイズ:', Math.round(rect.width), 'px ×', Math.round(rect.height), 'px');
+        console.log('🔍 エクスポート前の実測サイズ:');
+        console.log('   - getBoundingClientRect:', Math.round(rect.width), 'px ×', Math.round(rect.height), 'px');
+        console.log('   - currentLayout:', currentLayout);
+        console.log('   - isVertical:', isVertical);
+        console.log('   - A4目標サイズ:', a4WidthPx, 'px ×', a4HeightPx, 'px');
+        console.log('   - previewCanvas.className:', previewCanvas.className);
+        console.log('   - previewCanvas.style.width:', previewCanvas.style.width);
+        console.log('   - previewCanvas.style.height:', previewCanvas.style.height);
         
         // 画像間の間隔
         const gapPx = 15;
