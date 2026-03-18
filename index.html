@@ -167,9 +167,6 @@
                         <button class="btn btn-secondary" id="enableCameraGuideBefore" style="margin-top: 10px;">
                             <i class="fas fa-camera"></i> カメラガイド付き撮影
                         </button>
-                        <button class="btn btn-secondary" id="editBeforeBtn" style="display: none; margin-top: 10px;">
-                            <i class="fas fa-crop"></i> 画像を調整
-                        </button>
                     </div>
 
                     <!-- After画像 -->
@@ -184,9 +181,6 @@
                         <div class="preview-thumbnail" id="previewAfter"></div>
                         <button class="btn btn-secondary" id="enableCameraGuideAfter" style="margin-top: 10px;">
                             <i class="fas fa-camera"></i> カメラガイド付き撮影
-                        </button>
-                        <button class="btn btn-secondary" id="editAfterBtn" style="display: none; margin-top: 10px;">
-                            <i class="fas fa-crop"></i> 画像を調整
                         </button>
                     </div>
 
@@ -438,40 +432,7 @@
         </div>
     </div>
 
-    <!-- 画像編集モーダル -->
-    <div id="imageEditorModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="imageEditorTitle">画像の調整</h2>
-                <button class="modal-close" id="imageEditorClose">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="image-editor">
-                    <div class="editor-preview">
-                        <canvas id="editorCanvas"></canvas>
-                    </div>
-                    <div class="editor-controls">
-                        <div class="control-group">
-                            <label>拡大率: <span id="scaleValue">100</span>%</label>
-                            <input type="range" id="scaleSlider" min="50" max="200" value="100" step="1">
-                        </div>
-                        <div class="control-group">
-                            <label>回転: <span id="rotationValue">0</span>°</label>
-                            <input type="range" id="rotationSlider" min="-45" max="45" value="0" step="1">
-                        </div>
-                        <div class="control-info">
-                            <i class="fas fa-info-circle"></i>
-                            <span>画像をドラッグして位置を調整できます</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="imageEditorReset">リセット</button>
-                <button class="btn btn-primary" id="imageEditorApply">適用</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- ランドマーク編集モーダル -->
     <div id="landmarkEditorModal" class="modal">
@@ -511,7 +472,6 @@
     
     <!-- メインスクリプト -->
     <script src="js/camera-guide.js?v=13.10.0"></script>
-    <script src="js/image-editor.js?v=13.10.0"></script>
     <script src="js/landmark-editor.js?v=13.10.0"></script>
     <script src="js/main.js?v=13.10.0"></script>
     

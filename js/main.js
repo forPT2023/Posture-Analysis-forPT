@@ -396,25 +396,7 @@ function setupImageUploadListeners() {
             cameraGuide.show();
         });
     }
-    
-    // 画像編集ボタン
-    const editBeforeBtn = document.getElementById('editBeforeBtn');
-    if (editBeforeBtn) {
-        editBeforeBtn.addEventListener('click', () => {
-            if (beforeImage) {
-                openImageEditor(beforeImage, 'before');
-            }
-        });
-    }
-    
-    const editAfterBtn = document.getElementById('editAfterBtn');
-    if (editAfterBtn) {
-        editAfterBtn.addEventListener('click', () => {
-            if (afterImage) {
-                openImageEditor(afterImage, 'after');
-            }
-        });
-    }
+
 }
 
 // 分析・データ管理のイベントリスナー
@@ -831,9 +813,6 @@ function handleImageUpload(file, type) {
                 beforePose = null;  // 新しい画像なので姿勢データをクリア
                 beforeImageSrc = null;  // キャッシュキーをクリア
                 showPreviewThumbnail(e.target.result, 'previewBefore');
-                // 画像編集ボタンを表示
-                const editBtn = document.getElementById('editBeforeBtn');
-                if (editBtn) editBtn.style.display = 'block';
                 // 分析ボタンの状態を更新
                 updateAnalyzeButton();
             } else {
@@ -841,9 +820,6 @@ function handleImageUpload(file, type) {
                 afterPose = null;  // 新しい画像なので姿勢データをクリア
                 afterImageSrc = null;  // キャッシュキーをクリア
                 showPreviewThumbnail(e.target.result, 'previewAfter');
-                // 画像編集ボタンを表示
-                const editBtn = document.getElementById('editAfterBtn');
-                if (editBtn) editBtn.style.display = 'block';
                 // 分析ボタンの状態を更新
                 updateAnalyzeButton();
             }
