@@ -2608,6 +2608,13 @@ async function exportDoc(format) {
         document.head.appendChild(styleEl);
         previewCanvas.classList.add(tempClass);
         
+        // エクスポート時は preview-wrapper の背景を白に（グレー背景を除去）
+        const previewWrapper = document.getElementById('previewWrapper');
+        const originalWrapperBg = previewWrapper ? previewWrapper.style.background : '';
+        if (previewWrapper) {
+            previewWrapper.style.background = '#ffffff';
+        }
+        
         // DOMの再描画を十分に待つ（モバイルブラウザでは時間がかかる）
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -2649,6 +2656,11 @@ async function exportDoc(format) {
         const tempStyleEl = document.getElementById('export-temp-style-final');
         if (tempStyleEl) {
             tempStyleEl.remove();
+        }
+        
+        // preview-wrapper の背景を元に戻す
+        if (previewWrapper) {
+            previewWrapper.style.background = originalWrapperBg;
         }
         
         const patientName = document.getElementById('patientName').value || '無題';
