@@ -934,8 +934,10 @@ async function analyzePose() {
         displayResults();
         
         // 設定パネルとエクスポートセクションを表示
-        document.getElementById('displaySettings').style.display = 'block';
-        document.getElementById('exportSection').style.display = 'block';
+        const displaySettings = document.getElementById('displaySettings');
+        const exportSection = document.getElementById('exportSection');
+        if (displaySettings) displaySettings.style.display = 'block';
+        if (exportSection) exportSection.style.display = 'block';
         
     } catch (error) {
         console.error('❌ 姿勢分析エラー:', error);
@@ -1030,8 +1032,15 @@ function displayResults() {
     console.log('📊 結果表示開始');
     
     // 空の状態を非表示、レポートコンテンツを表示
-    document.getElementById('emptyState').style.display = 'none';
-    document.getElementById('reportContent').style.display = 'flex';
+    const emptyState = document.getElementById('emptyState');
+    const reportContent = document.getElementById('reportContent');
+    
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    if (reportContent) {
+        reportContent.style.display = 'flex';
+    }
     
     // preview-canvasにレイアウトクラスを追加
     const previewCanvas = document.getElementById('previewCanvas');
@@ -2432,8 +2441,10 @@ function loadData(e) {
                     updateAnalyzeButton();
                     displayResults();
                     
-                    document.getElementById('displaySettings').style.display = 'block';
-                    document.getElementById('exportSection').style.display = 'block';
+                    const displaySettings = document.getElementById('displaySettings');
+                    const exportSection = document.getElementById('exportSection');
+                    if (displaySettings) displaySettings.style.display = 'block';
+                    if (exportSection) exportSection.style.display = 'block';
                     
                     showStatus('データの読み込みが完了しました', 'success');
                 };
