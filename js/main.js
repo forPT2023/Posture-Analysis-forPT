@@ -245,12 +245,19 @@ function setupEventListeners() {
                 cervicalDetailSettings.style.display = cervicalModeEnabled ? 'block' : 'none';
             }
             
-            // 頸部モードOFF時はチェックボックスをリセット
-            if (!cervicalModeEnabled) {
+            // 頸部モードON時はアライメント評価をデフォルトでON
+            const enableAlignmentCheckbox = document.getElementById('enableAlignment');
+            const enableROMCheckbox = document.getElementById('enableROM');
+            
+            if (cervicalModeEnabled) {
+                // 頸部モード有効化時: アライメント評価をON
+                enableAlignment = true;
+                if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = true;
+                console.log('✅ アライメント評価を自動ON');
+            } else {
+                // 頸部モードOFF時はチェックボックスをリセット
                 enableAlignment = false;
                 enableROM = false;
-                const enableAlignmentCheckbox = document.getElementById('enableAlignment');
-                const enableROMCheckbox = document.getElementById('enableROM');
                 if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = false;
                 if (enableROMCheckbox) enableROMCheckbox.checked = false;
             }
@@ -2116,52 +2123,6 @@ function generateMetricHTML(label, value, unit, improved, status) {
             <span class="metric-value ${className}">${value} ${unit} ${improvementBadge}${statusBadge}</span>
         </div>
     `;
-}
-
-// 頸部モード切り替え関数
-function toggleCervicalMode() {
-    cervicalModeEnabled = !cervicalModeEnabled;
-    
-    const toggleButton = document.getElementById('cervicalModeToggle');
-    const detailSettings = document.getElementById('cervicalDetailSettings');
-    const modeDescription = document.getElementById('modeDescription');
-    
-    if (cervicalModeEnabled) {
-        // 頸部モードON
-        toggleButton.innerHTML = '<i class="fas fa-head-side-cough" style="margin-right: 5px;"></i>頸部専用モード';
-        toggleButton.style.background = '#ffc107';
-        toggleButton.style.borderColor = '#ffc107';
-        toggleButton.style.color = '#000';
-        detailSettings.style.display = 'block';
-        modeDescription.textContent = '頸部の詳細な測定を行います（選択した項目のみ）';
-        
-        // 少なくとも1つは選択されるようにする
-        if (!enableAlignment && !enableROM) {
-            enableAlignment = true;
-            document.getElementById('enableAlignment').checked = true;
-        }
-    } else {
-        // 全身姿勢モードON
-        toggleButton.innerHTML = '<i class="fas fa-user-circle" style="margin-right: 5px;"></i>全身姿勢モード';
-        toggleButton.style.background = 'white';
-        toggleButton.style.borderColor = '#6c757d';
-        toggleButton.style.color = '#000';
-        detailSettings.style.display = 'none';
-        modeDescription.textContent = '全身の姿勢バランスを分析します（5指標）';
-        
-        // 頸部設定をリセット
-        enableAlignment = false;
-        enableROM = false;
-        document.getElementById('enableAlignment').checked = false;
-        document.getElementById('enableROM').checked = false;
-    }
-    
-    console.log('🔄 測定モード切り替え:', cervicalModeEnabled ? '頸部専用モード' : '全身姿勢モード');
-    
-    // 既に分析済みの場合は表示を更新
-    if (beforePose && afterPose) {
-        updateDisplay();
-    }
 }
 
 function updateDisplay() {
