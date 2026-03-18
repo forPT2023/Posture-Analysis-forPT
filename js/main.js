@@ -1479,10 +1479,24 @@ function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) 
         return; // 両モードとも無効なら何も描画しない
     }
     
-    // 使用するランドマークを選択
-    const earIdx = facingSide === 'left' ? 7 : 8;
-    const shoulderIdx = facingSide === 'left' ? 11 : 12;
-    const eyeIdx = facingSide === 'left' ? 2 : 5;
+    // 全身モードと同じ判定ロジックを使用（z座標ベース）
+    const leftShoulder = landmarks[11];
+    const rightShoulder = landmarks[12];
+    
+    // z座標が存在しない、または同じ値の場合はデフォルトで左側を表示
+    let isLeftFront = true;
+    
+    if (leftShoulder && rightShoulder && 
+        typeof leftShoulder.z !== 'undefined' && 
+        typeof rightShoulder.z !== 'undefined') {
+        // z座標が小さい方が手前（カメラに近い）
+        isLeftFront = leftShoulder.z < rightShoulder.z;
+    }
+    
+    // 全身モードと同じ側のランドマークを使用
+    const earIdx = isLeftFront ? 7 : 8;
+    const shoulderIdx = isLeftFront ? 11 : 12;
+    const eyeIdx = isLeftFront ? 2 : 5;
     
     const ear = landmarks[earIdx];
     const shoulder = landmarks[shoulderIdx];
