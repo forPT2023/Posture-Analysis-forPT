@@ -1193,17 +1193,8 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         if (poseResults && poseResults.poseLandmarks && (enableAlignment || enableROM)) {
             drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
         }
-    } else if (selectedPlane === 'sagittal' && !cervicalModeEnabled) {
-        // 矢状面・全身モード: 全身骨格線 + 矢状面分析マーカー
-        if (showSkeleton && poseResults && poseResults.poseLandmarks) {
-            drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
-        }
-        // 矢状面分析マーカーも描画（全身モードでも）
-        if (poseResults && poseResults.poseLandmarks) {
-            drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
-        }
     } else {
-        // 前額面モード: 全身骨格線のみ
+        // 全身モード: 全身骨格線のみ描画（矢状面マーカーは表示しない）
         if (showSkeleton && poseResults && poseResults.poseLandmarks) {
             drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
         }
