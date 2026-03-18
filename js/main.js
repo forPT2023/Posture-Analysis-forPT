@@ -227,6 +227,16 @@ function initMediaPipe() {
 // イベントリスナー設定（分割版）
 // ========================================
 
+// メイン関数: すべてのイベントリスナーを設定
+function setupEventListeners() {
+    console.log('⚙️ イベントリスナー設定開始');
+    setupBasicInfoListeners();
+    setupPlaneSelectionListeners();
+    setupImageUploadListeners();
+    setupAnalysisListeners();
+    console.log('✅ イベントリスナー設定完了');
+}
+
 // 基本情報（タイトル・患者名・日付）のイベントリスナー
 function setupBasicInfoListeners() {
     const titleInput = document.getElementById('reportTitle');
