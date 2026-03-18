@@ -377,10 +377,8 @@ function setupEventListeners() {
     if (showMetricsCheck) {
         showMetricsCheck.addEventListener('change', (e) => {
             showMetrics = e.target.checked;
-            const metricsArea = document.getElementById('metricsArea');
-            if (metricsArea) {
-                metricsArea.style.display = showMetrics ? 'block' : 'none';
-            }
+            // metricsArea.style.displayの直接設定は削除
+            // generateMetrics()内で適切に制御される
             updateDisplay();
         });
     }
