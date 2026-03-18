@@ -2099,31 +2099,6 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
                                                  afterROMAngle >= 40 ? '軽度制限' :
                                                  afterROMAngle >= 25 ? '中等度制限' : '重度制限';
         
-        // 正常可動域下限（50度）との差分
-        const normalROM_min = 50;  // 正常可動域の下限
-        const beforeDeficit = Math.max(0, normalROM_min - beforeROMAngle);
-        const afterDeficit = Math.max(0, normalROM_min - afterROMAngle);
-        const deficitImproved = afterDeficit < beforeDeficit;
-        
-        metricCount++;
-        metrics[`metric${metricCount}Label`] = '可動域制限度';
-        metrics[`metric${metricCount}Value`] = `${beforeDeficit.toFixed(1)} → ${afterDeficit.toFixed(1)}`;
-        metrics[`metric${metricCount}Unit`] = '度';
-        metrics[`metric${metricCount}Improved`] = deficitImproved;
-        
-        // 制限度の判定（afterROMAngle基準で再評価）
-        if (afterROMAngle >= 60) {
-            metrics[`metric${metricCount}Status`] = '優良（制限なし）';
-        } else if (afterDeficit === 0) {
-            metrics[`metric${metricCount}Status`] = '制限なし（正常下限）';
-        } else if (afterDeficit <= 10) {
-            metrics[`metric${metricCount}Status`] = '軽度制限';
-        } else if (afterDeficit <= 25) {
-            metrics[`metric${metricCount}Status`] = '中等度制限';
-        } else {
-            metrics[`metric${metricCount}Status`] = '重度制限';
-        }
-        
         // 注意事項
         if (beforeROMAngle < 10 && afterROMAngle < 10) {
             console.warn('⚠️ Before/After両方の後屈角度が小さすぎます（Before: ' + beforeROMAngle.toFixed(1) + '度, After: ' + afterROMAngle.toFixed(1) + '度）。最大後屈姿勢で撮影してください。');
