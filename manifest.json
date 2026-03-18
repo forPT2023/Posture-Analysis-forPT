@@ -1,7 +1,7 @@
 {
-  "name": "姿勢分析",
-  "short_name": "姿勢分析",
-  "description": "MediaPipe Poseを使用した姿勢分析アプリ。Before/After画像の比較と姿勢評価を提供します。",
+  "name": "姿勢分析アプリ forPT",
+  "short_name": "姿勢分析 forPT",
+  "description": "理学療法士のためのMediaPipe Pose姿勢分析アプリ。Before/After画像の比較と姿勢評価を提供します。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
