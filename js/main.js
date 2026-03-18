@@ -208,30 +208,51 @@ function setupEventListeners() {
             selectedPlane = e.target.value;
             console.log('✅ 撮影面変更:', selectedPlane);
             
-            // 矢状面分析パネルの表示/非表示
-            const sagittalAnalysisGroup = document.getElementById('sagittalAnalysisGroup');
-            if (sagittalAnalysisGroup) {
-                sagittalAnalysisGroup.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
+            // 矢状面モード選択カードの表示/非表示
+            const sagittalModeCard = document.getElementById('sagittalModeCard');
+            if (sagittalModeCard) {
+                sagittalModeCard.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
             }
             
-            // 矢状面モード選択時のみ、チェックボックスの状態を読み込む
-            if (selectedPlane === 'sagittal') {
-                const enableAlignmentCheckbox = document.getElementById('enableAlignment');
-                const enableROMCheckbox = document.getElementById('enableROM');
-                
-                if (enableAlignmentCheckbox) {
-                    enableAlignment = enableAlignmentCheckbox.checked;
-                }
-                if (enableROMCheckbox) {
-                    enableROM = enableROMCheckbox.checked;
-                }
-                
-                console.log('✅ 矢状面分析モード有効化:', { enableAlignment, enableROM });
-            } else {
-                // 前額面モード時は矢状面分析を無効化
+            // 前額面モード時は矢状面分析を無効化
+            if (selectedPlane !== 'sagittal') {
+                cervicalModeEnabled = false;
                 enableAlignment = false;
                 enableROM = false;
                 console.log('✅ 前額面モード: 矢状面分析無効');
+            } else {
+                // 矢状面モード時は現在の選択を読み込む
+                const sagittalModeRadio = document.querySelector('input[name="sagittalMode"]:checked');
+                if (sagittalModeRadio) {
+                    cervicalModeEnabled = sagittalModeRadio.value === 'cervical';
+                    console.log('✅ 矢状面分析モード有効化:', { cervicalModeEnabled });
+                }
+            }
+            
+            updateDisplay();
+        });
+    });
+    
+    // 矢状面モード選択（全身 / 頸部）
+    document.querySelectorAll('input[name="sagittalMode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            cervicalModeEnabled = e.target.value === 'cervical';
+            console.log('✅ 矢状面測定モード変更:', e.target.value, '頸部モード:', cervicalModeEnabled);
+            
+            // 頸部詳細設定の表示/非表示
+            const cervicalDetailSettings = document.getElementById('cervicalDetailSettings');
+            if (cervicalDetailSettings) {
+                cervicalDetailSettings.style.display = cervicalModeEnabled ? 'block' : 'none';
+            }
+            
+            // 頸部モードOFF時はチェックボックスをリセット
+            if (!cervicalModeEnabled) {
+                enableAlignment = false;
+                enableROM = false;
+                const enableAlignmentCheckbox = document.getElementById('enableAlignment');
+                const enableROMCheckbox = document.getElementById('enableROM');
+                if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = false;
+                if (enableROMCheckbox) enableROMCheckbox.checked = false;
             }
             
             updateDisplay();
@@ -536,24 +557,18 @@ function setupEventListeners() {
     const enableAlignmentCheckbox = document.getElementById('enableAlignment');
     if (enableAlignmentCheckbox) {
         enableAlignmentCheckbox.addEventListener('change', (e) => {
-            // 矢状面モードかつ頸部モードON時のみ有効化
-            if (selectedPlane === 'sagittal' && cervicalModeEnabled) {
-                enableAlignment = e.target.checked;
-                console.log('🔄 アライメント評価:', enableAlignment);
-                updateDisplay();
-            }
+            enableAlignment = e.target.checked;
+            console.log('🔄 アライメント評価:', enableAlignment);
+            updateDisplay();
         });
     }
     
     const enableROMCheckbox = document.getElementById('enableROM');
     if (enableROMCheckbox) {
         enableROMCheckbox.addEventListener('change', (e) => {
-            // 矢状面モードかつ頸部モードON時のみ有効化
-            if (selectedPlane === 'sagittal' && cervicalModeEnabled) {
-                enableROM = e.target.checked;
-                console.log('🔄 後屈可動域測定:', enableROM);
-                updateDisplay();
-            }
+            enableROM = e.target.checked;
+            console.log('🔄 後屈可動域測定:', enableROM);
+            updateDisplay();
         });
     }
     

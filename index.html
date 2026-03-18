@@ -98,6 +98,57 @@
                     </div>
                 </div>
 
+                <!-- 矢状面モード選択（矢状面選択時のみ表示） -->
+                <div class="card" id="sagittalModeCard" style="display: none;">
+                    <h2 class="card-title">
+                        <i class="fas fa-sliders-h"></i> 測定モードの選択
+                    </h2>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                        矢状面（側面）での測定目的を選択してください
+                    </p>
+                    
+                    <div class="plane-selection">
+                        <label class="radio-card" id="fullBodyModeCard">
+                            <input type="radio" name="sagittalMode" value="fullBody" checked>
+                            <div class="radio-content">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">👤</div>
+                                <span class="radio-label">全身姿勢評価</span>
+                                <small>姿勢バランス・骨盤・膝など（5指標）</small>
+                            </div>
+                        </label>
+                        
+                        <label class="radio-card" id="cervicalModeCard">
+                            <input type="radio" name="sagittalMode" value="cervical">
+                            <div class="radio-content">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">🦴</div>
+                                <span class="radio-label">頸部専用評価</span>
+                                <small>頭部前方偏位・後屈可動域など</small>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- 頸部詳細設定（頸部モード選択時のみ表示） -->
+                    <div id="cervicalDetailSettings" style="display: none; margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 2px solid #ffc107;">
+                        <label style="display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: #856404;">
+                            <i class="fas fa-check-circle" style="margin-right: 5px;"></i>測定項目を選択
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enableAlignment">
+                            <span>アライメント評価</span>
+                        </label>
+                        <div style="font-size: 0.75rem; color: #856404; margin-left: 24px; margin-top: 2px; margin-bottom: 10px;">
+                            頭部前方偏位の角度と距離（2指標）
+                        </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enableROM">
+                            <span>後屈可動域測定</span>
+                        </label>
+                        <div style="font-size: 0.75rem; color: #856404; margin-left: 24px; margin-top: 2px;">
+                            頸部伸展角度と制限度（2指標）
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 画像アップロード -->
                 <div class="card">
                     <h2 class="card-title"><i class="fas fa-images"></i> 画像アップロード</h2>
