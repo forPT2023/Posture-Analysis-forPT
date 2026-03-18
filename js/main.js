@@ -271,14 +271,7 @@ function setupPlaneSelectionListeners() {
             selectedPlane = e.target.value;
             console.log('✅ 撮影面変更:', selectedPlane);
             
-            // 撮影側面選択カードの表示/非表示（矢状面選択直後に表示）
-            const facingSideCard = document.getElementById('facingSideCard');
-            if (facingSideCard) {
-                facingSideCard.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
-                console.log('👉 撮影側面選択カード:', selectedPlane === 'sagittal' ? '表示' : '非表示');
-            }
-            
-            // 矢状面モード選択カードの表示/非表示
+            // 矢状面モード選択カードの表示/非表示（撮影側面選択も内蔵）
             const sagittalModeCard = document.getElementById('sagittalModeCard');
             if (sagittalModeCard) {
                 sagittalModeCard.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
