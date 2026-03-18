@@ -1647,16 +1647,16 @@ function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) 
         return; // 両モードとも無効なら何も描画しない
     }
     
-    // ユーザーが選択した撮影側面を使用
-    // facingSide: 'left' = 左側面撮影（右半身が見える）, 'right' = 右側面撮影（左半身が見える）
+    // ユーザーが選択した撮影側面を使用（医療標準）
+    // facingSide: 'right' = 右側面撮影（身体の右側を測定）, 'left' = 左側面撮影（身体の左側を測定）
     const isRightSideFacing = facingSide === 'right';
     
     // 撮影側面に応じてランドマークを選択
-    // 右側面撮影（左半身が見える）: 左耳(7), 左肩(11), 左目(2)
-    // 左側面撮影（右半身が見える）: 右耳(8), 右肩(12), 右目(5)
-    const earIdx = isRightSideFacing ? 7 : 8;
-    const shoulderIdx = isRightSideFacing ? 11 : 12;
-    const eyeIdx = isRightSideFacing ? 2 : 5;
+    // 右側面撮影: 右耳(8), 右肩(12), 右目(5)
+    // 左側面撮影: 左耳(7), 左肩(11), 左目(2)
+    const earIdx = isRightSideFacing ? 8 : 7;
+    const shoulderIdx = isRightSideFacing ? 12 : 11;
+    const eyeIdx = isRightSideFacing ? 5 : 2;
     
     console.log(`📐 矢状面分析: 撮影側面=${facingSide}, 使用ランドマーク: 耳=${earIdx}, 肩=${shoulderIdx}, 目=${eyeIdx}`);
     
@@ -1940,17 +1940,17 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         
     } else {
         // 矢状面（側面）分析
-        // ユーザーが選択した撮影側面を使用
+        // ユーザーが選択した撮影側面を使用（医療標準）
         const isRightSideFacing = facingSide === 'right';
         
-        // 右側面撮影（左半身が見える）: 左側ランドマークを使用
-        // 左側面撮影（右半身が見える）: 右側ランドマークを使用
-        const earIdx = isRightSideFacing ? 7 : 8;
-        const shoulderIdx = isRightSideFacing ? 11 : 12;
-        const hipIdx = isRightSideFacing ? 23 : 24;
-        const kneeIdx = isRightSideFacing ? 25 : 26;
-        const ankleIdx = isRightSideFacing ? 27 : 28;
-        const eyeIdx = isRightSideFacing ? 2 : 5;
+        // 右側面撮影: 右側ランドマークを使用（右耳、右肩など）
+        // 左側面撮影: 左側ランドマークを使用（左耳、左肩など）
+        const earIdx = isRightSideFacing ? 8 : 7;
+        const shoulderIdx = isRightSideFacing ? 12 : 11;
+        const hipIdx = isRightSideFacing ? 24 : 23;
+        const kneeIdx = isRightSideFacing ? 26 : 25;
+        const ankleIdx = isRightSideFacing ? 28 : 27;
+        const eyeIdx = isRightSideFacing ? 5 : 2;
         
         console.log(`📐 メトリクス計算: 撮影側面=${facingSide}, 使用ランドマーク: 耳=${earIdx}, 肩=${shoulderIdx}`);
         
