@@ -1,7 +1,54 @@
-// 姿勢分析ツール v13.9.6 - メインスクリプト（カメラガイド機能追加）
+// 姿勢分析ツール v13.10.0 - メインスクリプト（最適化版）
 
-// デバッグモード設定
+// ========================================
+// 定数定義
+// ========================================
+
+// アプリケーション設定
+const APP_VERSION = '13.10.0';
 const DEBUG_MODE = false; // 本番環境ではfalse
+
+// ROM（後屈可動域）判定基準
+const ROM_THRESHOLDS = {
+    EXCELLENT: 60,    // 優良可動域
+    NORMAL: 50,       // 正常可動域
+    MILD: 40,         // 軽度制限
+    MODERATE: 25      // 中等度制限（これ未満は重度）
+};
+
+// アライメント角度判定基準
+const ALIGNMENT_THRESHOLDS = {
+    NORMAL: 15,       // 正常
+    MILD: 30,         // 軽度前方偏位
+    MODERATE: 45      // 中等度前方偏位（これ以上は重度）
+};
+
+// 色定義
+const COLORS = {
+    BEFORE: '#2196F3',  // 青
+    AFTER: '#F44336',   // 赤
+    HIGHLIGHT: 'rgba(255, 193, 7, 0.3)', // 黄色（半透明）
+    REFERENCE: 'rgba(255, 215, 0, 1.0)'  // 金色
+};
+
+// 描画設定
+const DRAW_CONFIG = {
+    LINE_WIDTH: 2,
+    MARKER_RADIUS: 5,
+    VISIBILITY_THRESHOLD: 0.3
+};
+
+// MediaPipe設定
+const MEDIAPIPE_CONFIG = {
+    MODEL_COMPLEXITY: 1,
+    SMOOTH_LANDMARKS: true,
+    MIN_DETECTION_CONFIDENCE: 0.5,
+    MIN_TRACKING_CONFIDENCE: 0.5
+};
+
+// ========================================
+// グローバル変数
+// ========================================
 
 // デバッグログ関数 (開発モードのみ出力)
 function debug(...args) {
@@ -19,7 +66,7 @@ function logError(...args) {
 if (DEBUG_MODE) {
     console.log('🔧 デバッグモード: 有効');
 } else {
-    console.log('姿勢分析アプリ v13.9.6 起動');
+    console.log(`姿勢分析アプリ v${APP_VERSION} 起動`);
 }
 
 let selectedPlane = 'frontal'; // 'frontal' または 'sagittal'
@@ -32,9 +79,9 @@ let showSkeleton = true;
 let showMetrics = true;
 let showHighlight = false;
 let showReferenceLine = true;
-let lineWidth = 2;
-let beforeColor = '#2196F3'; // 青
-let afterColor = '#F44336'; // 赤
+let lineWidth = DRAW_CONFIG.LINE_WIDTH;
+let beforeColor = COLORS.BEFORE;
+let afterColor = COLORS.AFTER;
 
 // 矢状面分析設定（矢状面モード選択時のみ有効）
 let facingSide = 'right'; // 'left' または 'right'
@@ -149,12 +196,12 @@ function initMediaPipe() {
         });
         
         pose.setOptions({
-            modelComplexity: 1,
-            smoothLandmarks: true,
+            modelComplexity: MEDIAPIPE_CONFIG.MODEL_COMPLEXITY,
+            smoothLandmarks: MEDIAPIPE_CONFIG.SMOOTH_LANDMARKS,
             enableSegmentation: false,
             smoothSegmentation: false,
-            minDetectionConfidence: 0.3,
-            minTrackingConfidence: 0.3  
+            minDetectionConfidence: MEDIAPIPE_CONFIG.MIN_DETECTION_CONFIDENCE,
+            minTrackingConfidence: MEDIAPIPE_CONFIG.MIN_TRACKING_CONFIDENCE  
         });
         
         mediaPipeReady = true;
@@ -176,8 +223,12 @@ function initMediaPipe() {
     }
 }
 
-function setupEventListeners() {
-    // 基本情報
+// ========================================
+// イベントリスナー設定（分割版）
+// ========================================
+
+// 基本情報（タイトル・患者名・日付）のイベントリスナー
+function setupBasicInfoListeners() {
     const titleInput = document.getElementById('reportTitle');
     const titlePreview = document.getElementById('previewTitle');
     if (titleInput && titlePreview) {
@@ -201,8 +252,11 @@ function setupEventListeners() {
             datePreview.textContent = formatDate(dateInput.value);
         });
     }
-    
-    // 面選択
+}
+
+// 面選択（前額面・矢状面）のイベントリスナー
+function setupPlaneSelectionListeners() {
+    // 撮影面選択
     document.querySelectorAll('input[name="plane"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             selectedPlane = e.target.value;
@@ -265,8 +319,11 @@ function setupEventListeners() {
             updateDisplay();
         });
     });
-    
-    // 画像アップロード - Before
+}
+
+// 画像アップロードのイベントリスナー
+function setupImageUploadListeners() {
+    // Before画像
     const uploadAreaBefore = document.getElementById('uploadAreaBefore');
     const fileInputBefore = document.getElementById('fileInputBefore');
     
@@ -348,21 +405,10 @@ function setupEventListeners() {
             }
         });
     }
-    
-    // 分析ボタンの状態を更新する関数
-    function updateAnalyzeButton() {
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        
-        if (!analyzeBtn) return;
-        
-        const hasBeforeImage = beforeImage !== null;
-        const hasAfterImage = afterImage !== null;
-        
-        // 両方アップロード済みの場合のみボタンを有効化
-        analyzeBtn.disabled = !(hasBeforeImage && hasAfterImage);
-    }
-    
-    // 初期状態の更新
+}
+
+// 分析・データ管理のイベントリスナー
+function setupAnalysisListeners() {
     updateAnalyzeButton();
     
     // 分析ボタン
@@ -1213,7 +1259,7 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
     // 線を描画
     let drawnLines = 0;
     // 🔧 前額面・矢状面ともにvisibilityしきい値を0.3に統一（検出率向上）
-    const visibilityThreshold = 0.3;
+    const visibilityThreshold = DRAW_CONFIG.VISIBILITY_THRESHOLD;
     
     // デバッグ: 前額面の主要ランドマークのvisibilityを確認
     if (selectedPlane === 'frontal') {
@@ -2061,9 +2107,9 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         metrics[`metric${metricCount}Value`] = `${beforeAlignmentAngle.toFixed(1)} → ${afterAlignmentAngle.toFixed(1)}`;
         metrics[`metric${metricCount}Unit`] = '度';
         metrics[`metric${metricCount}Improved`] = angleImproved;
-        metrics[`metric${metricCount}Status`] = afterAlignmentAngle < 15 ? '正常' : 
-                                                 afterAlignmentAngle < 30 ? '軽度前方偏位' :
-                                                 afterAlignmentAngle < 45 ? '中等度前方偏位' : '重度前方偏位';
+        metrics[`metric${metricCount}Status`] = afterAlignmentAngle < ALIGNMENT_THRESHOLDS.NORMAL ? '正常' : 
+                                                 afterAlignmentAngle < ALIGNMENT_THRESHOLDS.MILD ? '軽度前方偏位' :
+                                                 afterAlignmentAngle < ALIGNMENT_THRESHOLDS.MODERATE ? '中等度前方偏位' : '重度前方偏位';
         
         metricCount++;
         metrics[`metric${metricCount}Label`] = '頭部前方偏位距離';
@@ -2094,10 +2140,10 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         metrics[`metric${metricCount}Improved`] = angleImproved;
         
         // 判定基準（正常な頸椎後屈可動域は50-60度、それ以上は優良）
-        metrics[`metric${metricCount}Status`] = afterROMAngle >= 60 ? '優良可動域' :
-                                                 afterROMAngle >= 50 ? '正常可動域' :
-                                                 afterROMAngle >= 40 ? '軽度制限' :
-                                                 afterROMAngle >= 25 ? '中等度制限' : '重度制限';
+        metrics[`metric${metricCount}Status`] = afterROMAngle >= ROM_THRESHOLDS.EXCELLENT ? '優良可動域' :
+                                                 afterROMAngle >= ROM_THRESHOLDS.NORMAL ? '正常可動域' :
+                                                 afterROMAngle >= ROM_THRESHOLDS.MILD ? '軽度制限' :
+                                                 afterROMAngle >= ROM_THRESHOLDS.MODERATE ? '中等度制限' : '重度制限';
         
         // 注意事項
         if (beforeROMAngle < 10 && afterROMAngle < 10) {
