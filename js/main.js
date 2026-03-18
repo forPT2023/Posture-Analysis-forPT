@@ -1640,6 +1640,12 @@ function generateMetrics() {
     // 数値計算
     const metrics = calculateMetrics(beforeLandmarks, afterLandmarks);
     
+    // デバッグ: 頸部モード時のmetricsを確認
+    if (selectedPlane === 'sagittal' && (enableAlignment || enableROM)) {
+        console.log('🔍 頸部モード時のmetrics:', metrics);
+        console.log('🔍 頸部モード状態:', { enableAlignment, enableROM, showCervicalMetrics });
+    }
+    
     // HTML生成（ポジティブな結果のみ表示）
     const planeTitle = selectedPlane === 'frontal' ? '前額面（正面）' : '矢状面（側面）';
     
