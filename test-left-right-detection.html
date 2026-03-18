@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>左右側面検証テスト - 姿勢分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f9f9f9;
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .test-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        .test-pending {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        .icon {
+            margin-right: 8px;
+        }
+        .code {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .instruction {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+            margin: 15px 0;
+        }
+        .instruction ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        .instruction li {
+            margin: 8px 0;
+        }
+        .emphasis {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .url-box {
+            background: #fff;
+            padding: 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .url-box a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .url-box a:hover {
+            text-decoration: underline;
+        }
+        .checklist {
+            margin-top: 20px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 12px 0;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            margin-top: 2px;
+        }
+        .expected-result {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+            margin: 15px 0;
+        }
+        .expected-result h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 左右側面検証テスト</h1>
+        <p class="subtitle">両側面で正確な姿勢測定が可能か検証します</p>
+
+        <!-- 実装済み修正の確認 -->
+        <div class="section">
+            <h2>✅ 実装済みの修正内容</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>🐛 修正されたバグ</h3>
+                    <div class="test-item test-pass">
+                        <span class="icon">✓</span>
+                        ランドマークのディープコピー実装
+                    </div>
+                    <div class="test-item test-pass">
+                        <span class="icon">✓</span>
+                        Before/After独立したz座標判定
+                    </div>
+                    <div class="test-item test-pass">
+                        <span class="icon">✓</span>
+                        MediaPipeコールバック競合防止
+                    </div>
+                    <div class="test-item test-pass">
+                        <span class="icon">✓</span>
+                        詳細なデバッグログ追加
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h3>🔧 主要な修正箇所</h3>
+                    <div class="code">
+// ディープコピー
+results.poseLandmarks = 
+  JSON.parse(JSON.stringify(
+    results.poseLandmarks
+  ));
+
+// 独立した側面判定
+beforeIsLeftFront = 
+  beforeLeftShoulder.z < 
+  beforeRightShoulder.z;
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- テストURL -->
+        <div class="section">
+            <h2>🌐 テスト環境</h2>
+            <div class="url-box">
+                <a href="https://posture-analysis.pages.dev" target="_blank">
+                    https://posture-analysis.pages.dev
+                </a>
+            </div>
+            <p style="text-align: center; margin-top: 10px; color: #666;">
+                ↑ このURLでテストを実施してください
+            </p>
+        </div>
+
+        <!-- テスト手順 -->
+        <div class="section">
+            <h2>📋 テスト手順</h2>
+            
+            <div class="instruction">
+                <strong>🧪 テスト1: 左側面の測定精度</strong>
+                <ol>
+                    <li>アプリを開き、<span class="emphasis">開発者コンソール</span>を開く（F12キー）</li>
+                    <li>「矢状面（側面）」を選択</li>
+                    <li>「頸部専用評価」を選択（アライメント評価が自動ON）</li>
+                    <li>Before画像: <span class="emphasis">左側面</span>の姿勢画像をアップロード</li>
+                    <li>After画像: <span class="emphasis">左側面</span>の異なる姿勢画像をアップロード</li>
+                    <li>「姿勢を分析」ボタンをクリック</li>
+                    <li>コンソールログを確認</li>
+                    <li>表示された数値データを記録</li>
+                </ol>
+            </div>
+
+            <div class="expected-result">
+                <h4>📊 期待される結果（左側面）</h4>
+                <div class="code">
+✅ Before画像の分析完了: { 
+  imageId: "1234567890_0.123",
+  ear: "(0.512, 0.234)" 
+}
+✅ After画像の分析完了: { 
+  imageId: "1234567891_0.456",
+  ear: "(0.498, 0.245)"  ← 異なる座標
+}
+🔍 サイド判定: { 
+  before: 'left', 
+  after: 'left' 
+}
+🔍 Before座標: { 
+  ear: "(0.512, 0.234)", 
+  shoulder: "(0.534, 0.456)" 
+}
+🔍 After座標: { 
+  ear: "(0.498, 0.245)", 
+  shoulder: "(0.521, 0.467)" 
+}
+🔍 計算結果: { 
+  beforeAngle: "24.9", 
+  afterAngle: "18.5",  ← 異なる角度
+  beforeDistance: "33.2", 
+  afterDistance: "28.1"  ← 異なる距離
+}
+                </div>
+                <p><strong>画面表示:</strong> 頭部前方偏位角度: 24.9 → 18.5 度 <span style="color: #4caf50;">✓ 改善</span></p>
+            </div>
+
+            <div class="instruction">
+                <strong>🧪 テスト2: 右側面の測定精度</strong>
+                <ol>
+                    <li>ページをリロード（キャッシュクリア: Ctrl+Shift+R）</li>
+                    <li>同じ設定（矢状面 → 頸部専用評価）</li>
+                    <li>Before画像: <span class="emphasis">右側面</span>の姿勢画像をアップロード</li>
+                    <li>After画像: <span class="emphasis">右側面</span>の異なる姿勢画像をアップロード</li>
+                    <li>「姿勢を分析」ボタンをクリック</li>
+                    <li>コンソールログを確認</li>
+                    <li>表示された数値データを記録</li>
+                </ol>
+            </div>
+
+            <div class="expected-result">
+                <h4>📊 期待される結果（右側面）</h4>
+                <div class="code">
+🔍 サイド判定: { 
+  before: 'right', 
+  after: 'right' 
+}
+🔍 Before座標: { 
+  ear: "(0.488, 0.256)", 
+  shoulder: "(0.466, 0.478)" 
+}
+🔍 After座標: { 
+  ear: "(0.502, 0.267)", 
+  shoulder: "(0.479, 0.489)" 
+}
+🔍 計算結果: { 
+  beforeAngle: "26.3", 
+  afterAngle: "19.2",  ← 異なる角度
+  beforeDistance: "31.8", 
+  afterDistance: "26.5"  ← 異なる距離
+}
+                </div>
+                <p><strong>画面表示:</strong> 頭部前方偏位角度: 26.3 → 19.2 度 <span style="color: #4caf50;">✓ 改善</span></p>
+            </div>
+
+            <div class="instruction">
+                <strong>🧪 テスト3: 左右混在（クロステスト）</strong>
+                <ol>
+                    <li>ページをリロード</li>
+                    <li>Before画像: <span class="emphasis">左側面</span>の姿勢画像</li>
+                    <li>After画像: <span class="emphasis">右側面</span>の姿勢画像</li>
+                    <li>分析実行してコンソール確認</li>
+                </ol>
+            </div>
+
+            <div class="expected-result">
+                <h4>📊 期待される結果（左右混在）</h4>
+                <div class="code">
+🔍 サイド判定: { 
+  before: 'left',   ← Before は左
+  after: 'right'    ← After は右
+}
+                </div>
+                <p><strong>重要:</strong> サイド判定が異なっても、それぞれ正しいランドマークを使用して計算される</p>
+            </div>
+        </div>
+
+        <!-- チェックリスト -->
+        <div class="section">
+            <h2>✓ 検証チェックリスト</h2>
+            <div class="checklist">
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>1. 左側面のBefore/Afterで異なる数値が表示される</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            頭部前方偏位角度と距離が Before → After で変化する
+                        </p>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>2. 右側面のBefore/Afterで異なる数値が表示される</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            左側面と同様に正確な測定が可能
+                        </p>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>3. コンソールログでサイド判定が正しく表示される</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            🔍 サイド判定: { before: 'left/right', after: 'left/right' }
+                        </p>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>4. Before座標とAfter座標が異なる値を持つ</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            コンソールの 🔍 Before座標 と 🔍 After座標 が異なる
+                        </p>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>5. 改善がある場合、✓ 改善マークが表示される</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            角度や距離が小さくなった場合に改善バッジが表示
+                        </p>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>6. 左右混在でも正しく動作する</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            Before左、After右でも各々正しいランドマークを使用
+                        </p>
+                    </div>
+                </div>
+                <div class="checklist-item">
+                    <input type="checkbox" class="checkbox">
+                    <div>
+                        <strong>7. 描画されるマーカー位置が正しい</strong>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">
+                            耳と肩のマーカーが画像上の正しい位置に表示される
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 既知の問題と解決策 -->
+        <div class="section">
+            <h2>⚠️ トラブルシューティング</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>問題: 数値がまだ同じ</h3>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        ブラウザキャッシュをクリア
+                    </div>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        完全リロード: Ctrl+Shift+R
+                    </div>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        シークレットモードで開く
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h3>問題: サイド判定が wrong</h3>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        画像が全身を含んでいるか確認
+                    </div>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        肩がはっきり写っているか確認
+                    </div>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        左右どちら向きか再確認
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h3>問題: コンソールログが出ない</h3>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        F12キーで開発者ツールを開く
+                    </div>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        「Console」タブを選択
+                    </div>
+                    <div class="test-item test-pending">
+                        <span class="icon">→</span>
+                        ページをリロードしてから再試行
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最終確認 -->
+        <div class="section">
+            <h2>🎯 最終確認ポイント</h2>
+            <div class="expected-result">
+                <h4>✅ すべて正常に動作している場合</h4>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>✓ 左側面で Before ≠ After の数値</li>
+                    <li>✓ 右側面で Before ≠ After の数値</li>
+                    <li>✓ サイド判定が正しい（left/right）</li>
+                    <li>✓ ランドマーク座標が異なる</li>
+                    <li>✓ 計算結果の角度・距離が異なる</li>
+                    <li>✓ 改善時に ✓ 改善 バッジが表示</li>
+                    <li>✓ マーカーが正しい位置に描画</li>
+                </ul>
+            </div>
+            
+            <div class="test-item test-pass" style="margin-top: 20px; font-size: 1.1rem;">
+                <span class="icon">🎉</span>
+                <strong>すべてのチェックが通れば、問題は完全に解決されています！</strong>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
