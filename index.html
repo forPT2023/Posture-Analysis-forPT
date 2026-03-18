@@ -374,14 +374,14 @@
             <main class="preview-area">
                 <div class="card preview-card">
                     <div class="preview-header">
-                        <h2><i class="fas fa-eye"></i> プレビュー</h2>
-                        <div class="analysis-status" id="analysisStatus">
-                            <i class="fas fa-info-circle"></i>
-                            <span>画像をアップロードして分析を開始してください</span>
+                        <div class="preview-header-left">
+                            <h2><i class="fas fa-eye"></i> プレビュー</h2>
+                            <div class="analysis-status" id="analysisStatus">
+                                <i class="fas fa-info-circle"></i>
+                                <span>画像をアップロードして分析を開始してください</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="preview-wrapper" id="previewWrapper">
+                        
                         <!-- ZOOMコントロール -->
                         <div class="zoom-controls" id="zoomControls" style="display: none;">
                             <button class="zoom-btn" id="zoomOut" title="縮小">
@@ -395,7 +395,9 @@
                                 <i class="fas fa-undo"></i>
                             </button>
                         </div>
-
+                    </div>
+                    
+                    <div class="preview-wrapper" id="previewWrapper">
                         <div id="previewArea">
                             <div class="preview-canvas layout-horizontal" id="previewCanvas">
                             <!-- 空の状態 -->
