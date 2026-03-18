@@ -1056,7 +1056,12 @@ function generateComparisonArea() {
     const comparisonArea = document.getElementById('comparisonArea');
     if (!comparisonArea) return;
     
-    console.log('🎨 generateComparisonArea 実行開始 - currentLayout:', currentLayout);
+    console.log('🎨 generateComparisonArea 実行開始');
+    console.log('   - currentLayout:', currentLayout);
+    console.log('   - beforeImage:', beforeImage ? `${beforeImage.width}x${beforeImage.height}` : 'null');
+    console.log('   - afterImage:', afterImage ? `${afterImage.width}x${afterImage.height}` : 'null');
+    console.log('   - beforePose:', beforePose ? 'あり' : 'なし');
+    console.log('   - afterPose:', afterPose ? 'あり' : 'なし');
     
     // Before/After の Canvas を作成
     comparisonArea.innerHTML = `
@@ -1096,6 +1101,13 @@ function generateComparisonArea() {
     drawComparisonCanvas('canvasBefore', beforeImage, beforePose, beforeColor);
     drawComparisonCanvas('canvasAfter', afterImage, afterPose, afterColor);
     
+    // 描画後のcanvas確認
+    const canvasBefore = document.getElementById('canvasBefore');
+    const canvasAfter = document.getElementById('canvasAfter');
+    console.log('📊 Canvas描画後の確認:');
+    console.log('   - canvasBefore:', canvasBefore ? `${canvasBefore.width}x${canvasBefore.height}` : 'null');
+    console.log('   - canvasAfter:', canvasAfter ? `${canvasAfter.width}x${canvasAfter.height}` : 'null');
+    
     console.log('🎨 generateComparisonArea 実行完了');
 }
 
@@ -1117,6 +1129,7 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         // ヘッダー(約15mm) + 画像エリア(220mm) + 数値(約20mm) ≈ 255mm
         maxWidth = 95 * 3.7795;    // 約359px（各画像の幅を拡大）
         maxHeight = 220 * 3.7795;  // 約832px（縦長に対応、全身が収まる）
+        console.log('📐 縦レイアウト - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     } else {
         // A4横向き (297mm x 210mm) - Before/Afterを横並び配置
         // 実効エリア: (297-40) x (210-40) = 257mm x 170mm
@@ -1124,20 +1137,26 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         // ヘッダー(約15mm) + 画像エリア(140mm) + 数値(約15mm) ≈ 170mm
         maxWidth = 120 * 3.7795;   // 約453px
         maxHeight = 130 * 3.7795;  // 約491px
+        console.log('📐 横レイアウト - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     }
     
     let width = image.width;
     let height = image.height;
+    
+    console.log('🖼️ 元画像サイズ:', width, 'x', height);
     
     // アスペクト比を維持してリサイズ
     if (width > maxWidth || height > maxHeight) {
         const ratio = Math.min(maxWidth / width, maxHeight / height);
         width = width * ratio;
         height = height * ratio;
+        console.log('🔄 リサイズ後:', width, 'x', height, '(ratio:', ratio, ')');
     }
     
     canvas.width = width;
     canvas.height = height;
+    
+    console.log('✅ Canvas設定完了:', canvasId, '-', canvas.width, 'x', canvas.height);
     
     const ctx = canvas.getContext('2d');
     
