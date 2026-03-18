@@ -24,16 +24,17 @@ class CameraGuide {
             // モーダルを作成
             this.createModal();
             
-            // カメラを起動
+            // モーダルを先に表示（カメラ起動中の状態を表示）
+            this.modal.classList.add('active');
+            
+            // カメラを起動（loadedmetadataを待つ）
             await this.startCamera();
+            
+            console.log('📸 カメラ起動完了、縦線ガイド開始');
             
             // 中央縦線ガイドを開始
             this.startCenterLineGuide();
             
-            // モーダルを表示
-            this.modal.classList.add('active');
-            
-            console.log('📸 カメラガイド起動完了');
         } catch (error) {
             console.error('❌ カメラ起動エラー:', error);
             this.handleCameraError(error);
@@ -105,20 +106,41 @@ class CameraGuide {
             
             this.video.srcObject = this.stream;
             
-            // ビデオが読み込まれたらキャンバスサイズを設定
-            this.video.addEventListener('loadedmetadata', () => {
-                // キャンバスサイズをビューポートサイズに設定
-                const updateCanvasSize = () => {
-                    this.canvas.width = window.innerWidth;
-                    this.canvas.height = window.innerHeight;
-                    console.log(`📹 キャンバスサイズ: ${this.canvas.width}x${this.canvas.height}`);
-                };
+            // ビデオが読み込まれるのを待つ
+            return new Promise((resolve, reject) => {
+                this.video.addEventListener('loadedmetadata', () => {
+                    console.log('📹 ビデオメタデータ読み込み完了');
+                    
+                    // キャンバスサイズをビューポートサイズに設定
+                    const updateCanvasSize = () => {
+                        this.canvas.width = window.innerWidth;
+                        this.canvas.height = window.innerHeight;
+                        console.log(`📹 キャンバスサイズ設定: ${this.canvas.width}x${this.canvas.height}`);
+                    };
+                    
+                    updateCanvasSize();
+                    
+                    // 画面回転時にも対応
+                    window.addEventListener('resize', updateCanvasSize);
+                    window.addEventListener('orientationchange', updateCanvasSize);
+                    
+                    resolve();
+                });
                 
-                updateCanvasSize();
+                this.video.addEventListener('error', (e) => {
+                    console.error('❌ ビデオエラー:', e);
+                    reject(e);
+                });
                 
-                // 画面回転時にも対応
-                window.addEventListener('resize', updateCanvasSize);
-                window.addEventListener('orientationchange', updateCanvasSize);
+                // タイムアウト処理（5秒）
+                setTimeout(() => {
+                    if (this.canvas.width === 0) {
+                        console.warn('⚠️ loadedmetadataタイムアウト、強制的にキャンバスサイズを設定');
+                        this.canvas.width = window.innerWidth;
+                        this.canvas.height = window.innerHeight;
+                        resolve();
+                    }
+                }, 5000);
             });
             
         } catch (error) {
