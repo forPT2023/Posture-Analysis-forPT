@@ -847,6 +847,14 @@ async function analyzePose() {
     }
     
     console.log('🤖 姿勢分析開始');
+    console.log('📊 現在の設定:', { 
+        selectedPlane, 
+        cervicalModeEnabled, 
+        enableAlignment, 
+        enableROM,
+        showCervicalMetrics,
+        showMetrics
+    });
     showStatus('姿勢を分析中...', 'analyzing');
     
     try {
@@ -1645,7 +1653,8 @@ function generateMetrics() {
     
     // 矢状面モードかつ頸部モードがONの場合は、showCervicalMetricsで制御
     // それ以外（前額面モードまたは矢状面デフォルトモード）は、showMetricsで制御
-    const isUsingCervicalMetrics = (selectedPlane === 'sagittal' && cervicalModeEnabled && (enableAlignment || enableROM));
+    // 重要: cervicalModeEnabledがtrueなら、enableAlignment/enableROMの有無に関わらず頸部モード扱い
+    const isUsingCervicalMetrics = (selectedPlane === 'sagittal' && cervicalModeEnabled);
     const shouldShowMetrics = isUsingCervicalMetrics ? showCervicalMetrics : showMetrics;
     
     metricsArea.style.display = shouldShowMetrics ? 'block' : 'none';
@@ -1657,7 +1666,7 @@ function generateMetrics() {
     const metrics = calculateMetrics(beforeLandmarks, afterLandmarks);
     
     // デバッグ: 頸部モード時のmetricsを確認
-    if (selectedPlane === 'sagittal' && cervicalModeEnabled && (enableAlignment || enableROM)) {
+    if (selectedPlane === 'sagittal' && cervicalModeEnabled) {
         console.log('🔍 頸部モード時のmetrics:', metrics);
         console.log('🔍 頸部モード状態:', { cervicalModeEnabled, enableAlignment, enableROM, showCervicalMetrics });
     }
@@ -1887,10 +1896,15 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         // ========================================
         
         // 頸部モードがONの場合は、頸部指標のみを表示（全身指標は計算しない）
-        if (cervicalModeEnabled && (enableAlignment || enableROM)) {
-            // 頸部専用指標のみ表示（metricCountは既に頸部指標の数が設定済み）
-            // 全身指標は一切計算・追加しない
-            console.log('✅ 頸部モード: 全身指標を計算しない', { metricCount });
+        // 重要: cervicalModeEnabledがtrueであれば、enableAlignment/enableROMの有無に関わらず頸部モード
+        if (cervicalModeEnabled) {
+            // 頸部専用モード（チェックボックスがONになっていなくても頸部モード扱い）
+            console.log('✅ 頸部モード: 全身指標を計算しない', { metricCount, enableAlignment, enableROM });
+            
+            // チェックボックスが両方OFFの場合は警告
+            if (!enableAlignment && !enableROM) {
+                console.warn('⚠️ 頸部モードですが、測定項目が選択されていません');
+            }
             
         } else {
             // デフォルトモード（全身姿勢モード）：全身指標のみを表示
