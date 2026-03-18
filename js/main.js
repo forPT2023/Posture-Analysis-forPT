@@ -605,6 +605,63 @@ function setupEventListeners() {
         });
     }
     
+    // 頸部モード切り替えボタン
+    const cervicalModeToggle = document.getElementById('cervicalModeToggle');
+    if (cervicalModeToggle) {
+        cervicalModeToggle.addEventListener('click', toggleCervicalMode);
+    }
+    
+}
+
+// 頸部モード切り替え関数
+function toggleCervicalMode() {
+    cervicalModeEnabled = !cervicalModeEnabled;
+    
+    const modeButtonText = document.getElementById('modeButtonText');
+    const modeDescription = document.getElementById('modeDescription');
+    const cervicalDetailSettings = document.getElementById('cervicalDetailSettings');
+    const cervicalModeToggle = document.getElementById('cervicalModeToggle');
+    const toggleIcon = cervicalModeToggle ? cervicalModeToggle.querySelector('i') : null;
+    
+    if (cervicalModeEnabled) {
+        // 頸部モードON
+        if (modeButtonText) modeButtonText.textContent = '頸部機能評価モード';
+        if (modeDescription) modeDescription.textContent = '頸部の詳細機能を測定します（アライメント・可動域）';
+        if (cervicalDetailSettings) cervicalDetailSettings.style.display = 'block';
+        if (cervicalModeToggle) {
+            cervicalModeToggle.style.borderColor = '#ffc107';
+            cervicalModeToggle.style.background = '#fff3cd';
+            cervicalModeToggle.style.color = '#856404';
+        }
+        if (toggleIcon) {
+            toggleIcon.className = 'fas fa-head-side-cough';
+        }
+        console.log('✅ 頸部機能評価モード: ON');
+    } else {
+        // 頸部モードOFF（全身姿勢モード）
+        if (modeButtonText) modeButtonText.textContent = '全身姿勢モード';
+        if (modeDescription) modeDescription.textContent = '全身の姿勢バランスを分析します（5指標）';
+        if (cervicalDetailSettings) cervicalDetailSettings.style.display = 'none';
+        if (cervicalModeToggle) {
+            cervicalModeToggle.style.borderColor = '#6c757d';
+            cervicalModeToggle.style.background = 'white';
+            cervicalModeToggle.style.color = 'inherit';
+        }
+        if (toggleIcon) {
+            toggleIcon.className = 'fas fa-user-circle';
+        }
+        // 頸部モードOFFの場合、頸部測定項目も無効化
+        enableAlignment = false;
+        enableROM = false;
+        const enableAlignmentCheckbox = document.getElementById('enableAlignment');
+        const enableROMCheckbox = document.getElementById('enableROM');
+        if (enableAlignmentCheckbox) enableAlignmentCheckbox.checked = false;
+        if (enableROMCheckbox) enableROMCheckbox.checked = false;
+        console.log('✅ 全身姿勢モード: ON');
+    }
+    
+    // 表示を更新
+    updateDisplay();
 }
 
 function formatDate(dateStr) {
@@ -1090,19 +1147,30 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
     let connections;
     
     if (selectedPlane === 'frontal') {
-        // 前額面（正面）: 顔は中央（鼻）と耳のみ
-        connections = [
-            // 顔（シンプル化）
-            [0, 7], [0, 8],  // 鼻→左右の耳
-            // 体幹
-            [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
-            [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
-            [11, 23], [12, 24], [23, 24],
-            // 左脚
-            [23, 25], [25, 27], [27, 29], [29, 31], [27, 31],
-            // 右脚
-            [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
-        ];
+        // 前額面（正面）
+        if (cervicalModeEnabled) {
+            // 頸部モード: 頭部・首・肩のみ表示
+            connections = [
+                // 顔（鼻と耳）
+                [0, 7], [0, 8],  // 鼻→左右の耳
+                // 首・肩
+                [11, 12]  // 左肩→右肩
+            ];
+        } else {
+            // 全身姿勢モード: 全身を表示
+            connections = [
+                // 顔（シンプル化）
+                [0, 7], [0, 8],  // 鼻→左右の耳
+                // 体幹
+                [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
+                [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
+                [11, 23], [12, 24], [23, 24],
+                // 左脚
+                [23, 25], [25, 27], [27, 29], [29, 31], [27, 31],
+                // 右脚
+                [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
+            ];
+        }
     } else {
         // 矢状面（側面）: 手前側のみ表示（zが小さい方）
         // まず左右どちらが手前かを判定
@@ -1126,26 +1194,40 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
             console.log('⚠️ z座標が取得できないため、デフォルトで左側を表示します');
         }
         
-        if (isLeftFront) {
-            // 左側が手前（顔と腕は非表示、耳を追加して視認性向上）
-            connections = [
-                // 頭部ガイド
-                [7, 11],   // 左耳→左肩（追加: 頭部の位置を示す）
-                // 体幹（左側）
-                [11, 23],  // 左肩→左腰
-                // 左脚
-                [23, 25], [25, 27], [27, 29], [29, 31], [27, 31]
-            ];
+        if (cervicalModeEnabled) {
+            // 頸部モード: 頭部・首・肩のみ表示
+            if (isLeftFront) {
+                connections = [
+                    [7, 11]   // 左耳→左肩
+                ];
+            } else {
+                connections = [
+                    [8, 12]   // 右耳→右肩
+                ];
+            }
         } else {
-            // 右側が手前（顔と腕は非表示、耳を追加して視認性向上）
-            connections = [
-                // 頭部ガイド
-                [8, 12],   // 右耳→右肩（追加: 頭部の位置を示す）
-                // 体幹（右側）
-                [12, 24],  // 右肩→右腰
-                // 右脚
-                [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
-            ];
+            // 全身姿勢モード: 全身を表示
+            if (isLeftFront) {
+                // 左側が手前（顔と腕は非表示、耳を追加して視認性向上）
+                connections = [
+                    // 頭部ガイド
+                    [7, 11],   // 左耳→左肩（追加: 頭部の位置を示す）
+                    // 体幹（左側）
+                    [11, 23],  // 左肩→左腰
+                    // 左脚
+                    [23, 25], [25, 27], [27, 29], [29, 31], [27, 31]
+                ];
+            } else {
+                // 右側が手前（顔と腕は非表示、耳を追加して視認性向上）
+                connections = [
+                    // 頭部ガイド
+                    [8, 12],   // 右耳→右肩（追加: 頭部の位置を示す）
+                    // 体幹（右側）
+                    [12, 24],  // 右肩→右腰
+                    // 右脚
+                    [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
+                ];
+            }
         }
     }
     
