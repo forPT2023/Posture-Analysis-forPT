@@ -2485,6 +2485,7 @@ async function exportDoc(format) {
         styleEl.id = 'export-temp-style-final';
         
         // A4サイズを厳密に適用（全ての既存スタイルを上書き）
+        // スマホのメディアクエリを上書きして、デスクトップ版と同じスタイルを強制適用
         styleEl.textContent = `
             .${tempClass} {
                 position: relative !important;
@@ -2507,6 +2508,22 @@ async function exportDoc(format) {
                 margin-bottom: 12px !important;
                 border-bottom: 2px solid #2196F3 !important;
             }
+            .${tempClass} .document-title {
+                font-size: 1.3rem !important;
+                font-weight: 700 !important;
+                color: #2196F3 !important;
+                margin: 0 0 6px 0 !important;
+                line-height: 1.2 !important;
+            }
+            .${tempClass} .document-info {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                font-size: 0.85rem !important;
+                margin: 0 !important;
+                gap: 0 !important;
+            }
             .${tempClass} .comparison-area {
                 flex: 1 !important;
                 display: flex !important;
@@ -2528,6 +2545,18 @@ async function exportDoc(format) {
                 min-width: 0 !important;
                 max-height: 100% !important;
             }
+            .${tempClass} .comparison-label {
+                position: absolute !important;
+                top: 10px !important;
+                left: 10px !important;
+                background: rgba(0, 0, 0, 0.7) !important;
+                color: #ffffff !important;
+                padding: 5px 12px !important;
+                border-radius: 5px !important;
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                z-index: 10 !important;
+            }
             .${tempClass} .comparison-canvas {
                 max-width: 100% !important;
                 max-height: 100% !important;
@@ -2538,6 +2567,41 @@ async function exportDoc(format) {
             .${tempClass} .metrics-area {
                 flex-shrink: 0 !important;
                 margin-top: 12px !important;
+                padding: 10px !important;
+                background: rgba(33, 150, 243, 0.05) !important;
+                border-radius: 8px !important;
+                border: 1px solid #ddd !important;
+            }
+            .${tempClass} .metrics-title {
+                font-size: 0.9rem !important;
+                font-weight: 600 !important;
+                margin-bottom: 8px !important;
+                color: #333 !important;
+            }
+            .${tempClass} .metrics-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            .${tempClass} .metric-item {
+                display: flex !important;
+                justify-content: space-between !important;
+                padding: 6px 10px !important;
+                background: #ffffff !important;
+                border-radius: 6px !important;
+                border: 1px solid #ddd !important;
+                font-size: 0.85rem !important;
+            }
+            .${tempClass} .metric-label {
+                font-weight: 500 !important;
+                color: #333 !important;
+            }
+            .${tempClass} .metric-value {
+                font-weight: 600 !important;
+                color: #2196F3 !important;
+            }
+            .${tempClass} .metric-value.improved {
+                color: #4CAF50 !important;
             }
         `;
         
