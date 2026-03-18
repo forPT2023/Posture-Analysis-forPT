@@ -458,14 +458,14 @@
     <script src="js/landmark-editor.js?v=13.10.0"></script>
     <script src="js/main.js?v=13.10.0"></script>
     
-    <!-- Service Worker登録: PWA完全対応 -->
+    <!-- Service Worker登録: PWA完全対応（有効期限なし） -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw_with_expiry.js')
+                navigator.serviceWorker.register('/sw.js')
                     .then(registration => {
                         console.log('✅ Service Worker登録成功:', registration.scope);
-                        console.log('🎉 PWA完全対応: オフライン動作が有効になりました');
+                        console.log('🎉 PWA完全対応: オフライン動作が有効になりました（有効期限なし）');
                         
                         // 更新チェック
                         registration.addEventListener('updatefound', () => {
