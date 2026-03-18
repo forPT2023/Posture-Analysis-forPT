@@ -567,7 +567,10 @@ function setupAnalysisListeners() {
     document.querySelectorAll('input[name="facingSide"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             facingSide = e.target.value;
-            console.log('🔄 撮影側面変更:', facingSide);
+            console.log('🔄 撮影側面変更:', facingSide, '| チェック状態:', {
+                left: document.getElementById('facingSideLeft')?.checked,
+                right: document.getElementById('facingSideRight')?.checked
+            });
             updateDisplay();
         });
     });
