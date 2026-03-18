@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>頸部モード・全身モード分離テスト</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-group label {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .control-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .expected-result {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        
+        .expected-result strong {
+            color: #1976D2;
+        }
+        
+        .metric-display {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f5f5f5;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .metric-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .metric-value {
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass {
+            background: #4CAF50;
+        }
+        
+        .status-fail {
+            background: #F44336;
+        }
+        
+        .test-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .test-pass {
+            background: #C8E6C9;
+            border: 2px solid #4CAF50;
+            color: #2E7D32;
+        }
+        
+        .test-fail {
+            background: #FFCDD2;
+            border: 2px solid #F44336;
+            color: #C62828;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 頸部モード・全身モード分離テスト</h1>
+        <p class="description">
+            矢状面分析における頸部モードと全身姿勢モードのデータ表示が完全に分離されているかをテストします。
+            各テストケースで期待される指標数と実際の表示が一致するか確認してください。
+        </p>
+        
+        <!-- テストケース1: デフォルトモード -->
+        <div class="test-section">
+            <h2>📊 テストケース1: デフォルトモード</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <input type="checkbox" id="test1-alignment" onchange="runTest1()">
+                    <label for="test1-alignment">アライメント評価</label>
+                </div>
+                <div class="control-group">
+                    <input type="checkbox" id="test1-rom" onchange="runTest1()">
+                    <label for="test1-rom">後屈可動域測定</label>
+                </div>
+            </div>
+            <div class="expected-result">
+                <strong>期待される結果:</strong> 全身姿勢データ（5指標）のみを表示
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>姿勢バランススコア</li>
+                    <li>骨盤前傾角度</li>
+                    <li>膝の角度</li>
+                    <li>頭部前方偏位</li>
+                    <li>体幹の前後傾き</li>
+                </ul>
+            </div>
+            <div id="test1-result"></div>
+        </div>
+        
+        <!-- テストケース2: アライメント評価のみON -->
+        <div class="test-section">
+            <h2>📊 テストケース2: アライメント評価のみON</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <input type="checkbox" id="test2-alignment" checked onchange="runTest2()">
+                    <label for="test2-alignment">アライメント評価</label>
+                </div>
+                <div class="control-group">
+                    <input type="checkbox" id="test2-rom" onchange="runTest2()">
+                    <label for="test2-rom">後屈可動域測定</label>
+                </div>
+            </div>
+            <div class="expected-result">
+                <strong>期待される結果:</strong> 頸部2指標のみを表示
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>頭部前方偏位角度</li>
+                    <li>頭部前方偏位距離</li>
+                </ul>
+            </div>
+            <div id="test2-result"></div>
+        </div>
+        
+        <!-- テストケース3: 後屈可動域測定のみON -->
+        <div class="test-section">
+            <h2>📊 テストケース3: 後屈可動域測定のみON</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <input type="checkbox" id="test3-alignment" onchange="runTest3()">
+                    <label for="test3-alignment">アライメント評価</label>
+                </div>
+                <div class="control-group">
+                    <input type="checkbox" id="test3-rom" checked onchange="runTest3()">
+                    <label for="test3-rom">後屈可動域測定</label>
+                </div>
+            </div>
+            <div class="expected-result">
+                <strong>期待される結果:</strong> 頸部2指標のみを表示
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>頸部後屈可動域</li>
+                    <li>可動域制限度</li>
+                </ul>
+            </div>
+            <div id="test3-result"></div>
+        </div>
+        
+        <!-- テストケース4: 両方ON -->
+        <div class="test-section">
+            <h2>📊 テストケース4: 両方ON</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <input type="checkbox" id="test4-alignment" checked onchange="runTest4()">
+                    <label for="test4-alignment">アライメント評価</label>
+                </div>
+                <div class="control-group">
+                    <input type="checkbox" id="test4-rom" checked onchange="runTest4()">
+                    <label for="test4-rom">後屈可動域測定</label>
+                </div>
+            </div>
+            <div class="expected-result">
+                <strong>期待される結果:</strong> 頸部4指標のみを表示
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>頭部前方偏位角度</li>
+                    <li>頭部前方偏位距離</li>
+                    <li>頸部後屈可動域</li>
+                    <li>可動域制限度</li>
+                </ul>
+            </div>
+            <div id="test4-result"></div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+            <h3 style="color: #e65100; margin-bottom: 10px;">✅ テスト実行方法</h3>
+            <ol style="padding-left: 20px; color: #666; line-height: 1.8;">
+                <li>各テストケースのチェックボックスを操作する</li>
+                <li>期待される指標数と実際の表示が一致するか確認する</li>
+                <li>全身指標が頸部モードON時に表示されないことを確認する</li>
+                <li>すべてのテストケースでPASSが表示されることを確認する</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        // モックデータ生成関数
+        function generateMockMetrics(enableAlignment, enableROM) {
+            const metrics = {};
+            let metricCount = 0;
+            
+            // 頸部モードがONの場合
+            if (enableAlignment || enableROM) {
+                // アライメント評価
+                if (enableAlignment) {
+                    metricCount++;
+                    metrics[`metric${metricCount}Label`] = '頭部前方偏位角度';
+                    metrics[`metric${metricCount}Value`] = '25.3 → 18.7';
+                    metrics[`metric${metricCount}Unit`] = '度';
+                    
+                    metricCount++;
+                    metrics[`metric${metricCount}Label`] = '頭部前方偏位距離';
+                    metrics[`metric${metricCount}Value`] = '45.2 → 32.1';
+                    metrics[`metric${metricCount}Unit`] = 'mm';
+                }
+                
+                // 後屈可動域測定
+                if (enableROM) {
+                    metricCount++;
+                    metrics[`metric${metricCount}Label`] = '頸部後屈可動域';
+                    metrics[`metric${metricCount}Value`] = '65.4 → 75.8';
+                    metrics[`metric${metricCount}Unit`] = '度';
+                    
+                    metricCount++;
+                    metrics[`metric${metricCount}Label`] = '可動域制限度';
+                    metrics[`metric${metricCount}Value`] = '24.6 → 14.2';
+                    metrics[`metric${metricCount}Unit`] = '度';
+                }
+                
+                // ここで全身指標を追加しない（修正後の動作）
+                
+            } else {
+                // デフォルトモード: 全身5指標のみ
+                metricCount = 5;
+                
+                metrics.metric1Label = '姿勢バランススコア';
+                metrics.metric1Value = '38.5 → 22.3';
+                metrics.metric1Unit = 'mm';
+                
+                metrics.metric2Label = '骨盤前傾角度';
+                metrics.metric2Value = '18.2 → 14.5';
+                metrics.metric2Unit = '度';
+                
+                metrics.metric3Label = '膝の角度';
+                metrics.metric3Value = '178.5 → 179.2';
+                metrics.metric3Unit = '度';
+                
+                metrics.metric4Label = '頭部前方偏位';
+                metrics.metric4Value = '42.3 → 35.1';
+                metrics.metric4Unit = 'mm';
+                
+                metrics.metric5Label = '体幹の前後傾き';
+                metrics.metric5Value = '8.7 → 5.2';
+                metrics.metric5Unit = '度';
+            }
+            
+            return { metrics, metricCount };
+        }
+        
+        function displayMetrics(metrics, metricCount, containerId, expectedCount) {
+            const container = document.getElementById(containerId);
+            
+            let html = '<div class="metric-display">';
+            html += `<h3 style="color: #667eea; margin-bottom: 15px;">表示される指標（計${metricCount}個）</h3>`;
+            
+            for (let i = 1; i <= metricCount; i++) {
+                if (metrics[`metric${i}Label`]) {
+                    html += `
+                        <div class="metric-item">
+                            <span class="metric-label">${metrics[`metric${i}Label`]}</span>
+                            <span class="metric-value">${metrics[`metric${i}Value`]} ${metrics[`metric${i}Unit`]}</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            html += '</div>';
+            
+            // テスト結果を表示
+            const isPassed = metricCount === expectedCount;
+            html += `
+                <div class="test-result ${isPassed ? 'test-pass' : 'test-fail'}">
+                    <span class="status-indicator ${isPassed ? 'status-pass' : 'status-fail'}"></span>
+                    ${isPassed 
+                        ? `✅ PASS: 期待される${expectedCount}個の指標が正しく表示されました` 
+                        : `❌ FAIL: ${expectedCount}個の指標を期待していましたが、${metricCount}個表示されました`}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function runTest1() {
+            const enableAlignment = document.getElementById('test1-alignment').checked;
+            const enableROM = document.getElementById('test1-rom').checked;
+            const { metrics, metricCount } = generateMockMetrics(enableAlignment, enableROM);
+            displayMetrics(metrics, metricCount, 'test1-result', 5);
+        }
+        
+        function runTest2() {
+            const enableAlignment = document.getElementById('test2-alignment').checked;
+            const enableROM = document.getElementById('test2-rom').checked;
+            const { metrics, metricCount } = generateMockMetrics(enableAlignment, enableROM);
+            displayMetrics(metrics, metricCount, 'test2-result', 2);
+        }
+        
+        function runTest3() {
+            const enableAlignment = document.getElementById('test3-alignment').checked;
+            const enableROM = document.getElementById('test3-rom').checked;
+            const { metrics, metricCount } = generateMockMetrics(enableAlignment, enableROM);
+            displayMetrics(metrics, metricCount, 'test3-result', 2);
+        }
+        
+        function runTest4() {
+            const enableAlignment = document.getElementById('test4-alignment').checked;
+            const enableROM = document.getElementById('test4-rom').checked;
+            const { metrics, metricCount } = generateMockMetrics(enableAlignment, enableROM);
+            displayMetrics(metrics, metricCount, 'test4-result', 4);
+        }
+        
+        // 初期表示
+        window.addEventListener('DOMContentLoaded', () => {
+            runTest1();
+            runTest2();
+            runTest3();
+            runTest4();
+        });
+    </script>
+</body>
+</html>

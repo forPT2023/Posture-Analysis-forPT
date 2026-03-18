@@ -1931,62 +1931,13 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         }
         
         // ========================================
-        // メトリクスの組み立て
+        // メトリクスの組み立て（完全分離）
         // ========================================
         
-        // 頸部モードがONの場合は、頸部指標を先に追加してから全身指標を追加
+        // 頸部モードがONの場合は、頸部指標のみを表示（全身指標は表示しない）
         if (enableAlignment || enableROM) {
-            // 頸部指標が既にmetricCountとmetricsに設定されている
-            // 全身指標を続けて追加
-            
-            // 全身垂直アライメント
-            if (beforeAlignment !== null && afterAlignment !== null) {
-                metricCount++;
-                metrics[`metric${metricCount}Label`] = '姿勢バランススコア';
-                metrics[`metric${metricCount}Value`] = `${beforeAlignment.toFixed(1)} → ${afterAlignment.toFixed(1)}`;
-                metrics[`metric${metricCount}Unit`] = 'mm';
-                metrics[`metric${metricCount}Improved`] = alignmentImproved;
-                metrics[`metric${metricCount}Status`] = afterAlignment < 25 ? '良好' : 
-                                                       afterAlignment < 40 ? '普通' : '要改善';
-            }
-            
-            // 骨盤角度
-            if (beforePelvicTilt !== null && afterPelvicTilt !== null) {
-                metricCount++;
-                metrics[`metric${metricCount}Label`] = '骨盤前傾角度';
-                metrics[`metric${metricCount}Value`] = `${beforePelvicTilt.toFixed(1)} → ${afterPelvicTilt.toFixed(1)}`;
-                metrics[`metric${metricCount}Unit`] = '度';
-                metrics[`metric${metricCount}Improved`] = pelvicImproved;
-                metrics[`metric${metricCount}Status`] = (afterPelvicTilt >= 10 && afterPelvicTilt <= 15) ? '正常範囲' :
-                                                        afterPelvicTilt > 20 ? '過度な前傾' :
-                                                        afterPelvicTilt < 5 ? '後傾' : '軽度の偏り';
-            }
-            
-            // 膝角度
-            if (beforeKneeAngle !== null && afterKneeAngle !== null) {
-                metricCount++;
-                metrics[`metric${metricCount}Label`] = '膝の角度';
-                metrics[`metric${metricCount}Value`] = `${beforeKneeAngle.toFixed(1)} → ${afterKneeAngle.toFixed(1)}`;
-                metrics[`metric${metricCount}Unit`] = '度';
-                metrics[`metric${metricCount}Improved`] = kneeImproved;
-                metrics[`metric${metricCount}Status`] = (afterKneeAngle >= 175 && afterKneeAngle <= 180) ? '正常' :
-                                                        afterKneeAngle > 185 ? '反張膝' :
-                                                        afterKneeAngle < 165 ? '屈曲位' : '軽度の偏り';
-            }
-            
-            // 頭部前方偏位（簡易版・参考値として）
-            metricCount++;
-            metrics[`metric${metricCount}Label`] = '頭部前方偏位（参考）';
-            metrics[`metric${metricCount}Value`] = `${Math.abs(beforeHeadForward).toFixed(1)} → ${Math.abs(afterHeadForward).toFixed(1)}`;
-            metrics[`metric${metricCount}Unit`] = 'mm';
-            metrics[`metric${metricCount}Improved`] = headImproved;
-            
-            // 体幹の前後傾き
-            metricCount++;
-            metrics[`metric${metricCount}Label`] = '体幹の前後傾き';
-            metrics[`metric${metricCount}Value`] = `${beforeTrunkTilt.toFixed(1)} → ${afterTrunkTilt.toFixed(1)}`;
-            metrics[`metric${metricCount}Unit`] = '度';
-            metrics[`metric${metricCount}Improved`] = trunkImproved;
+            // 頸部専用指標のみ表示（metricCountは既に頸部指標の数が設定済み）
+            // 全身指標は追加しない
             
         } else {
             // デフォルトモード：全身指標のみを表示（姿勢バランススコアを最優先）
