@@ -1637,24 +1637,18 @@ function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) 
         return; // 両モードとも無効なら何も描画しない
     }
     
-    // 全身モードと同じ判定ロジックを使用（z座標ベース）
-    const leftShoulder = landmarks[11];
-    const rightShoulder = landmarks[12];
+    // ユーザーが選択した撮影側面を使用
+    // facingSide: 'left' = 左側面撮影（右半身が見える）, 'right' = 右側面撮影（左半身が見える）
+    const isRightSideFacing = facingSide === 'right';
     
-    // z座標が存在しない、または同じ値の場合はデフォルトで左側を表示
-    let isLeftFront = true;
+    // 撮影側面に応じてランドマークを選択
+    // 右側面撮影（左半身が見える）: 左耳(7), 左肩(11), 左目(2)
+    // 左側面撮影（右半身が見える）: 右耳(8), 右肩(12), 右目(5)
+    const earIdx = isRightSideFacing ? 7 : 8;
+    const shoulderIdx = isRightSideFacing ? 11 : 12;
+    const eyeIdx = isRightSideFacing ? 2 : 5;
     
-    if (leftShoulder && rightShoulder && 
-        typeof leftShoulder.z !== 'undefined' && 
-        typeof rightShoulder.z !== 'undefined') {
-        // z座標が小さい方が手前（カメラに近い）
-        isLeftFront = leftShoulder.z < rightShoulder.z;
-    }
-    
-    // 全身モードと同じ側のランドマークを使用
-    const earIdx = isLeftFront ? 7 : 8;
-    const shoulderIdx = isLeftFront ? 11 : 12;
-    const eyeIdx = isLeftFront ? 2 : 5;
+    console.log(`📐 矢状面分析: 撮影側面=${facingSide}, 使用ランドマーク: 耳=${earIdx}, 肩=${shoulderIdx}, 目=${eyeIdx}`);
     
     const ear = landmarks[earIdx];
     const shoulder = landmarks[shoulderIdx];
@@ -1936,59 +1930,34 @@ function calculateMetrics(beforeLandmarks, afterLandmarks) {
         
     } else {
         // 矢状面（側面）分析
-        // Before画像: z座標ベースでサイドを判定
-        const beforeLeftShoulder = beforeLandmarks[11];
-        const beforeRightShoulder = beforeLandmarks[12];
-        let beforeIsLeftFront = true;
+        // ユーザーが選択した撮影側面を使用
+        const isRightSideFacing = facingSide === 'right';
         
-        if (beforeLeftShoulder && beforeRightShoulder && 
-            typeof beforeLeftShoulder.z !== 'undefined' && 
-            typeof beforeRightShoulder.z !== 'undefined') {
-            beforeIsLeftFront = beforeLeftShoulder.z < beforeRightShoulder.z;
-        }
+        // 右側面撮影（左半身が見える）: 左側ランドマークを使用
+        // 左側面撮影（右半身が見える）: 右側ランドマークを使用
+        const earIdx = isRightSideFacing ? 7 : 8;
+        const shoulderIdx = isRightSideFacing ? 11 : 12;
+        const hipIdx = isRightSideFacing ? 23 : 24;
+        const kneeIdx = isRightSideFacing ? 25 : 26;
+        const ankleIdx = isRightSideFacing ? 27 : 28;
+        const eyeIdx = isRightSideFacing ? 2 : 5;
         
-        const beforeEarIdx = beforeIsLeftFront ? 7 : 8;
-        const beforeShoulderIdx = beforeIsLeftFront ? 11 : 12;
-        const beforeHipIdx = beforeIsLeftFront ? 23 : 24;
-        const beforeKneeIdx = beforeIsLeftFront ? 25 : 26;
-        const beforeAnkleIdx = beforeIsLeftFront ? 27 : 28;
-        const beforeEyeIdx = beforeIsLeftFront ? 2 : 5;
+        console.log(`📐 メトリクス計算: 撮影側面=${facingSide}, 使用ランドマーク: 耳=${earIdx}, 肩=${shoulderIdx}`);
         
-        // After画像: z座標ベースでサイドを判定（Before とは独立）
-        const afterLeftShoulder = afterLandmarks[11];
-        const afterRightShoulder = afterLandmarks[12];
-        let afterIsLeftFront = true;
+        // Before/After共に同じ側のランドマークを使用
+        const beforeEar = beforeLandmarks[earIdx];
+        const beforeShoulder = beforeLandmarks[shoulderIdx];
+        const beforeHip = beforeLandmarks[hipIdx];
+        const beforeKnee = beforeLandmarks[kneeIdx];
+        const beforeAnkle = beforeLandmarks[ankleIdx];
+        const beforeEye = beforeLandmarks[eyeIdx];
         
-        if (afterLeftShoulder && afterRightShoulder && 
-            typeof afterLeftShoulder.z !== 'undefined' && 
-            typeof afterRightShoulder.z !== 'undefined') {
-            afterIsLeftFront = afterLeftShoulder.z < afterRightShoulder.z;
-        }
-        
-        const afterEarIdx = afterIsLeftFront ? 7 : 8;
-        const afterShoulderIdx = afterIsLeftFront ? 11 : 12;
-        const afterHipIdx = afterIsLeftFront ? 23 : 24;
-        const afterKneeIdx = afterIsLeftFront ? 25 : 26;
-        const afterAnkleIdx = afterIsLeftFront ? 27 : 28;
-        const afterEyeIdx = afterIsLeftFront ? 2 : 5;
-        
-        const beforeEar = beforeLandmarks[beforeEarIdx];
-        const beforeShoulder = beforeLandmarks[beforeShoulderIdx];
-        const beforeHip = beforeLandmarks[beforeHipIdx];
-        const beforeKnee = beforeLandmarks[beforeKneeIdx];
-        const beforeAnkle = beforeLandmarks[beforeAnkleIdx];
-        const beforeEye = beforeLandmarks[beforeEyeIdx];
-        const afterEar = afterLandmarks[afterEarIdx];
-        const afterShoulder = afterLandmarks[afterShoulderIdx];
-        const afterHip = afterLandmarks[afterHipIdx];
-        const afterKnee = afterLandmarks[afterKneeIdx];
-        const afterAnkle = afterLandmarks[afterAnkleIdx];
-        const afterEye = afterLandmarks[afterEyeIdx];
-        
-        console.log('🔍 サイド判定:', { 
-            before: beforeIsLeftFront ? 'left' : 'right', 
-            after: afterIsLeftFront ? 'left' : 'right' 
-        });
+        const afterEar = afterLandmarks[earIdx];
+        const afterShoulder = afterLandmarks[shoulderIdx];
+        const afterHip = afterLandmarks[hipIdx];
+        const afterKnee = afterLandmarks[kneeIdx];
+        const afterAnkle = afterLandmarks[ankleIdx];
+        const afterEye = afterLandmarks[eyeIdx];
         
         // ========================================
         // 頸部モードと全身モードで完全に分離
