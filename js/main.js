@@ -1075,15 +1075,16 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     // 画像を描画
     ctx.drawImage(image, 0, 0, width, height);
     
-    // 骨格線を描画
-    if (showSkeleton && poseResults && poseResults.poseLandmarks) {
-        drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
-    }
-    
-    // 矢状面の頸部マーカーは独立して描画（showSkeletonに依存しない）
-    if (selectedPlane === 'sagittal' && poseResults && poseResults.poseLandmarks) {
-        if (enableAlignment || enableROM) {
+    // 骨格線とマーカーの描画（モードに応じて完全分離）
+    if (selectedPlane === 'sagittal' && cervicalModeEnabled) {
+        // 頸部モード: 頸部マーカーのみ描画（全身骨格線は描画しない）
+        if (poseResults && poseResults.poseLandmarks && (enableAlignment || enableROM)) {
             drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
+        }
+    } else {
+        // 全身モード: 骨格線を描画
+        if (showSkeleton && poseResults && poseResults.poseLandmarks) {
+            drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
         }
     }
 }
