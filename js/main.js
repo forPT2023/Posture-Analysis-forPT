@@ -1910,6 +1910,16 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
     
     console.log('✅ 頸部モード: 頸部指標のみを計算', { enableAlignment, enableROM });
     
+    // デバッグ: ランドマーク座標を出力
+    console.log('🔍 Before座標:', { 
+        ear: beforeEar ? `(${beforeEar.x.toFixed(3)}, ${beforeEar.y.toFixed(3)})` : 'null',
+        shoulder: beforeShoulder ? `(${beforeShoulder.x.toFixed(3)}, ${beforeShoulder.y.toFixed(3)})` : 'null'
+    });
+    console.log('🔍 After座標:', { 
+        ear: afterEar ? `(${afterEar.x.toFixed(3)}, ${afterEar.y.toFixed(3)})` : 'null',
+        shoulder: afterShoulder ? `(${afterShoulder.x.toFixed(3)}, ${afterShoulder.y.toFixed(3)})` : 'null'
+    });
+    
     // アライメント評価モード: 耳-肩線と垂直基準線の角度
     if (enableAlignment && beforeEar && beforeShoulder && afterEar && afterShoulder) {
         const beforeAlignmentAngle = calculateAlignmentAngle(beforeEar, beforeShoulder);
@@ -1918,6 +1928,14 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         // 水平距離（前方偏位距離）
         const beforeDistance = Math.abs(beforeEar.x - beforeShoulder.x) * 1000;
         const afterDistance = Math.abs(afterEar.x - afterShoulder.x) * 1000;
+        
+        // デバッグ: 計算結果を出力
+        console.log('🔍 計算結果:', {
+            beforeAngle: beforeAlignmentAngle.toFixed(1),
+            afterAngle: afterAlignmentAngle.toFixed(1),
+            beforeDistance: beforeDistance.toFixed(1),
+            afterDistance: afterDistance.toFixed(1)
+        });
         
         // 改善判定
         const angleImproved = afterAlignmentAngle < beforeAlignmentAngle;
