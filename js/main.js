@@ -1225,47 +1225,32 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
             [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
         ];
     } else {
-        // 矢状面（側面）: 手前側のみ表示（zが小さい方）
-        // まず左右どちらが手前かを判定
-        const leftShoulder = landmarks[11];
-        const rightShoulder = landmarks[12];
+        // 矢状面（側面）: ユーザーが選択した側を表示
+        // facingSide: 'right' = 右側面測定（右側のランドマークを使用）
+        // facingSide: 'left' = 左側面測定（左側のランドマークを使用）
+        const isRightSide = facingSide === 'right';
         
+        console.log(`🎨 drawSkeleton: 矢状面モード, 選択側面=${facingSide}, 描画側=${isRightSide ? '右側' : '左側'}`);
         
-        // 重要なランドマークのvisibilityを確認
-        const keyLandmarks = [7, 8, 11, 12, 23, 24, 25, 26];
-        
-        // z座標が存在しない、または同じ値の場合はデフォルトで左側を表示
-        let isLeftFront = true;
-        
-        if (leftShoulder && rightShoulder && 
-            typeof leftShoulder.z !== 'undefined' && 
-            typeof rightShoulder.z !== 'undefined') {
-            // z座標が小さい方が手前（カメラに近い）
-            isLeftFront = leftShoulder.z < rightShoulder.z;
-            
-        } else {
-            console.log('⚠️ z座標が取得できないため、デフォルトで左側を表示します');
-        }
-        
-        if (isLeftFront) {
-            // 左側が手前（顔と腕は非表示、耳を追加して視認性向上）
+        if (isRightSide) {
+            // 右側面測定: 右側の骨格線を描画
             connections = [
                 // 頭部ガイド
-                [7, 11],   // 左耳→左肩（追加: 頭部の位置を示す）
-                // 体幹（左側）
-                [11, 23],  // 左肩→左腰
-                // 左脚
-                [23, 25], [25, 27], [27, 29], [29, 31], [27, 31]
-            ];
-        } else {
-            // 右側が手前（顔と腕は非表示、耳を追加して視認性向上）
-            connections = [
-                // 頭部ガイド
-                [8, 12],   // 右耳→右肩（追加: 頭部の位置を示す）
+                [8, 12],   // 右耳→右肩
                 // 体幹（右側）
                 [12, 24],  // 右肩→右腰
                 // 右脚
                 [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
+            ];
+        } else {
+            // 左側面測定: 左側の骨格線を描画
+            connections = [
+                // 頭部ガイド
+                [7, 11],   // 左耳→左肩
+                // 体幹（左側）
+                [11, 23],  // 左肩→左腰
+                // 左脚
+                [23, 25], [25, 27], [27, 29], [29, 31], [27, 31]
             ];
         }
     }
