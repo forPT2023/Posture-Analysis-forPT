@@ -1121,8 +1121,16 @@ function generateComparisonArea() {
 }
 
 function drawComparisonCanvas(canvasId, image, poseResults, color) {
+    console.log('🎨 drawComparisonCanvas 開始:', canvasId);
+    console.log('   - currentLayout:', currentLayout);
+    console.log('   - image:', image ? `${image.width}x${image.height}` : 'null');
+    
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+    if (!canvas) {
+        console.error('❌ Canvas要素が見つかりません:', canvasId);
+        return;
+    }
+    console.log('✅ Canvas要素取得成功:', canvasId);
     
     // レイアウトに応じてCanvasの最大サイズを設定
     // A4サイズ: 横向き297x210mm、縦向き210x297mm
@@ -1153,6 +1161,7 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     let height = image.height;
     
     console.log('🖼️ 元画像サイズ:', width, 'x', height);
+    console.log('📏 maxWidth:', maxWidth, ', maxHeight:', maxHeight);
     
     // アスペクト比を維持してリサイズ
     if (width > maxWidth || height > maxHeight) {
@@ -1160,12 +1169,16 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         width = width * ratio;
         height = height * ratio;
         console.log('🔄 リサイズ後:', width, 'x', height, '(ratio:', ratio, ')');
+    } else {
+        console.log('ℹ️ リサイズ不要（画像が最大サイズ内）');
     }
     
     canvas.width = width;
     canvas.height = height;
     
     console.log('✅ Canvas設定完了:', canvasId, '-', canvas.width, 'x', canvas.height);
+    console.log('   - Canvas style.width:', canvas.style.width);
+    console.log('   - Canvas style.height:', canvas.style.height);
     
     const ctx = canvas.getContext('2d');
     
@@ -2296,28 +2309,21 @@ function generateMetricHTML(label, value, unit, improved, status) {
 }
 
 function updateDisplay() {
-    if (!beforePose || !afterPose) return;
+    if (!beforePose || !afterPose) {
+        console.log('⚠️ updateDisplay: beforePose または afterPose が未設定のため表示更新をスキップ');
+        return;
+    }
     
     console.log('🔄 表示更新 - currentLayout:', currentLayout);
     
-    // プレビューエリアを完全にクリア
-    const previewArea = document.getElementById('previewArea');
+    // preview-canvasのレイアウトクラスだけを更新（innerHTML はクリアしない）
     const previewCanvas = document.getElementById('previewCanvas');
-    
-    if (previewArea) {
-        // 既存のコンテンツをクリア
-        previewArea.innerHTML = '';
-        
-        // previewCanvasを再作成
-        const newCanvas = document.createElement('div');
-        newCanvas.id = 'previewCanvas';
-        newCanvas.className = `preview-canvas layout-${currentLayout}`;
-        previewArea.appendChild(newCanvas);
-    }
-    
-    // preview-canvasのレイアウトクラスを更新
     if (previewCanvas) {
         previewCanvas.className = `preview-canvas layout-${currentLayout}`;
+        console.log('   - previewCanvas className更新:', previewCanvas.className);
+    } else {
+        console.error('❌ previewCanvas要素が見つかりません');
+        return;
     }
     
     // 比較エリアを再生成（これでスタイルも再設定される）
@@ -2328,7 +2334,7 @@ function updateDisplay() {
         generateMetrics();
     }
     
-    console.log('✅ プレビュー画面をリロードしました');
+    console.log('✅ 表示更新完了');
     showToast('プレビューを更新しました', 'success');
 }
 
