@@ -77,7 +77,6 @@ let afterPose = null;
 let currentLayout = 'horizontal'; // 'horizontal' または 'vertical'
 let showSkeleton = true;
 let showMetrics = true;
-let showHighlight = false;
 let showReferenceLine = true;
 let lineWidth = DRAW_CONFIG.LINE_WIDTH;
 let beforeColor = COLORS.BEFORE;
@@ -446,17 +445,6 @@ function setupAnalysisListeners() {
             showMetrics = e.target.checked;
             // metricsArea.style.displayの直接設定は削除
             // generateMetrics()内で適切に制御される
-            updateDisplay();
-        });
-    }
-    
-    const showHighlightCheck = document.getElementById('showHighlight');
-    if (showHighlightCheck) {
-        // 初期状態をJavaScriptの変数と同期
-        showHighlightCheck.checked = showHighlight;
-        
-        showHighlightCheck.addEventListener('change', (e) => {
-            showHighlight = e.target.checked;
             updateDisplay();
         });
     }
@@ -1292,10 +1280,6 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
         }
     });
     
-    // 変化ハイライトを描画（Afterの場合のみ）
-    if (showHighlight && beforePose && color === afterColor) {
-        drawChangeHighlight(ctx, landmarks, canvasWidth, canvasHeight);
-    }
     
     // 関節点を描画（connectionsに含まれるポイントのみ）
     ctx.fillStyle = color;
@@ -1762,52 +1746,6 @@ function drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color) 
             ctx.setLineDash([]);
         }
     }
-}
-
-function drawChangeHighlight(ctx, afterLandmarks, canvasWidth, canvasHeight) {
-    if (!beforePose || !beforePose.poseLandmarks) return;
-    
-    const beforeLandmarks = beforePose.poseLandmarks;
-    
-    // 顔の不要なポイントを除外（目と口を除外し、鼻と耳のみ表示）
-    const facePointsToExclude = new Set([1, 2, 3, 4, 5, 6, 9, 10]);
-    
-    // 各関節の変化量を計算してグラデーション表示
-    afterLandmarks.forEach((afterPoint, index) => {
-        const beforePoint = beforeLandmarks[index];
-        
-        if (!beforePoint || !afterPoint) return;
-        if (beforePoint.visibility < 0.5 || afterPoint.visibility < 0.5) return;
-        
-        // 顔の不要ポイントはスキップ
-        if (facePointsToExclude.has(index)) return;
-        
-        // 移動距離を計算（正規化座標で）
-        const dx = afterPoint.x - beforePoint.x;
-        const dy = afterPoint.y - beforePoint.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // 変化量に応じて色を設定（緑→黄→赤）
-        let highlightColor;
-        if (distance < 0.02) {
-            highlightColor = 'rgba(76, 175, 80, 0.3)'; // 緑（変化小）
-        } else if (distance < 0.05) {
-            highlightColor = 'rgba(255, 193, 7, 0.5)'; // 黄色（変化中）
-        } else {
-            highlightColor = 'rgba(244, 67, 54, 0.7)'; // 赤（変化大）
-        }
-        
-        // 変化が大きい関節をハイライト
-        if (distance >= 0.02) {
-            ctx.fillStyle = highlightColor;
-            const x = afterPoint.x * canvasWidth;
-            const y = afterPoint.y * canvasHeight;
-            
-            ctx.beginPath();
-            ctx.arc(x, y, lineWidth * 3, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-    });
 }
 
 function generateMetrics() {
@@ -2385,7 +2323,6 @@ function saveData() {
         layout: currentLayout,
         showSkeleton,
         showMetrics,
-        showHighlight,
         lineWidth,
         beforeColor,
         afterColor,
@@ -2435,7 +2372,6 @@ function loadData(e) {
             currentLayout = data.layout;
             showSkeleton = data.showSkeleton;
             showMetrics = data.showMetrics;
-            showHighlight = data.showHighlight;
             lineWidth = data.lineWidth;
             beforeColor = data.beforeColor;
             afterColor = data.afterColor;
@@ -2444,7 +2380,6 @@ function loadData(e) {
             updateLayoutButtons();
             document.getElementById('showSkeleton').checked = showSkeleton;
             document.getElementById('showMetrics').checked = showMetrics;
-            document.getElementById('showHighlight').checked = showHighlight;
             document.getElementById('lineWidth').value = lineWidth;
             document.getElementById('lineWidthValue').textContent = `${lineWidth}px`;
             
