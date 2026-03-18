@@ -1822,7 +1822,13 @@ function generateMetrics() {
     }
     
     // HTML生成（ポジティブな結果のみ表示）
-    const planeTitle = selectedPlane === 'frontal' ? '前額面（正面）' : '矢状面（側面）';
+    let planeTitle = selectedPlane === 'frontal' ? '前額面（正面）' : '矢状面（側面）';
+    
+    // 矢状面の場合は測定側面を追加
+    if (selectedPlane === 'sagittal') {
+        const sideLabel = facingSide === 'right' ? '右側面' : '左側面';
+        planeTitle = `矢状面（側面・${sideLabel}測定）`;
+    }
     
     // 改善された項目のみを収集（動的にmetric1〜metricNまでチェック）
     const improvedMetrics = [];
@@ -2113,6 +2119,9 @@ function calculateFullBodyMetrics(beforeEar, beforeShoulder, beforeHip, beforeKn
     const metrics = {};
     
     console.log('✅ 全身姿勢モード: 全身指標のみを計算');
+    console.log('📍 測定側面:', facingSide === 'right' ? '右側面（右耳・右肩を使用）' : '左側面（左耳・左肩を使用）');
+    console.log('📍 Before Ear X座標:', beforeEar.x.toFixed(3), '| Before Shoulder X座標:', beforeShoulder.x.toFixed(3));
+    console.log('📍 After Ear X座標:', afterEar.x.toFixed(3), '| After Shoulder X座標:', afterShoulder.x.toFixed(3));
     
     // 1. 頭部前方偏位
     const beforeHeadForward = (beforeEar.x - beforeShoulder.x) * 1000;
