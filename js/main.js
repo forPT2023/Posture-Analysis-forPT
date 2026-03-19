@@ -1872,38 +1872,38 @@ function generateMetrics() {
 }
 
 function calculateMetrics(beforeLandmarks, afterLandmarks) {
-    const beforeLeftShoulder = beforeLandmarks[11];
-    const beforeRightShoulder = beforeLandmarks[12];
-    const afterLeftShoulder = afterLandmarks[11];
-    const afterRightShoulder = afterLandmarks[12];
-    const beforeLeftHip = beforeLandmarks[23];
-    const beforeRightHip = beforeLandmarks[24];
-    const afterLeftHip = afterLandmarks[23];
-    const afterRightHip = afterLandmarks[24];
-    const beforeNose = beforeLandmarks[0];
-    const afterNose = afterLandmarks[0];
-    const beforeLeftEar = beforeLandmarks[7];
-    const afterLeftEar = afterLandmarks[7];
-    
-    // 肩と骨盤の中心点を計算
-    const beforeShoulderCenter = {
-        x: (beforeLeftShoulder.x + beforeRightShoulder.x) / 2,
-        y: (beforeLeftShoulder.y + beforeRightShoulder.y) / 2
-    };
-    const afterShoulderCenter = {
-        x: (afterLeftShoulder.x + afterRightShoulder.x) / 2,
-        y: (afterLeftShoulder.y + afterRightShoulder.y) / 2
-    };
-    const beforeHipCenter = {
-        x: (beforeLeftHip.x + beforeRightHip.x) / 2,
-        y: (beforeLeftHip.y + beforeRightHip.y) / 2
-    };
-    const afterHipCenter = {
-        x: (afterLeftHip.x + afterRightHip.x) / 2,
-        y: (afterLeftHip.y + afterRightHip.y) / 2
-    };
+    // 🔥 重要: 前額面と矢状面で完全に分離し、不要な計算を排除
     
     if (selectedPlane === 'frontal') {
+        // 前額面（正面）モード専用の変数定義
+        const beforeLeftShoulder = beforeLandmarks[11];
+        const beforeRightShoulder = beforeLandmarks[12];
+        const afterLeftShoulder = afterLandmarks[11];
+        const afterRightShoulder = afterLandmarks[12];
+        const beforeLeftHip = beforeLandmarks[23];
+        const beforeRightHip = beforeLandmarks[24];
+        const afterLeftHip = afterLandmarks[23];
+        const afterRightHip = afterLandmarks[24];
+        const beforeNose = beforeLandmarks[0];
+        const afterNose = afterLandmarks[0];
+        
+        // 肩と骨盤の中心点を計算
+        const beforeShoulderCenter = {
+            x: (beforeLeftShoulder.x + beforeRightShoulder.x) / 2,
+            y: (beforeLeftShoulder.y + beforeRightShoulder.y) / 2
+        };
+        const afterShoulderCenter = {
+            x: (afterLeftShoulder.x + afterRightShoulder.x) / 2,
+            y: (afterLeftShoulder.y + afterRightShoulder.y) / 2
+        };
+        const beforeHipCenter = {
+            x: (beforeLeftHip.x + beforeRightHip.x) / 2,
+            y: (beforeLeftHip.y + beforeRightHip.y) / 2
+        };
+        const afterHipCenter = {
+            x: (afterLeftHip.x + afterRightHip.x) / 2,
+            y: (afterLeftHip.y + afterRightHip.y) / 2
+        };
                 
         // 1. 肩の高さ差（左右差） - 小さいほど良い
         const beforeShoulderDiff = Math.abs(beforeLeftShoulder.y - beforeRightShoulder.y) * 1000;
@@ -2697,28 +2697,39 @@ async function exportDoc(format) {
             windowWidth: a4WidthPx,
             windowHeight: a4HeightPx,
             onclone: (clonedDoc) => {
-                // クローンされたドキュメント内で背景を完全に白に統一
-                // html2canvasがキャプチャする対象要素とその全ての親要素を白に
+                // 🔥 重要: CSSの!importantを上書きするため、setPropertyでpriorityを指定
+                // html2canvasがキャプチャする対象要素とその全ての親要素を白に強制
                 const clonedCanvas = clonedDoc.getElementById('previewCanvas');
                 if (clonedCanvas) {
-                    clonedCanvas.style.background = '#ffffff';
-                    clonedCanvas.style.backgroundColor = '#ffffff';
+                    clonedCanvas.style.setProperty('background', '#ffffff', 'important');
+                    clonedCanvas.style.setProperty('background-color', '#ffffff', 'important');
                 }
                 const clonedWrapper = clonedDoc.getElementById('previewWrapper');
                 if (clonedWrapper) {
-                    clonedWrapper.style.background = '#ffffff';
-                    clonedWrapper.style.backgroundColor = '#ffffff';
+                    clonedWrapper.style.setProperty('background', '#ffffff', 'important');
+                    clonedWrapper.style.setProperty('background-color', '#ffffff', 'important');
                 }
                 const clonedArea = clonedDoc.getElementById('previewArea');
                 if (clonedArea) {
-                    clonedArea.style.background = '#ffffff';
-                    clonedArea.style.backgroundColor = '#ffffff';
+                    clonedArea.style.setProperty('background', '#ffffff', 'important');
+                    clonedArea.style.setProperty('background-color', '#ffffff', 'important');
                 }
                 // body要素も白に（念のため）
                 if (clonedDoc.body) {
-                    clonedDoc.body.style.background = '#ffffff';
-                    clonedDoc.body.style.backgroundColor = '#ffffff';
+                    clonedDoc.body.style.setProperty('background', '#ffffff', 'important');
+                    clonedDoc.body.style.setProperty('background-color', '#ffffff', 'important');
                 }
+                
+                // 全てのdiv要素の背景も白に（徹底対策）
+                const allDivs = clonedDoc.querySelectorAll('div');
+                allDivs.forEach(div => {
+                    const bgColor = window.getComputedStyle(div).backgroundColor;
+                    // グレー系の背景色を検出して白に置き換え
+                    if (bgColor === 'rgb(232, 234, 246)' || bgColor === '#E8EAF6' || bgColor.includes('232, 234, 246')) {
+                        div.style.setProperty('background', '#ffffff', 'important');
+                        div.style.setProperty('background-color', '#ffffff', 'important');
+                    }
+                });
             }
         });
         
@@ -2752,16 +2763,23 @@ async function exportDoc(format) {
             console.log('📄 PDF実際のページサイズ:', pageWidth, 'mm x', pageHeight, 'mm');
             
             // 画像をPDFに配置
-            // html2canvasはscale=2で2倍サイズのcanvasを生成するため、
-            // PDFには余白なしで全面に配置する必要がある
+            // 🔥 重要: html2canvasはscale=2で2倍解像度のcanvasを生成
+            // しかしPDFには元のA4サイズ（mm）で配置する必要がある
+            // canvas.width/heightは2倍だが、PDF上の表示サイズはa4Width/a4Heightで指定
             pdf.addImage(
                 canvas.toDataURL('image/jpeg', 0.95), 
                 'JPEG', 
                 0,  // x位置（余白なし）
                 0,  // y位置（余白なし）
-                pageWidth,  // PDFの実際のページ幅を使用
-                pageHeight  // PDFの実際のページ高さを使用
+                a4Width,  // A4の実際の幅（mm）- pageWidthと同じ
+                a4Height  // A4の実際の高さ（mm）- pageHeightと同じ
             );
+            
+            console.log('📄 PDF addImage パラメータ:');
+            console.log('  - x, y:', 0, 0);
+            console.log('  - width, height (mm):', a4Width, a4Height);
+            console.log('  - canvas actual size (px):', canvas.width, 'x', canvas.height);
+            console.log('  - scale factor:', canvas.width / a4WidthPx, 'x', canvas.height / a4HeightPx);
             
             console.log('✅ PDF生成完了:', `${filename}.pdf`);
             pdf.save(`${filename}.pdf`);
