@@ -2488,14 +2488,26 @@ async function exportDoc(format) {
         // スマホのメディアクエリを上書きして、デスクトップ版と同じスタイルを強制適用
         styleEl.textContent = `
             /* エクスポート時：親要素を完全に白背景・透明化 */
-            #previewWrapper {
+            /* 全てのメディアクエリを上書き */
+            #previewWrapper,
+            .preview-wrapper {
                 background: #ffffff !important;
+                background-color: #ffffff !important;
                 padding: 0 !important;
                 overflow: visible !important;
             }
             
+            @media (max-width: 768px) {
+                #previewWrapper,
+                .preview-wrapper {
+                    background: #ffffff !important;
+                    background-color: #ffffff !important;
+                }
+            }
+            
             #previewArea {
                 background: #ffffff !important;
+                background-color: #ffffff !important;
                 overflow: visible !important;
             }
             
@@ -2511,7 +2523,8 @@ async function exportDoc(format) {
                 padding: 20mm !important;
                 box-sizing: border-box !important;
                 overflow: hidden !important;
-                background: white !important;
+                background: #ffffff !important;
+                background-color: #ffffff !important;
                 display: flex !important;
                 flex-direction: column !important;
                 margin: 0 !important;
@@ -2673,15 +2686,36 @@ async function exportDoc(format) {
         
         // html2canvasでキャプチャ
         // scale: 2で高解像度化するが、PDFには元のA4サイズで配置する
+        // 親要素の背景を無視するため、ignoreElements を使用
         const canvas = await html2canvas(previewCanvas, {
             scale: 2,  // 高解像度化（2倍）
             useCORS: true,
-            backgroundColor: '#ffffff',
+            backgroundColor: '#ffffff',  // 白背景を強制
             logging: false,
             width: a4WidthPx,
             height: a4HeightPx,
             windowWidth: a4WidthPx,
-            windowHeight: a4HeightPx
+            windowHeight: a4HeightPx,
+            ignoreElements: (element) => {
+                // previewWrapper と previewArea を無視（背景のみ）
+                if (element.id === 'previewWrapper' || element.id === 'previewArea') {
+                    return false; // これらの要素自体は無視しない（子要素を含む）
+                }
+                return false;
+            },
+            onclone: (clonedDoc) => {
+                // クローンされたドキュメント内で親要素の背景を強制的に白に
+                const clonedWrapper = clonedDoc.getElementById('previewWrapper');
+                if (clonedWrapper) {
+                    clonedWrapper.style.background = '#ffffff';
+                    clonedWrapper.style.backgroundColor = '#ffffff';
+                }
+                const clonedArea = clonedDoc.getElementById('previewArea');
+                if (clonedArea) {
+                    clonedArea.style.background = '#ffffff';
+                    clonedArea.style.backgroundColor = '#ffffff';
+                }
+            }
         });
         
         console.log('📊 html2canvas結果:');
