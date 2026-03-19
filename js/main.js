@@ -2685,8 +2685,8 @@ async function exportDoc(format) {
 
         
         // html2canvasでキャプチャ
-        // scale: 2で高解像度化するが、PDFには元のA4サイズで配置する
-        // 親要素の背景を無視するため、ignoreElements を使用
+        // scale: 2で高解像度化、PDFには元のA4サイズで配置
+        // 重要：previewCanvas自体とその親要素すべての背景を白に強制
         const canvas = await html2canvas(previewCanvas, {
             scale: 2,  // 高解像度化（2倍）
             useCORS: true,
@@ -2696,15 +2696,14 @@ async function exportDoc(format) {
             height: a4HeightPx,
             windowWidth: a4WidthPx,
             windowHeight: a4HeightPx,
-            ignoreElements: (element) => {
-                // previewWrapper と previewArea を無視（背景のみ）
-                if (element.id === 'previewWrapper' || element.id === 'previewArea') {
-                    return false; // これらの要素自体は無視しない（子要素を含む）
-                }
-                return false;
-            },
             onclone: (clonedDoc) => {
-                // クローンされたドキュメント内で親要素の背景を強制的に白に
+                // クローンされたドキュメント内で背景を完全に白に統一
+                // html2canvasがキャプチャする対象要素とその全ての親要素を白に
+                const clonedCanvas = clonedDoc.getElementById('previewCanvas');
+                if (clonedCanvas) {
+                    clonedCanvas.style.background = '#ffffff';
+                    clonedCanvas.style.backgroundColor = '#ffffff';
+                }
                 const clonedWrapper = clonedDoc.getElementById('previewWrapper');
                 if (clonedWrapper) {
                     clonedWrapper.style.background = '#ffffff';
@@ -2714,6 +2713,11 @@ async function exportDoc(format) {
                 if (clonedArea) {
                     clonedArea.style.background = '#ffffff';
                     clonedArea.style.backgroundColor = '#ffffff';
+                }
+                // body要素も白に（念のため）
+                if (clonedDoc.body) {
+                    clonedDoc.body.style.background = '#ffffff';
+                    clonedDoc.body.style.backgroundColor = '#ffffff';
                 }
             }
         });
@@ -2747,14 +2751,16 @@ async function exportDoc(format) {
             const pageHeight = pdf.internal.pageSize.getHeight();
             console.log('📄 PDF実際のページサイズ:', pageWidth, 'mm x', pageHeight, 'mm');
             
-            // 画像をPDFに配置（0,0から開始、A4サイズで配置）
+            // 画像をPDFに配置
+            // html2canvasはscale=2で2倍サイズのcanvasを生成するため、
+            // PDFには余白なしで全面に配置する必要がある
             pdf.addImage(
                 canvas.toDataURL('image/jpeg', 0.95), 
                 'JPEG', 
-                0,  // x位置
-                0,  // y位置
-                a4Width,  // 幅（mm）
-                a4Height  // 高さ（mm）
+                0,  // x位置（余白なし）
+                0,  // y位置（余白なし）
+                pageWidth,  // PDFの実際のページ幅を使用
+                pageHeight  // PDFの実際のページ高さを使用
             );
             
             console.log('✅ PDF生成完了:', `${filename}.pdf`);
