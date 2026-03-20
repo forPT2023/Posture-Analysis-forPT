@@ -2520,7 +2520,7 @@ async function exportDoc(format) {
                 max-width: ${a4WidthPx}px !important;
                 min-height: ${a4HeightPx}px !important;
                 max-height: ${a4HeightPx}px !important;
-                padding: 8mm !important;
+                padding: 10mm !important;
                 box-sizing: border-box !important;
                 overflow: hidden !important;
                 background: #ffffff !important;
@@ -2532,16 +2532,16 @@ async function exportDoc(format) {
             
             .${tempClass} .document-header {
                 flex-shrink: 0 !important;
-                padding-bottom: 4px !important;
-                margin-bottom: 6px !important;
+                padding-bottom: 8px !important;
+                margin-bottom: 10px !important;
                 border-bottom: 2px solid #2196F3 !important;
             }
             
             .${tempClass} .document-title {
-                font-size: 1.1rem !important;
+                font-size: 1.3rem !important;
                 font-weight: 700 !important;
                 color: #2196F3 !important;
-                margin: 0 0 3px 0 !important;
+                margin: 0 0 6px 0 !important;
                 line-height: 1.2 !important;
             }
             
@@ -2550,7 +2550,7 @@ async function exportDoc(format) {
                 flex-direction: row !important;
                 justify-content: space-between !important;
                 align-items: center !important;
-                font-size: 0.75rem !important;
+                font-size: 0.85rem !important;
                 margin: 0 !important;
                 gap: 0 !important;
             }
@@ -2559,7 +2559,7 @@ async function exportDoc(format) {
                 flex: 1 !important;
                 display: flex !important;
                 flex-direction: row !important;
-                gap: 8px !important;
+                gap: 15px !important;
                 align-items: center !important;
                 justify-content: center !important;
                 overflow: hidden !important;
@@ -2600,13 +2600,13 @@ async function exportDoc(format) {
             
             .${tempClass} .comparison-label {
                 position: absolute !important;
-                top: 8px !important;
-                left: 8px !important;
+                top: 10px !important;
+                left: 10px !important;
                 background: rgba(0, 0, 0, 0.7) !important;
                 color: #ffffff !important;
-                padding: 4px 10px !important;
-                border-radius: 4px !important;
-                font-size: 0.8rem !important;
+                padding: 5px 12px !important;
+                border-radius: 5px !important;
+                font-size: 0.85rem !important;
                 font-weight: 600 !important;
                 z-index: 10 !important;
             }
@@ -2622,34 +2622,34 @@ async function exportDoc(format) {
             
             .${tempClass} .metrics-area {
                 flex-shrink: 0 !important;
-                margin-top: 6px !important;
-                padding: 6px !important;
+                margin-top: 10px !important;
+                padding: 10px !important;
                 background: rgba(33, 150, 243, 0.05) !important;
-                border-radius: 4px !important;
+                border-radius: 8px !important;
                 border: 1px solid #ddd !important;
             }
             
             .${tempClass} .metrics-title {
-                font-size: 0.8rem !important;
+                font-size: 0.9rem !important;
                 font-weight: 600 !important;
-                margin-bottom: 4px !important;
+                margin-bottom: 8px !important;
                 color: #333 !important;
             }
             
             .${tempClass} .metrics-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                gap: 6px !important;
+                gap: 10px !important;
             }
             
             .${tempClass} .metric-item {
                 display: flex !important;
                 justify-content: space-between !important;
-                padding: 4px 6px !important;
+                padding: 6px 10px !important;
                 background: #ffffff !important;
-                border-radius: 3px !important;
+                border-radius: 6px !important;
                 border: 1px solid #ddd !important;
-                font-size: 0.7rem !important;
+                font-size: 0.85rem !important;
             }
             
             .${tempClass} .metric-label {
@@ -2664,6 +2664,23 @@ async function exportDoc(format) {
             
             .${tempClass} .metric-value.improved {
                 color: #4CAF50 !important;
+            }
+            
+            /* モバイル用メディアクエリを完全にオーバーライド */
+            @media (max-width: 768px) {
+                .${tempClass} .document-info {
+                    flex-direction: row !important;
+                    font-size: 0.85rem !important;
+                }
+                
+                .${tempClass} .metrics-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                }
+                
+                .${tempClass} .metric-item {
+                    flex-direction: row !important;
+                    justify-content: space-between !important;
+                }
             }
         `;
         
