@@ -2532,16 +2532,16 @@ async function exportDoc(format) {
             
             .${tempClass} .document-header {
                 flex-shrink: 0 !important;
-                padding-bottom: 6px !important;
-                margin-bottom: 8px !important;
+                padding-bottom: 4px !important;
+                margin-bottom: 6px !important;
                 border-bottom: 2px solid #2196F3 !important;
             }
             
             .${tempClass} .document-title {
-                font-size: 1.2rem !important;
+                font-size: 1.1rem !important;
                 font-weight: 700 !important;
                 color: #2196F3 !important;
-                margin: 0 0 4px 0 !important;
+                margin: 0 0 3px 0 !important;
                 line-height: 1.2 !important;
             }
             
@@ -2550,7 +2550,7 @@ async function exportDoc(format) {
                 flex-direction: row !important;
                 justify-content: space-between !important;
                 align-items: center !important;
-                font-size: 0.8rem !important;
+                font-size: 0.75rem !important;
                 margin: 0 !important;
                 gap: 0 !important;
             }
@@ -2559,7 +2559,7 @@ async function exportDoc(format) {
                 flex: 1 !important;
                 display: flex !important;
                 flex-direction: row !important;
-                gap: 10px !important;
+                gap: 8px !important;
                 align-items: center !important;
                 justify-content: center !important;
                 overflow: hidden !important;
@@ -2592,6 +2592,7 @@ async function exportDoc(format) {
                 align-items: center !important;
                 justify-content: center !important;
                 width: 100% !important;
+                height: 100% !important;
                 min-height: 0 !important;
                 position: relative !important;
                 overflow: hidden !important;
@@ -2621,34 +2622,34 @@ async function exportDoc(format) {
             
             .${tempClass} .metrics-area {
                 flex-shrink: 0 !important;
-                margin-top: 8px !important;
-                padding: 8px !important;
+                margin-top: 6px !important;
+                padding: 6px !important;
                 background: rgba(33, 150, 243, 0.05) !important;
-                border-radius: 6px !important;
+                border-radius: 4px !important;
                 border: 1px solid #ddd !important;
             }
             
             .${tempClass} .metrics-title {
-                font-size: 0.85rem !important;
+                font-size: 0.8rem !important;
                 font-weight: 600 !important;
-                margin-bottom: 6px !important;
+                margin-bottom: 4px !important;
                 color: #333 !important;
             }
             
             .${tempClass} .metrics-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
+                gap: 6px !important;
             }
             
             .${tempClass} .metric-item {
                 display: flex !important;
                 justify-content: space-between !important;
-                padding: 5px 8px !important;
+                padding: 4px 6px !important;
                 background: #ffffff !important;
-                border-radius: 4px !important;
+                border-radius: 3px !important;
                 border: 1px solid #ddd !important;
-                font-size: 0.75rem !important;
+                font-size: 0.7rem !important;
             }
             
             .${tempClass} .metric-label {
