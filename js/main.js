@@ -2560,7 +2560,7 @@ async function exportDoc(format) {
                 display: flex !important;
                 flex-direction: row !important;
                 gap: 10px !important;
-                align-items: stretch !important;
+                align-items: center !important;
                 justify-content: center !important;
                 overflow: hidden !important;
                 min-height: 0 !important;
@@ -2578,8 +2578,8 @@ async function exportDoc(format) {
                 flex: 1 !important;
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: stretch !important;
-                justify-content: stretch !important;
+                align-items: center !important;
+                justify-content: center !important;
                 min-width: 0 !important;
                 min-height: 0 !important;
                 max-height: 100% !important;
@@ -2613,8 +2613,8 @@ async function exportDoc(format) {
             .${tempClass} .comparison-canvas {
                 max-width: 100% !important;
                 max-height: 100% !important;
-                width: 100% !important;
-                height: 100% !important;
+                width: auto !important;
+                height: auto !important;
                 object-fit: contain !important;
                 display: block !important;
             }
