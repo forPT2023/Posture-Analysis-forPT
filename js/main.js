@@ -2639,7 +2639,7 @@ async function exportDoc(format) {
                 position: absolute !important;
                 top: 10px !important;
                 left: 10px !important;
-                background: rgba(0, 0, 0, 0.7) !important;
+                /* background は削除（インラインスタイルのbeforeColor/afterColorを優先） */
                 color: #ffffff !important;
                 padding: 5px 12px !important;
                 border-radius: 5px !important;
