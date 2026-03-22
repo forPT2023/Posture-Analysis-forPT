@@ -1161,6 +1161,7 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     console.log('✅ Canvas要素取得成功:', canvasId);
     
     // レイアウトに応じてCanvasの最大サイズを設定
+    // 画像比率: 3:4 (横:縦) = 0.75
     // A4サイズ: 横向き297x210mm、縦向き210x297mm
     // padding 20mm x 2 = 40mm を引く
     // 1mm ≈ 3.7795px (96dpi)
@@ -1169,20 +1170,23 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     if (currentLayout === 'vertical') {
         // A4縦向き (210mm x 297mm) - Before/Afterを横並び配置
         // 実効エリア: (210-40) x (297-40) = 170mm x 257mm
-        // 2つの画像を横に配置: 各画像 約95mm x 220mm
+        // 2つの画像を横に配置し、3:4比率を考慮
+        // 各画像: 横幅 80mm → 高さ 107mm (80 / 0.75)
         // gap(10mm) + 左右padding(40mm) を考慮
-        // ヘッダー(約15mm) + 画像エリア(220mm) + 数値(約20mm) ≈ 255mm
-        maxWidth = 95 * 3.7795;    // 約359px（各画像の幅を拡大）
-        maxHeight = 220 * 3.7795;  // 約832px（縦長に対応、全身が収まる）
-        console.log('📐 縦レイアウト - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
+        // ヘッダー(15mm) + 画像(107mm) + 数値(20mm) + margin ≈ 150mm (余裕あり)
+        maxWidth = 80 * 3.7795;    // 約302px (3:4比率の横幅)
+        maxHeight = 107 * 3.7795;  // 約404px (3:4比率の縦幅、全身が収まる)
+        console.log('📐 縦レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     } else {
         // A4横向き (297mm x 210mm) - Before/Afterを横並び配置
         // 実効エリア: (297-40) x (210-40) = 257mm x 170mm
-        // 2つの画像を横に配置: 各画像 約120mm x 130mm
-        // ヘッダー(約15mm) + 画像エリア(140mm) + 数値(約15mm) ≈ 170mm
-        maxWidth = 120 * 3.7795;   // 約453px
-        maxHeight = 130 * 3.7795;  // 約491px
-        console.log('📐 横レイアウト - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
+        // 2つの画像を横に配置: 各画像 約110mm x 147mm (3:4比率)
+        // gap(10mm) + 左右padding(40mm) を考慮
+        // 110mm * 2 + 10mm(gap) + 40mm(padding) = 270mm (少し調整が必要)
+        // 実際: 各画像 105mm x 140mm
+        maxWidth = 105 * 3.7795;   // 約397px (3:4比率の横幅)
+        maxHeight = 140 * 3.7795;  // 約529px (3:4比率の縦幅)
+        console.log('📐 横レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     }
     
     let width = image.width;

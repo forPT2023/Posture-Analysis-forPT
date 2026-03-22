@@ -627,9 +627,11 @@ input[type="range"]::-moz-range-thumb {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;  /* グレー背景を削除 */
+    background: transparent;
     width: fit-content;
     margin: 0 auto;
+    /* 3:4比率の画像に最適化 */
+    aspect-ratio: 3 / 4;
 }
 
 .comparison-canvas {
@@ -639,6 +641,8 @@ input[type="range"]::-moz-range-thumb {
     width: 100%;
     height: auto;
     object-fit: contain;
+    /* 3:4比率を維持 */
+    aspect-ratio: 3 / 4;
 }
 
 /* 数値データエリア */
