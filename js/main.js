@@ -354,6 +354,8 @@ function setupImageUploadListeners() {
         
         fileInputBefore.addEventListener('change', (e) => {
             handleImageUpload(e.target.files[0], 'before');
+            // ファイル選択後にvalueをリセット（再選択を可能にする）
+            e.target.value = '';
         });
         
         // カメラ撮影時のガイド機能を追加
@@ -377,6 +379,8 @@ function setupImageUploadListeners() {
         
         fileInputAfter.addEventListener('change', (e) => {
             handleImageUpload(e.target.files[0], 'after');
+            // ファイル選択後にvalueをリセット（再選択を可能にする）
+            e.target.value = '';
         });
         
         // カメラ撮影時のガイド機能を追加
