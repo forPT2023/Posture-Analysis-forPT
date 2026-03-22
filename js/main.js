@@ -2542,7 +2542,7 @@ async function exportDoc(format) {
                 max-width: ${a4WidthPx}px !important;
                 min-height: ${a4HeightPx}px !important;
                 max-height: ${a4HeightPx}px !important;
-                padding: 10mm !important;
+                padding: 20mm !important;
                 box-sizing: border-box !important;
                 overflow: hidden !important;
                 background: #ffffff !important;
