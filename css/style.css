@@ -630,8 +630,7 @@ input[type="range"]::-moz-range-thumb {
     background: transparent;
     width: fit-content;
     margin: 0 auto;
-    /* 3:4比率の画像に最適化 */
-    aspect-ratio: 3 / 4;
+    /* aspect-ratio削除: あらゆる比率の画像に対応 */
 }
 
 .comparison-canvas {
@@ -641,8 +640,7 @@ input[type="range"]::-moz-range-thumb {
     width: 100%;
     height: auto;
     object-fit: contain;
-    /* 3:4比率を維持 */
-    aspect-ratio: 3 / 4;
+    /* aspect-ratio削除: 画像の元の比率を尊重 */
 }
 
 /* 数値データエリア */
