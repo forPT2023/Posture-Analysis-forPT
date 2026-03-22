@@ -1170,11 +1170,12 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     if (currentLayout === 'vertical') {
         // A4縦向き (210mm x 297mm) - Before/Afterを横並び配置
         // 実効エリア: (210-40) x (297-40) = 170mm x 257mm
-        // ヘッダー(15mm) + 画像(100mm) + 数値(20mm) + 余裕(122mm) = 257mm
-        // 各画像: 75mm x 100mm (3:4比率)
+        // ヘッダー(15mm) + 画像(140mm) + 数値(20mm) + 余裕(82mm) = 257mm
+        // 各画像: 75mm x 140mm (3:4比率、全身表示最適化)
         // 合計幅: 75mm * 2 + 10mm(gap) = 160mm (実効170mmの94%)
+        // 画像エリア: 257 - 15 - 20 = 222mm, 画像140mm = 約63%使用（最適バランス）
         maxWidth = 75 * 3.7795;    // 約283px (3:4比率の横幅)
-        maxHeight = 100 * 3.7795;  // 約378px (3:4比率の縦幅、全身が収まる)
+        maxHeight = 140 * 3.7795;  // 約529px (3:4比率の縦幅、全身が完全に収まる)
         console.log('📐 縦レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     } else {
         // A4横向き (297mm x 210mm) - Before/Afterを横並び配置
