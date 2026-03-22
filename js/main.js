@@ -2799,8 +2799,14 @@ async function exportDoc(format) {
                 }
                 
                 // 全てのdiv要素の背景も白に（徹底対策）
+                // ⚠️ 重要: comparison-labelは除外（Before/Afterの背景色を保持）
                 const allDivs = clonedDoc.querySelectorAll('div');
                 allDivs.forEach(div => {
+                    // comparison-labelクラスを持つ要素はスキップ
+                    if (div.classList.contains('comparison-label')) {
+                        return;
+                    }
+                    
                     const bgColor = window.getComputedStyle(div).backgroundColor;
                     // グレー系の背景色を検出して白に置き換え
                     if (bgColor === 'rgb(232, 234, 246)' || bgColor === '#E8EAF6' || bgColor.includes('232, 234, 246')) {
