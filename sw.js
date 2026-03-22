@@ -1,5 +1,5 @@
 // Service Worker - Posture Analysis PWA
-const CACHE_NAME = 'posture-analysis-v13.11.0';
+const CACHE_NAME = 'posture-analysis-v13.9.6';
 
 const urlsToCache = [
     '/',
