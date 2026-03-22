@@ -1,19 +1,26 @@
-// Service Worker - Posture Analysis PWA
-const CACHE_NAME = 'posture-analysis-v13.9.6';
+// Service Worker - Posture Analysis PWA (完全オフライン対応版)
+const CACHE_NAME = 'posture-analysis-v13.13.3-offline';
 
 const urlsToCache = [
     '/',
     '/index.html',
     '/css/style.css',
     '/css/camera-guide.css',
+    '/css/image-crop.css',        // ✨ 追加（不足分）
     '/js/main.js',
     '/js/camera-guide.js',
     '/js/landmark-editor.js',
+    '/js/image-crop.js',           // ✨ 追加（不足分）
     '/manifest.json',
     '/icons/icon-192.png',
     '/icons/icon-512.png',
     '/icons/apple-touch-icon.png',
-    // 外部CDNは常にオンライン取得（最新版を使用）
+    // ✨ ローカルライブラリ（オフライン対応）
+    '/libs/mediapipe/pose.js',
+    '/libs/mediapipe/camera_utils.js',
+    '/libs/mediapipe/drawing_utils.js',
+    '/libs/html2canvas.min.js',
+    '/libs/jspdf.umd.min.js',
 ];
 
 // インストール時
@@ -125,4 +132,4 @@ self.addEventListener('sync', (event) => {
     }
 });
 
-console.log('🎉 Service Worker v13.11.0 読み込み完了（有効期限チェックなし）');
+console.log('🎉 Service Worker v13.13.3-offline 読み込み完了（完全オフライン対応）');
