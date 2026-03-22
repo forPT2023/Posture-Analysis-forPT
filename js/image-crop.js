@@ -121,16 +121,16 @@ function initializeCropArea() {
 
     console.log('📐 画像サイズ:', imgWidth, 'x', imgHeight);
 
-    // 3:4比率で画像に収まる最大サイズを計算
+    // 3:4比率で画像に収まる最大サイズを計算（画像いっぱいに）
     let cropWidth, cropHeight;
 
     if (imgWidth / imgHeight > ASPECT_RATIO) {
-        // 画像が横長 → 高さを基準に
-        cropHeight = imgHeight * 0.9; // 90%のサイズ
+        // 画像が横長 → 高さを基準に最大化
+        cropHeight = imgHeight;
         cropWidth = cropHeight * ASPECT_RATIO;
     } else {
-        // 画像が縦長 → 幅を基準に
-        cropWidth = imgWidth * 0.9;
+        // 画像が縦長 → 幅を基準に最大化
+        cropWidth = imgWidth;
         cropHeight = cropWidth / ASPECT_RATIO;
     }
 
@@ -340,6 +340,10 @@ function applyCrop() {
     canvas.width = actualWidth;
     canvas.height = actualHeight;
 
+    // 白背景を描画（JPEGの場合の黒背景を防ぐ）
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, actualWidth, actualHeight);
+
     // クロップして描画
     ctx.drawImage(
         cropImage,
@@ -347,8 +351,18 @@ function applyCrop() {
         0, 0, actualWidth, actualHeight // デスティネーション
     );
 
-    // Data URLとして出力
-    const croppedImageData = canvas.toDataURL('image/jpeg', 0.95);
+    // Data URLとして出力（元の画像形式を維持）
+    // 元画像がPNGならPNG、JPEGならJPEGで出力
+    let outputFormat = 'image/jpeg';
+    let outputQuality = 0.95;
+    
+    // 元画像のData URLから形式を判定
+    if (cropModalState.currentImage.startsWith('data:image/png')) {
+        outputFormat = 'image/png';
+        outputQuality = 1.0; // PNGは品質パラメータ不要だが念のため
+    }
+    
+    const croppedImageData = canvas.toDataURL(outputFormat, outputQuality);
 
     console.log('✅ クロップ完了');
 
