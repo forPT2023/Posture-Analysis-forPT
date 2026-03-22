@@ -281,11 +281,13 @@ function setupPlaneSelectionListeners() {
                 sagittalModeCard.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
             }
             
-            // 矢状面分析グループ（撮影側面選択など）の表示/非表示
+            // 矢状面分析グループ（頸部機能評価セクション）の表示/非表示
+            // 矢状面 AND 頸部モード時のみ表示
             const sagittalAnalysisGroup = document.getElementById('sagittalAnalysisGroup');
             if (sagittalAnalysisGroup) {
-                sagittalAnalysisGroup.style.display = selectedPlane === 'sagittal' ? 'block' : 'none';
-                console.log('📐 矢状面分析グループ:', selectedPlane === 'sagittal' ? '表示' : '非表示');
+                const shouldShow = selectedPlane === 'sagittal' && cervicalModeEnabled;
+                sagittalAnalysisGroup.style.display = shouldShow ? 'block' : 'none';
+                console.log('📐 矢状面分析グループ（頸部機能評価）:', shouldShow ? '表示' : '非表示');
             }
             
             // 前額面モード時は矢状面分析を無効化
@@ -312,6 +314,13 @@ function setupPlaneSelectionListeners() {
         radio.addEventListener('change', (e) => {
             cervicalModeEnabled = e.target.value === 'cervical';
             console.log('✅ 矢状面測定モード変更:', e.target.value, '頸部モード:', cervicalModeEnabled);
+            
+            // 矢状面分析グループ（頸部機能評価セクション）の表示/非表示
+            const sagittalAnalysisGroup = document.getElementById('sagittalAnalysisGroup');
+            if (sagittalAnalysisGroup) {
+                sagittalAnalysisGroup.style.display = cervicalModeEnabled ? 'block' : 'none';
+                console.log('📐 矢状面分析グループ（頸部機能評価）:', cervicalModeEnabled ? '表示' : '非表示');
+            }
             
             // 頸部詳細設定の表示/非表示
             const cervicalDetailSettings = document.getElementById('cervicalDetailSettings');
