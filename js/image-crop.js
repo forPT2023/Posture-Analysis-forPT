@@ -95,8 +95,18 @@ function openCropModal(imageData, type, callback) {
 
     // 画像を設定
     cropImage.onload = () => {
-        initializeCropArea();
+        console.log('🖼️ 画像読み込み完了');
+        
+        // モーダルを表示
         modal.style.display = 'flex';
+        
+        // requestAnimationFrame を使ってレンダリング完了を確実に待つ
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                console.log('🎬 レンダリング完了、クロップエリア初期化開始');
+                initializeCropArea();
+            });
+        });
     };
 
     cropImage.onerror = () => {
@@ -114,12 +124,25 @@ function initializeCropArea() {
     const cropImage = document.getElementById('cropImage');
     const cropArea = document.getElementById('cropArea');
 
-    if (!cropImage || !cropArea) return;
+    if (!cropImage || !cropArea) {
+        console.error('❌ クロップ要素が見つかりません');
+        return;
+    }
 
     const imgWidth = cropImage.clientWidth;
     const imgHeight = cropImage.clientHeight;
 
-    console.log('📐 画像サイズ:', imgWidth, 'x', imgHeight);
+    console.log('📐 画像サイズ (client):', imgWidth, 'x', imgHeight);
+    console.log('📐 画像サイズ (natural):', cropImage.naturalWidth, 'x', cropImage.naturalHeight);
+
+    // サイズが0の場合は再試行
+    if (imgWidth === 0 || imgHeight === 0) {
+        console.warn('⚠️ 画像サイズが0です。再試行します...');
+        setTimeout(() => {
+            initializeCropArea();
+        }, 100);
+        return;
+    }
 
     // 3:4比率で画像に収まる最大サイズを計算（画像いっぱいに）
     let cropWidth, cropHeight;
@@ -148,6 +171,13 @@ function initializeCropArea() {
     cropArea.style.display = 'block';
 
     console.log('✅ クロップエリア初期化:', cropModalState.cropData);
+    console.log('✅ クロップエリアCSS:', {
+        left: cropArea.style.left,
+        top: cropArea.style.top,
+        width: cropArea.style.width,
+        height: cropArea.style.height,
+        display: cropArea.style.display
+    });
 }
 
 /**
