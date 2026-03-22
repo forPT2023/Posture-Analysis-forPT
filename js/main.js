@@ -2739,7 +2739,6 @@ async function exportDoc(format) {
                     font-size: 1.3rem !important;
                 }
             }
-            }
         `;
         
         document.head.appendChild(styleEl);
