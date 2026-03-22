@@ -1170,22 +1170,20 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     if (currentLayout === 'vertical') {
         // A4縦向き (210mm x 297mm) - Before/Afterを横並び配置
         // 実効エリア: (210-40) x (297-40) = 170mm x 257mm
-        // 2つの画像を横に配置し、3:4比率を考慮
-        // 各画像: 横幅 80mm → 高さ 107mm (80 / 0.75)
-        // gap(10mm) + 左右padding(40mm) を考慮
-        // ヘッダー(15mm) + 画像(107mm) + 数値(20mm) + margin ≈ 150mm (余裕あり)
-        maxWidth = 80 * 3.7795;    // 約302px (3:4比率の横幅)
-        maxHeight = 107 * 3.7795;  // 約404px (3:4比率の縦幅、全身が収まる)
+        // ヘッダー(15mm) + 画像(100mm) + 数値(20mm) + 余裕(122mm) = 257mm
+        // 各画像: 75mm x 100mm (3:4比率)
+        // 合計幅: 75mm * 2 + 10mm(gap) = 160mm (実効170mmの94%)
+        maxWidth = 75 * 3.7795;    // 約283px (3:4比率の横幅)
+        maxHeight = 100 * 3.7795;  // 約378px (3:4比率の縦幅、全身が収まる)
         console.log('📐 縦レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     } else {
         // A4横向き (297mm x 210mm) - Before/Afterを横並び配置
         // 実効エリア: (297-40) x (210-40) = 257mm x 170mm
-        // 2つの画像を横に配置: 各画像 約110mm x 147mm (3:4比率)
-        // gap(10mm) + 左右padding(40mm) を考慮
-        // 110mm * 2 + 10mm(gap) + 40mm(padding) = 270mm (少し調整が必要)
-        // 実際: 各画像 105mm x 140mm
-        maxWidth = 105 * 3.7795;   // 約397px (3:4比率の横幅)
-        maxHeight = 140 * 3.7795;  // 約529px (3:4比率の縦幅)
+        // ヘッダー(15mm) + 画像(120mm) + 数値(15mm) + 余裕(20mm) = 170mm
+        // 各画像: 90mm x 120mm (3:4比率)
+        // 合計幅: 90mm * 2 + 10mm(gap) = 190mm (実効257mmの74%)
+        maxWidth = 90 * 3.7795;    // 約340px (3:4比率の横幅)
+        maxHeight = 120 * 3.7795;  // 約453px (3:4比率の縦幅、全身が収まる)
         console.log('📐 横レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     }
     
