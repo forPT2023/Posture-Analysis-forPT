@@ -1,0 +1,256 @@
+/**
+ * 画像クロップUI専用スタイル
+ * v1.0.0 - 2026-03-22
+ */
+
+/* モーダル背景 */
+.crop-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+}
+
+/* モーダルコンテンツ */
+.crop-modal-content {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ヘッダー */
+.crop-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f5f5f5;
+}
+
+.crop-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.crop-close-btn {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.crop-close-btn:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+/* ボディ（キャンバスエリア） */
+.crop-modal-body {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fafafa;
+}
+
+.crop-canvas-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#cropImage {
+    display: block;
+    max-width: 100%;
+    max-height: 70vh;
+    width: auto;
+    height: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+}
+
+/* クロップエリア */
+.crop-area {
+    display: none;
+    position: absolute;
+    border: 2px solid #2196F3;
+    background-color: rgba(33, 150, 243, 0.1);
+    cursor: move;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+}
+
+/* クロップハンドル */
+.crop-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #2196F3;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 10;
+}
+
+.crop-handle-nw {
+    top: -10px;
+    left: -10px;
+    cursor: nw-resize;
+}
+
+.crop-handle-ne {
+    top: -10px;
+    right: -10px;
+    cursor: ne-resize;
+}
+
+.crop-handle-sw {
+    bottom: -10px;
+    left: -10px;
+    cursor: sw-resize;
+}
+
+.crop-handle-se {
+    bottom: -10px;
+    right: -10px;
+    cursor: se-resize;
+}
+
+.crop-handle:hover {
+    background-color: #1976D2;
+    transform: scale(1.2);
+    transition: all 0.2s;
+}
+
+/* フッター */
+.crop-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #f5f5f5;
+}
+
+.crop-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.crop-btn-primary {
+    background-color: #2196F3;
+    color: #fff;
+}
+
+.crop-btn-primary:hover {
+    background-color: #1976D2;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+.crop-btn-secondary {
+    background-color: #fff;
+    color: #666;
+    border: 2px solid #e0e0e0;
+}
+
+.crop-btn-secondary:hover {
+    background-color: #f5f5f5;
+    border-color: #bdbdbd;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .crop-modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+
+    .crop-modal-header {
+        padding: 15px;
+    }
+
+    .crop-modal-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .crop-modal-body {
+        padding: 15px;
+    }
+
+    #cropImage {
+        max-height: 60vh;
+    }
+
+    .crop-modal-footer {
+        padding: 15px;
+        flex-direction: column;
+    }
+
+    .crop-btn {
+        width: 100%;
+        padding: 14px;
+    }
+
+    .crop-handle {
+        width: 24px;
+        height: 24px;
+    }
+
+    .crop-handle-nw,
+    .crop-handle-ne,
+    .crop-handle-sw,
+    .crop-handle-se {
+        margin: -12px;
+    }
+}
+
+/* タッチデバイス対応 */
+@media (hover: none) {
+    .crop-handle {
+        width: 28px;
+        height: 28px;
+    }
+
+    .crop-handle:active {
+        background-color: #1976D2;
+        transform: scale(1.3);
+    }
+
+    .crop-btn:active {
+        transform: scale(0.98);
+    }
+}

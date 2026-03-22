@@ -799,35 +799,17 @@ function handleImageUpload(file, type) {
     const reader = new FileReader();
     
     reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-            
-            if (type === 'before') {
-                beforeImage = img;
-                beforePose = null;  // 新しい画像なので姿勢データをクリア
-                beforeImageSrc = null;  // キャッシュキーをクリア
-                showPreviewThumbnail(e.target.result, 'previewBefore');
-                // 分析ボタンの状態を更新
-                updateAnalyzeButton();
-            } else {
-                afterImage = img;
-                afterPose = null;  // 新しい画像なので姿勢データをクリア
-                afterImageSrc = null;  // キャッシュキーをクリア
-                showPreviewThumbnail(e.target.result, 'previewAfter');
-                // 分析ボタンの状態を更新
-                updateAnalyzeButton();
-            }
-            
-            // 両方の画像がアップロードされたら分析ボタンを有効化
-            updateAnalyzeButton();
-        };
-        
-        img.onerror = () => {
-            console.error(`❌ 画像読み込みエラー: ${type}`);
-            showToast('画像の読み込みに失敗しました', 'error');
-        };
-        
-        img.src = e.target.result;
+        // 🆕 クロップモーダルを開く（image-crop.js の関数を使用）
+        if (typeof openCropModal === 'function') {
+            openCropModal(e.target.result, type, (croppedImageData) => {
+                // クロップ完了後の処理（既存ロジック）
+                processUploadedImage(croppedImageData, type);
+            });
+        } else {
+            // フォールバック: クロップ機能がない場合はそのまま処理
+            console.warn('⚠️ クロップ機能が利用できません。元の画像を使用します。');
+            processUploadedImage(e.target.result, type);
+        }
     };
     
     reader.onerror = () => {
@@ -836,6 +818,43 @@ function handleImageUpload(file, type) {
     };
     
     reader.readAsDataURL(file);
+}
+
+/**
+ * アップロードされた画像を処理（クロップ後）
+ * @param {string} imageData - 画像のData URL
+ * @param {string} type - 'before' or 'after'
+ */
+function processUploadedImage(imageData, type) {
+    const img = new Image();
+    
+    img.onload = () => {
+        if (type === 'before') {
+            beforeImage = img;
+            beforePose = null;  // 新しい画像なので姿勢データをクリア
+            beforeImageSrc = null;  // キャッシュキーをクリア
+            showPreviewThumbnail(imageData, 'previewBefore');
+            // 分析ボタンの状態を更新
+            updateAnalyzeButton();
+        } else {
+            afterImage = img;
+            afterPose = null;  // 新しい画像なので姿勢データをクリア
+            afterImageSrc = null;  // キャッシュキーをクリア
+            showPreviewThumbnail(imageData, 'previewAfter');
+            // 分析ボタンの状態を更新
+            updateAnalyzeButton();
+        }
+        
+        // 両方の画像がアップロードされたら分析ボタンを有効化
+        updateAnalyzeButton();
+    };
+    
+    img.onerror = () => {
+        console.error(`❌ 画像読み込みエラー: ${type}`);
+        showToast('画像の読み込みに失敗しました', 'error');
+    };
+    
+    img.src = imageData;
 }
 
 function showPreviewThumbnail(src, elementId) {
