@@ -2572,7 +2572,8 @@ async function exportDoc(format) {
                 border-bottom: 2px solid #2196F3 !important;
             }
             
-            .${tempClass} .document-title {
+            /* 詳細度を上げてスマホCSSを確実に上書き */
+            .${tempClass}.preview-canvas .document-title {
                 font-size: 1.3rem !important;
                 font-weight: 700 !important;
                 color: #2196F3 !important;
@@ -2580,7 +2581,7 @@ async function exportDoc(format) {
                 line-height: 1.2 !important;
             }
             
-            .${tempClass} .document-info {
+            .${tempClass}.preview-canvas .document-info {
                 display: flex !important;
                 flex-direction: row !important;
                 justify-content: space-between !important;
@@ -2633,7 +2634,8 @@ async function exportDoc(format) {
                 overflow: hidden !important;
             }
             
-            .${tempClass} .comparison-label {
+            /* 詳細度を上げてスマホCSSを確実に上書き */
+            .${tempClass}.preview-canvas .comparison-label {
                 position: absolute !important;
                 top: 10px !important;
                 left: 10px !important;
@@ -2664,20 +2666,21 @@ async function exportDoc(format) {
                 border: 1px solid #ddd !important;
             }
             
-            .${tempClass} .metrics-title {
+            /* 詳細度を上げてスマホCSSを確実に上書き */
+            .${tempClass}.preview-canvas .metrics-title {
                 font-size: 0.9rem !important;
                 font-weight: 600 !important;
                 margin-bottom: 8px !important;
                 color: #333 !important;
             }
             
-            .${tempClass} .metrics-grid {
+            .${tempClass}.preview-canvas .metrics-grid {
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
             }
             
-            .${tempClass} .metric-item {
+            .${tempClass}.preview-canvas .metric-item {
                 display: flex !important;
                 justify-content: space-between !important;
                 padding: 6px 10px !important;
@@ -2702,20 +2705,40 @@ async function exportDoc(format) {
             }
             
             /* モバイル用メディアクエリを完全にオーバーライド */
+            /* 詳細度を上げてスマホCSSを確実に上書き */
             @media (max-width: 768px) {
-                .${tempClass} .document-info {
+                .${tempClass}.preview-canvas .document-info {
                     flex-direction: row !important;
                     font-size: 0.85rem !important;
+                    align-items: center !important;
+                    gap: 0 !important;
                 }
                 
-                .${tempClass} .metrics-grid {
+                .${tempClass}.preview-canvas .metrics-grid {
                     grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 10px !important;
                 }
                 
-                .${tempClass} .metric-item {
+                .${tempClass}.preview-canvas .metric-item {
                     flex-direction: row !important;
                     justify-content: space-between !important;
+                    font-size: 0.85rem !important;
+                    padding: 6px 10px !important;
                 }
+                
+                .${tempClass}.preview-canvas .comparison-label {
+                    font-size: 0.85rem !important;
+                    padding: 5px 12px !important;
+                }
+                
+                .${tempClass}.preview-canvas .metrics-title {
+                    font-size: 0.9rem !important;
+                }
+                
+                .${tempClass}.preview-canvas .document-title {
+                    font-size: 1.3rem !important;
+                }
+            }
             }
         `;
         
