@@ -1885,10 +1885,6 @@ function generateMetrics() {
             <div class="metrics-grid">
                 ${improvedMetrics.join('')}
             </div>
-            <div class="metrics-disclaimer">
-                <p>※ 印の付いた測定値は写真ベースの参考値です。正確な評価には専門的な測定が必要です。</p>
-                <p style="font-size: 0.75rem; margin-top: 5px;">本アプリの測定値は姿勢のスクリーニングを目的としており、医療診断に代わるものではありません。</p>
-            </div>
         `;
     } else if (allMetrics.length > 0) {
         metricsArea.innerHTML = `
@@ -1898,10 +1894,6 @@ function generateMetrics() {
             </div>
             <div class="metrics-message">
                 <p>測定可能な改善は検出されませんでしたが、視覚的な変化が見られる可能性があります。</p>
-            </div>
-            <div class="metrics-disclaimer">
-                <p>※ 印の付いた測定値は写真ベースの参考値です。正確な評価には専門的な測定が必要です。</p>
-                <p style="font-size: 0.75rem; margin-top: 5px;">本アプリの測定値は姿勢のスクリーニングを目的としており、医療診断に代わるものではありません。</p>
             </div>
         `;
     } else {
@@ -2120,7 +2112,7 @@ function calculateCervicalMetrics(beforeEar, beforeShoulder, beforeEye, afterEar
         const angleImproved = afterROMAngle > beforeROMAngle;
         
         metricCount++;
-        metrics[`metric${metricCount}Label`] = '頭部後傾角度 ※';
+        metrics[`metric${metricCount}Label`] = '頭部後傾角度';
         metrics[`metric${metricCount}Value`] = `${beforeROMAngle.toFixed(1)} → ${afterROMAngle.toFixed(1)}`;
         metrics[`metric${metricCount}Unit`] = '度';
         metrics[`metric${metricCount}Improved`] = angleImproved;
@@ -2246,7 +2238,7 @@ function calculateFullBodyMetrics(beforeEar, beforeShoulder, beforeHip, beforeKn
         
         // 骨盤角度をmetric2に
         if (beforePelvicTilt !== null && afterPelvicTilt !== null) {
-            metrics.metric2Label = '股関節-膝アライメント角度 ※';
+            metrics.metric2Label = '股関節-膝アライメント角度';
             metrics.metric2Value = `${beforePelvicTilt.toFixed(1)} → ${afterPelvicTilt.toFixed(1)}`;
             metrics.metric2Unit = '度';
             metrics.metric2Improved = pelvicImproved;
