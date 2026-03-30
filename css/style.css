@@ -735,6 +735,26 @@ input[type="range"]::-moz-range-thumb {
     font-size: 0.9rem;
 }
 
+.metrics-disclaimer {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background: rgba(255, 152, 0, 0.08);
+    border-left: 3px solid #FF9800;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.metrics-disclaimer p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.metrics-disclaimer p:first-child {
+    color: #E65100;
+    font-weight: 500;
+}
+
 /* レスポンシブデザイン */
 
 /* PC画面: A4サイズを正確に表示 */
