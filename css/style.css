@@ -646,8 +646,7 @@ input[type="range"]::-moz-range-thumb {
     display: block;
     max-width: 100%;
     max-height: 100%;
-    width: auto;  /* 自動調整に変更 */
-    height: auto;
+    /* width: auto; height: auto; を削除してJavaScriptのインラインスタイルを優先 */
     object-fit: contain;
 }
 
