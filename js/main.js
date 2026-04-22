@@ -74,6 +74,10 @@ let beforeImage = null;
 let afterImage = null;
 let beforePose = null;
 let afterPose = null;
+
+// 高解像度画像保持用（エクスポート品質向上のため）
+let beforeOriginalImage = null;  // 元画像（リサイズ前）
+let afterOriginalImage = null;   // 元画像（リサイズ前）
 let currentLayout = 'horizontal'; // 'horizontal' または 'vertical'
 let showSkeleton = true;
 let showMetrics = true;
@@ -929,6 +933,11 @@ async function analyzePose() {
             console.log('✅ Before画像のキャッシュを使用');
         } else {
             showStatus('Before画像を分析中... (1/2)', 'analyzing');
+            
+            // 元画像を保存（高解像度エクスポート用）
+            beforeOriginalImage = beforeImage;
+            console.log('💾 Before元画像を保存:', beforeImage.width, 'x', beforeImage.height);
+            
             beforePose = await detectPose(beforeImage);
             beforeImageSrc = beforeSrc;  // キャッシュキーを保存
             
@@ -950,6 +959,11 @@ async function analyzePose() {
             console.log('✅ After画像のキャッシュを使用');
         } else {
             showStatus('After画像を分析中... (2/2)', 'analyzing');
+            
+            // 元画像を保存（高解像度エクスポート用）
+            afterOriginalImage = afterImage;
+            console.log('💾 After元画像を保存:', afterImage.width, 'x', afterImage.height);
+            
             afterPose = await detectPose(afterImage);
             afterImageSrc = afterSrc;  // キャッシュキーを保存
             
@@ -1173,6 +1187,21 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     }
     console.log('✅ Canvas要素取得成功:', canvasId);
     
+    // 元画像を使用（高解像度表示・エクスポート用）
+    const originalImage = (canvasId === 'canvasBefore') ? beforeOriginalImage : afterOriginalImage;
+    const displayImage = originalImage || image;  // フォールバック: 元画像がない場合は解析用画像
+    
+    if (originalImage) {
+        console.log('💎 元画像を使用（高解像度）:', displayImage.width, 'x', displayImage.height);
+    } else {
+        console.log('⚠️ 元画像なし、解析画像を使用:', displayImage.width, 'x', displayImage.height);
+    }
+    
+    // MediaPipe解析画像とのスケール比を計算（座標変換用）
+    const scaleX = displayImage.width / image.width;
+    const scaleY = displayImage.height / image.height;
+    console.log('📐 座標スケール比:', scaleX.toFixed(3), 'x', scaleY.toFixed(3));
+    
     // レイアウトに応じてCanvasの最大サイズを設定
     // 画像比率: 3:4 (横:縦) = 0.75
     // A4サイズ: 横向き297x210mm、縦向き210x297mm
@@ -1185,34 +1214,35 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         // 実効エリア: (210-40) x (297-40) = 170mm x 257mm
         // 画像エリア: 257 - 15(ヘッダー) - 20(メトリクス) - 15(gap) = 207mm
         // 各画像: 155mm x 207mm (3:4比率、100%使用で完全最大化)
-        // 合計幅: 155mm * 2 + 10mm(gap) = 320mm → 実効170mmに収まるよう自動縮小
-        // 画像エリア使用率: 207mm / 207mm = 100% (フルサイズ表示)
-        maxWidth = 155 * 3.7795;   // 約586px (3:4比率の横幅、完全最大化)
-        maxHeight = 207 * 3.7795;  // 約782px (3:4比率の縦幅、画像エリアの100%使用)
-        console.log('📐 縦レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
+        // 高解像度表示のた〘1.5倍に拡大
+        const baseFactor = 1.5;  // 画質向上のためのスケールファクター
+        maxWidth = 155 * 3.7795 * baseFactor;   // 約879px (1.5倍)
+        maxHeight = 207 * 3.7795 * baseFactor;  // 約1173px (1.5倍)
+        console.log('📐 縦レイアウト (高画質1.5倍) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     } else {
         // A4横向き (297mm x 210mm) - Before/Afterを横並び配置
         // 実効エリア: (297-40) x (210-40) = 257mm x 170mm
         // ヘッダー(15mm) + 画像(120mm) + 数値(15mm) + 余裕(20mm) = 170mm
         // 各画像: 90mm x 120mm (3:4比率)
-        // 合計幅: 90mm * 2 + 10mm(gap) = 190mm (実効257mmの74%)
-        maxWidth = 90 * 3.7795;    // 約340px (3:4比率の横幅)
-        maxHeight = 120 * 3.7795;  // 約453px (3:4比率の縦幅、全身が収まる)
-        console.log('📐 横レイアウト (3:4最適化) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
+        // 高解像度表示のため1.5倍に拡大
+        const baseFactor = 1.5;  // 画質向上のためのスケールファクター
+        maxWidth = 90 * 3.7795 * baseFactor;    // 約510px (1.5倍)
+        maxHeight = 120 * 3.7795 * baseFactor;  // 約680px (1.5倍)
+        console.log('📐 横レイアウト (高画質1.5倍) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     }
     
-    let width = image.width;
-    let height = image.height;
+    let width = displayImage.width;
+    let height = displayImage.height;
     
-    console.log('🖼️ 元画像サイズ:', width, 'x', height);
+    console.log('🖼️ 使用画像サイズ:', width, 'x', height);
     console.log('📏 maxWidth:', maxWidth, ', maxHeight:', maxHeight);
     
     // アスペクト比を維持してリサイズ
+    const displayRatio = Math.min(maxWidth / width, maxHeight / height);
     if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = width * ratio;
-        height = height * ratio;
-        console.log('🔄 リサイズ後:', width, 'x', height, '(ratio:', ratio, ')');
+        width = width * displayRatio;
+        height = height * displayRatio;
+        console.log('🔄 表示用リサイズ:', width, 'x', height, '(ratio:', displayRatio.toFixed(3), ')');
     } else {
         console.log('ℹ️ リサイズ不要（画像が最大サイズ内）');
     }
@@ -1226,19 +1256,19 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     
     const ctx = canvas.getContext('2d');
     
-    // 画像を描画
-    ctx.drawImage(image, 0, 0, width, height);
+    // 元画像を描画
+    ctx.drawImage(displayImage, 0, 0, width, height);
     
-    // 骨格線とマーカーの描画（モードに応じて完全分離）
+    // 骨格線とマーカーの描画（座標をスケーリング）
     if (selectedPlane === 'sagittal' && cervicalModeEnabled) {
         // 頸部モード: 頸部マーカーのみ描画（全身骨格線は描画しない）
         if (poseResults && poseResults.poseLandmarks && (enableAlignment || enableROM)) {
-            drawSagittalAnalysis(ctx, poseResults.poseLandmarks, width, height, color);
+            drawSagittalAnalysisScaled(ctx, poseResults.poseLandmarks, width, height, color, scaleX, scaleY, displayRatio);
         }
     } else {
         // 全身モード: 全身骨格線のみ描画（矢状面マーカーは表示しない）
         if (showSkeleton && poseResults && poseResults.poseLandmarks) {
-            drawSkeleton(ctx, poseResults.poseLandmarks, width, height, color);
+            drawSkeletonScaled(ctx, poseResults.poseLandmarks, width, height, color, scaleX, scaleY, displayRatio);
         }
     }
 }
@@ -1387,6 +1417,131 @@ function drawSkeleton(ctx, landmarks, canvasWidth, canvasHeight, color) {
     });
     
     // 矢状面分析の描画はdrawComparisonCanvas内で独立して実行される
+}
+
+// スケーリング版のdrawSkeleton（高解像度画像用）
+function drawSkeletonScaled(ctx, landmarks, canvasWidth, canvasHeight, color, scaleX, scaleY, displayRatio) {
+    // 📐 矢状面の基準線を最初に描画（最背面）
+    if (selectedPlane === 'sagittal' && showReferenceLine) {
+        drawReferenceLineScaled(ctx, landmarks, canvasWidth, canvasHeight, scaleX, scaleY, displayRatio);
+    }
+    
+    // MediaPipe Pose の関節接続定義
+    let connections;
+    
+    if (selectedPlane === 'frontal') {
+        // 前額面（正面）
+        connections = [
+            [0, 7], [0, 8],
+            [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
+            [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
+            [11, 23], [12, 24], [23, 24],
+            [23, 25], [25, 27], [27, 29], [29, 31], [27, 31],
+            [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
+        ];
+    } else {
+        // 矢状面（側面）
+        const isRightSide = facingSide === 'right';
+        
+        if (isRightSide) {
+            connections = [
+                [8, 12], [12, 24],
+                [24, 26], [26, 28], [28, 30], [30, 32], [28, 32]
+            ];
+        } else {
+            connections = [
+                [7, 11], [11, 23],
+                [23, 25], [25, 27], [27, 29], [29, 31], [27, 31]
+            ];
+        }
+    }
+    
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    const visibilityThreshold = DRAW_CONFIG.VISIBILITY_THRESHOLD;
+    
+    // 線を描画（座標をスケーリング）
+    connections.forEach(([start, end]) => {
+        const startPoint = landmarks[start];
+        const endPoint = landmarks[end];
+        
+        if (startPoint && endPoint && 
+            startPoint.visibility > visibilityThreshold && 
+            endPoint.visibility > visibilityThreshold) {
+            ctx.beginPath();
+            // 座標変換: MediaPipe正規化座標(0-1) → 表示座標(canvas上のピクセル)
+            // canvasWidthとcanvasHeightは既に表示サイズなので、そのまま掛けるだけでOK
+            ctx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
+            ctx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
+            ctx.stroke();
+        }
+    });
+    
+    // 関節点を描画
+    ctx.fillStyle = color;
+    const pointsToShow = new Set();
+    connections.forEach(([start, end]) => {
+        pointsToShow.add(start);
+        pointsToShow.add(end);
+    });
+    
+    const facePointsToExclude = new Set([1, 2, 3, 4, 5, 6, 9, 10]);
+    
+    landmarks.forEach((landmark, index) => {
+        if (pointsToShow.has(index) && !facePointsToExclude.has(index) && landmark.visibility > visibilityThreshold) {
+            // 座標変換: MediaPipe正規化座標(0-1) → 表示座標
+            const x = landmark.x * canvasWidth;
+            const y = landmark.y * canvasHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, lineWidth * 1.5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    });
+}
+
+function drawReferenceLineScaled(ctx, landmarks, canvasWidth, canvasHeight, scaleX, scaleY, displayRatio) {
+    const leftShoulder = landmarks[11];
+    const rightShoulder = landmarks[12];
+    
+    let isLeftFront = true;
+    if (leftShoulder && rightShoulder && 
+        typeof leftShoulder.z !== 'undefined' && 
+        typeof rightShoulder.z !== 'undefined') {
+        isLeftFront = leftShoulder.z < rightShoulder.z;
+    }
+    
+    const ear = landmarks[isLeftFront ? 7 : 8];
+    
+    if (!ear || ear.visibility < 0.3) {
+        return;
+    }
+    
+    // 座標変換: MediaPipe正規化座標(0-1) → 表示座標
+    const x = ear.x * canvasWidth;
+    
+    ctx.save();
+    ctx.strokeStyle = COLORS.REFERENCE;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 5]);
+    
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvasHeight);
+    ctx.stroke();
+    
+    ctx.restore();
+}
+
+function drawSagittalAnalysisScaled(ctx, landmarks, canvasWidth, canvasHeight, color, scaleX, scaleY, displayRatio) {
+    // スケーリング版の矢状面分析描画
+    // 実装は通常版とほぼ同じだが、座標変換を適用
+    // 簡略化のため、既存のdrawSagittalAnalysisを呼び出し
+    // （座標は正規化されているため、スケーリングの影響は少ない）
+    drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color);
 }
 
 function drawReferenceLine(ctx, landmarks, canvasWidth, canvasHeight) {
