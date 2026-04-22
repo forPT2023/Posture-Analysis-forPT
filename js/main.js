@@ -1,11 +1,11 @@
-// 姿勢分析ツール v13.10.0 - メインスクリプト（最適化版）
+// 姿勢分析ツール v13.16.0 - メインスクリプト（最適化版）
 
 // ========================================
 // 定数定義
 // ========================================
 
 // アプリケーション設定
-const APP_VERSION = '13.10.0';
+const APP_VERSION = '13.16.0';
 const DEBUG_MODE = false; // 本番環境ではfalse
 
 // ROM（後屈可動域）判定基準
@@ -1538,10 +1538,139 @@ function drawReferenceLineScaled(ctx, landmarks, canvasWidth, canvasHeight, scal
 
 function drawSagittalAnalysisScaled(ctx, landmarks, canvasWidth, canvasHeight, color, scaleX, scaleY, displayRatio) {
     // スケーリング版の矢状面分析描画
-    // 実装は通常版とほぼ同じだが、座標変換を適用
-    // 簡略化のため、既存のdrawSagittalAnalysisを呼び出し
-    // （座標は正規化されているため、スケーリングの影響は少ない）
-    drawSagittalAnalysis(ctx, landmarks, canvasWidth, canvasHeight, color);
+    // 高解像度画像用の座標変換を適用
+    console.log('🔍 drawSagittalAnalysisScaled 呼び出し: facingSide =', facingSide, 'cervicalModeEnabled =', cervicalModeEnabled);
+    
+    // 頸部モードの場合のみ enableAlignment/enableROM をチェック
+    if (cervicalModeEnabled && !enableAlignment && !enableROM) {
+        console.log('   → 頸部モードだが測定項目が未選択のため描画スキップ');
+        return;
+    }
+    
+    console.log('   → 矢状面マーカーを描画します（高解像度）');
+    
+    // ユーザーが選択した撮影側面を使用
+    const isRightSideFacing = facingSide === 'right';
+    
+    const earIdx = isRightSideFacing ? 8 : 7;
+    const shoulderIdx = isRightSideFacing ? 12 : 11;
+    const eyeIdx = isRightSideFacing ? 5 : 2;
+    
+    console.log(`📐 矢状面分析（高解像度）: 撮影側面=${facingSide}, 使用ランドマーク: 耳=${earIdx}, 肩=${shoulderIdx}, 目=${eyeIdx}`);
+    
+    const ear = landmarks[earIdx];
+    const shoulder = landmarks[shoulderIdx];
+    const eye = landmarks[eyeIdx];
+    
+    if (!ear) {
+        console.log('⚠️ 矢状面分析: 耳のランドマークが検出されませんでした');
+        return;
+    }
+    
+    // 座標変換: MediaPipe正規化座標(0-1) → 表示座標
+    // canvasWidthとcanvasHeightは既に表示サイズなので、そのまま掛けるだけでOK
+    const earX = ear.x * canvasWidth;
+    const earY = ear.y * canvasHeight;
+    
+    // 全身モードまたはアライメント評価モード
+    if (shoulder && (cervicalModeEnabled ? enableAlignment : true)) {
+        const shoulderX = shoulder.x * canvasWidth;
+        const shoulderY = shoulder.y * canvasHeight;
+        
+        // マーカー描画
+        if (showSagittalMarkers) {
+            // 耳マーカー
+            ctx.beginPath();
+            ctx.arc(earX, earY, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFD700'; // 金色
+            ctx.fill();
+            ctx.strokeStyle = '#FFA500';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            
+            // 肩マーカー
+            ctx.beginPath();
+            ctx.arc(shoulderX, shoulderY, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#4CAF50'; // 緑
+            ctx.fill();
+            ctx.strokeStyle = '#2E7D32';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+        
+        // 測定線（耳-肩）
+        if (showSagittalLines) {
+            ctx.beginPath();
+            ctx.moveTo(earX, earY);
+            ctx.lineTo(shoulderX, shoulderY);
+            ctx.strokeStyle = '#FF9800'; // オレンジ
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        
+        // 垂直基準線
+        if (showSagittalReference) {
+            ctx.beginPath();
+            ctx.moveTo(earX, earY);
+            ctx.lineTo(earX, canvasHeight);
+            ctx.strokeStyle = '#4CAF50'; // 緑
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+    
+    // 後屈可動域測定モード
+    if (enableROM && eye) {
+        const eyeX = eye.x * canvasWidth;
+        const eyeY = eye.y * canvasHeight;
+        
+        // マーカー描画
+        if (showSagittalMarkers) {
+            // 耳マーカー（アライメントと重複しないように色を変える）
+            if (!enableAlignment) {
+                ctx.beginPath();
+                ctx.arc(earX, earY, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#FFD700'; // 金色
+                ctx.fill();
+                ctx.strokeStyle = '#FFA500';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+            
+            // 目マーカー
+            ctx.beginPath();
+            ctx.arc(eyeX, eyeY, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#2196F3'; // 青
+            ctx.fill();
+            ctx.strokeStyle = '#1565C0';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+        
+        // 測定線（耳-目）
+        if (showSagittalLines) {
+            ctx.beginPath();
+            ctx.moveTo(earX, earY);
+            ctx.lineTo(eyeX, eyeY);
+            ctx.strokeStyle = '#FF9800'; // オレンジ
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        
+        // 水平基準線
+        if (showSagittalReference) {
+            ctx.beginPath();
+            ctx.moveTo(0, earY);
+            ctx.lineTo(canvasWidth, earY);
+            ctx.strokeStyle = '#4CAF50'; // 緑
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
 }
 
 function drawReferenceLine(ctx, landmarks, canvasWidth, canvasHeight) {
