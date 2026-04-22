@@ -644,9 +644,8 @@ input[type="range"]::-moz-range-thumb {
 
 .comparison-canvas {
     display: block;
-    max-width: 100%;
-    max-height: 100%;
-    /* width: auto; height: auto; を削除してJavaScriptのインラインスタイルを優先 */
+    /* max-width/max-heightを削除してサイズを固定 */
+    /* JavaScriptのインラインスタイル（style.width, style.height）が優先される */
     object-fit: contain;
 }
 

@@ -1251,8 +1251,11 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     canvas.height = height;
     
     // Canvas要素のstyle属性にもサイズを明示的に設定（アスペクト比保持）
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    // setPropertyで!importantフラグを付けて確実に適用
+    canvas.style.setProperty('width', `${width}px`, 'important');
+    canvas.style.setProperty('height', `${height}px`, 'important');
+    canvas.style.setProperty('max-width', 'none', 'important');
+    canvas.style.setProperty('max-height', 'none', 'important');
     
     console.log('✅ Canvas設定完了:', canvasId, '-', canvas.width, 'x', canvas.height);
     console.log('   - Canvas style.width:', canvas.style.width);
