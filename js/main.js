@@ -1214,21 +1214,19 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
         // 実効エリア: (210-40) x (297-40) = 170mm x 257mm
         // 画像エリア: 257 - 15(ヘッダー) - 20(メトリクス) - 15(gap) = 207mm
         // 各画像: 155mm x 207mm (3:4比率、100%使用で完全最大化)
-        // 高解像度表示のた〘1.5倍に拡大
-        const baseFactor = 1.5;  // 画質向上のためのスケールファクター
-        maxWidth = 155 * 3.7795 * baseFactor;   // 約879px (1.5倍)
-        maxHeight = 207 * 3.7795 * baseFactor;  // 約1173px (1.5倍)
-        console.log('📐 縦レイアウト (高画質1.5倍) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
+        const baseFactor = 1.0;  // プレビュー時は1.0、エクスポート時はhtml2canvasのscale=2で高解像度化
+        maxWidth = 155 * 3.7795 * baseFactor;   // 約586px
+        maxHeight = 207 * 3.7795 * baseFactor;  // 約782px
+        console.log('📐 縦レイアウト - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     } else {
         // A4横向き (297mm x 210mm) - Before/Afterを横並び配置
         // 実効エリア: (297-40) x (210-40) = 257mm x 170mm
         // ヘッダー(15mm) + 画像(120mm) + 数値(15mm) + 余裕(20mm) = 170mm
         // 各画像: 90mm x 120mm (3:4比率)
-        // 高解像度表示のため1.5倍に拡大
-        const baseFactor = 1.5;  // 画質向上のためのスケールファクター
-        maxWidth = 90 * 3.7795 * baseFactor;    // 約510px (1.5倍)
-        maxHeight = 120 * 3.7795 * baseFactor;  // 約680px (1.5倍)
-        console.log('📐 横レイアウト (高画質1.5倍) - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
+        const baseFactor = 1.0;  // プレビュー時は1.0、エクスポート時はhtml2canvasのscale=2で高解像度化
+        maxWidth = 90 * 3.7795 * baseFactor;    // 約340px
+        maxHeight = 120 * 3.7795 * baseFactor;  // 約453px
+        console.log('📐 横レイアウト - Canvas最大サイズ:', maxWidth, 'x', maxHeight);
     }
     
     let width = displayImage.width;
@@ -1250,12 +1248,10 @@ function drawComparisonCanvas(canvasId, image, poseResults, color) {
     canvas.width = width;
     canvas.height = height;
     
-    // Canvas要素のstyle属性にもサイズを明示的に設定（アスペクト比保持）
-    // setPropertyで!importantフラグを付けて確実に適用
-    canvas.style.setProperty('width', `${width}px`, 'important');
-    canvas.style.setProperty('height', `${height}px`, 'important');
-    canvas.style.setProperty('max-width', 'none', 'important');
-    canvas.style.setProperty('max-height', 'none', 'important');
+    // Canvas要素のCSS表示サイズを内部解像度と一致させる
+    // これにより、1:1のピクセルマッピングが保証され、画像が歪まない
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
     
     console.log('✅ Canvas設定完了:', canvasId, '-', canvas.width, 'x', canvas.height);
     console.log('   - Canvas style.width:', canvas.style.width);
